@@ -1,7 +1,11 @@
+from math import log
 from pathlib import Path
 from typing import Dict, List
 from http import HTTPStatus
 import requests
+import logging
+
+logger = logging.getLogger()
 
 
 class File:
@@ -65,10 +69,22 @@ class NetworkFile(File):
 
     def readlines(self) -> List[str]:
         response = requests.get(self.__download_url)
-        print(f"Downloading {self.__download_url}")
+        logging.info(
+            "User [%s] Repo [%s] Path [%s]; downloading via %s",
+            self.__user,
+            self.__repo,
+            self.__path,
+            self.__download_url,
+        )
         if response.status_code == HTTPStatus.OK:
             return response.text.split("\n")
         else:
-            print(f"Failed to download, got status {response.status_code}")
-            print("Response is:", response.text)
+            logging.error(
+                "User [%s] Repo [%s] Path [%s]; failed to download with status: %d and response %s",
+                self.__user,
+                self.__repo,
+                self.__path,
+                response.status_code,
+                response.text,
+            )
             return []

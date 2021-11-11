@@ -1,4 +1,11 @@
 __pycache__
+
+# exclude prototyping related files
 **.json
 chunk-test/
+
+# exclude config
 config.py
+
+# exclude generated logs
+**.log

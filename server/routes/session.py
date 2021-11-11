@@ -3,9 +3,11 @@ from typing import List, Dict
 from dependency.injection import get_chunk_fetcher, get_file_fetcher
 from services.session import Session
 from nanoid import generate
+import logging
 
 
 router = APIRouter(prefix="/session", tags=["session"])
+logger = logging.getLogger()
 
 db: Dict[str, Session] = {}
 
@@ -18,7 +20,8 @@ def make_session(users: List[str]):
         session.setup()
         db[id] = session
     except Exception as e:
-        return HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
+        logging.error("Failed to setup, reason %s", str(e))
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
     return {"id": id}
 
@@ -26,14 +29,14 @@ def make_session(users: List[str]):
 @router.get("/{session_id}/pick", status_code=status.HTTP_200_OK)
 def pick_chunk(session_id: str):
     if not session_id in db:
-        return HTTPException(
+        raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
         )
     session = db[session_id]
     if session.can_pick():
         session.pick()
     else:
-        return HTTPException(
+        raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "ran out of files to pick amongst"
         )
 
@@ -41,13 +44,13 @@ def pick_chunk(session_id: str):
 @router.get("/{session_id}/chunk", status_code=status.HTTP_200_OK)
 def get_session(session_id: str):
     if not session_id in db:
-        return HTTPException(
+        raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
         )
     session = db[session_id]
     chunk = session.get_chunk()
     if not chunk:
-        return HTTPException(
+        raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "get_chunk() called on a session which may have never picked a file",
         )
@@ -57,7 +60,7 @@ def get_session(session_id: str):
 @router.get("/{session_id}/peek", status_code=status.HTTP_200_OK)
 def get_session(session_id: str, direction: str = "above"):
     if not session_id in db:
-        return HTTPException(
+        raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
         )
     session = db[session_id]
@@ -70,11 +73,11 @@ def get_session(session_id: str, direction: str = "above"):
             session.peek_below()
             return session.get_chunk().get_content()
         else:
-            return HTTPException(
+            raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
                 "direction query parameter can only be 'above' or 'below'",
             )
     else:
-        return HTTPException(
+        raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "unable to call peek"
         )

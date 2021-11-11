@@ -2,6 +2,9 @@ from services.chunk import Chunk
 from services.file import File
 from typing import List
 import random
+import logging
+
+logger = logging.getLogger()
 
 
 class ChunkFetcher:
@@ -54,13 +57,11 @@ class RandomChunkFetcher:
         if self.can_pick_chunk():
             self.__picked_file = self.__pick_random_file()
 
-            print(
-                "Picked:",
-                self.__picked_file.get_path(),
-                "Repo:",
-                self.__picked_file.get_repo(),
-                "User:",
+            logger.info(
+                "User [%s] Repo [%s]; picked file %s",
                 self.__picked_file.get_user(),
+                self.__picked_file.get_repo(),
+                self.__picked_file.get_path(),
             )
 
             lines = self.__picked_file.readlines()
@@ -112,8 +113,12 @@ class RandomChunkFetcher:
                 )
             )
             self.__current_peeks += 1
-            print(
-                f"[{self.__picked_file.get_path()}], User:{self.__picked_file.get_user()}, Remaining Peeks:{self.__current_peeks}"
+            logger.info(
+                "User [%s] Repo [%s] File [%s]; peeked above, remaining %d peeks",
+                self.__picked_file.get_user(),
+                self.__picked_file.get_repo(),
+                self.__picked_file.get_path(),
+                self.__max_peeks - self.__current_peeks,
             )
 
     def peek_below(self):
@@ -133,8 +138,12 @@ class RandomChunkFetcher:
                 )
             )
             self.__current_peeks += 1
-            print(
-                f"[{self.__picked_file.get_path()}], User:{self.__picked_file.get_user()}, Remaining Peeks:{self.__current_peeks}"
+            logger.info(
+                "User [%s] Repo [%s] File [%s]; peeked below, remaining %d peeks",
+                self.__picked_file.get_user(),
+                self.__picked_file.get_repo(),
+                self.__picked_file.get_path(),
+                self.__max_peeks - self.__current_peeks,
             )
 
     def get_chunk(self):
