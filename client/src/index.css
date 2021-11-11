@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+:root {
+  --color-bg: #151415;
+  --p0: #FAFBFB;
+  --p1: #B3E7EB;
+  --z0:#676767;
+  --z1: #444;
+  --z2: #7C7D83;
+  --r0: #996262;
+  --r1: #B84444;
+}
+
+body {
+  max-width: 1024px;
+  margin: 8px auto;
+  font-family: 'IBM Plex Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
+  color: var(--p0);
+}
+
+a {
+  text-decoration: none;
+  color: var(--p0);
+}
+
+a:hover {
+  color: var(--p1);
+}
