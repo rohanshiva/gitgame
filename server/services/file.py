@@ -3,11 +3,11 @@ from typing import Dict, List
 from http import HTTPStatus
 import requests
 
-class File:
 
+class File:
     def __str__(self) -> str:
         return f"{self.get_repo()} : {self.get_path()}"
-    
+
     def serialize(self) -> Dict:
         return {
             "user": self.get_user(),
@@ -36,7 +36,6 @@ class File:
 
 
 class NetworkFile(File):
-
     def __init__(self, user: str, path: str, repo: str, download_url: str, size: int):
         self.__user = user
         self.__path = path
@@ -48,10 +47,10 @@ class NetworkFile(File):
         serial_file = super().serialize()
         serial_file["download_url"] = self.__download_url
         return serial_file
-    
+
     def get_user(self) -> str:
         return self.__user
-    
+
     def get_path(self) -> str:
         return self.__path
 
@@ -60,10 +59,10 @@ class NetworkFile(File):
 
     def get_repo(self) -> str:
         return self.__repo
-    
+
     def get_size(self) -> int:
         return self.__size
-    
+
     def readlines(self) -> List[str]:
         response = requests.get(self.__download_url)
         print(f"Downloading {self.__download_url}")
@@ -73,6 +72,3 @@ class NetworkFile(File):
             print(f"Failed to download, got status {response.status_code}")
             print("Response is:", response.text)
             return []
-
-    
-
