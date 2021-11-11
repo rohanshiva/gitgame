@@ -49,7 +49,7 @@ class GithubFileFetcher(FileFetcher):
 
                     if element.type == self.BLOB:
                         file = NetworkFile(user, path, repo.full_name, 
-                                self.__get_file_download_url(repo.full_name, path), size)
+                                self.__get_file_download_url(repo, path), size)
                         
                         if self.__file_rule.is_valid(file):
                             files.append(file) 
@@ -62,6 +62,6 @@ class GithubFileFetcher(FileFetcher):
 
         return files
     
-    def __get_file_download_url(self, repo_name : str, file_path : str):
-        return f"https://raw.githubusercontent.com/{repo_name}/master/{file_path}"
+    def __get_file_download_url(self, repo : Repository, file_path : str):
+        return f"https://raw.githubusercontent.com/{repo.full_name}/{repo.default_branch}/{file_path}"
     

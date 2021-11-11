@@ -6,7 +6,7 @@ class FileRule:
     def is_valid(self, file:File) -> bool:
         pass
 
-# only consider files which have supported_extensions
+# only consider files which have supported language extensions
 class CodeFileRule(FileRule):
 
     def __init__(self, supported_extensions: List[str]):
@@ -18,3 +18,4 @@ class CodeFileRule(FileRule):
 
     def __get_extension(self, path: str) -> str:
         return pathlib.Path(path).suffix[1:]
+

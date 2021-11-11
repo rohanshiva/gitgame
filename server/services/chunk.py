@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import List
 
-
 class Chunk:
     
-    def __init__(self, start_line : int, end_line : int, content : List[str]):
+    def __init__(self, file_name: str, start_line : int, end_line : int, content : List[str]):
+        self.__file_name = file_name
         self.__start = start_line
         self.__end = end_line
         self.__content = content
@@ -15,9 +15,15 @@ class Chunk:
     def get_end_line(self) -> int:
         return self.__end
     
-    def get_content(self) -> str:
-        return "\n".join(self.__content)
-    
+    def get_content(self):
+        chunk_lines = []
+        for i in range(len(self.__content)):
+            chunk_lines.append({
+                    "line_number": i + self.__start,
+                    "content": self.__content[i]
+            })
+        
+        return {"filename":self.__file_name, "lines": chunk_lines}
     
     # naive merging of chunks, assumes the chunks' start and end positions don't overlap
     def merge_chunk(self, chunk : Chunk):

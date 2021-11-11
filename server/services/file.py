@@ -66,10 +66,11 @@ class NetworkFile(File):
     
     def readlines(self) -> List[str]:
         response = requests.get(self.__download_url)
+        print(f"Downloading {self.__download_url}")
         if response.status_code == HTTPStatus.OK:
             return response.text.split("\n")
         else:
-            print("Failed to download, got status:" + response.status_code)
+            print(f"Failed to download, got status {response.status_code}")
             print("Response is:", response.text)
             return []
 
