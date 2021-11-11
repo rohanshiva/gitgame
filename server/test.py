@@ -2,7 +2,6 @@ import requests
 
 
 def dump_chunk(session_id):
-
     response = requests.get(f"http://localhost:8000/session/{session_id}/chunk")
     if response.status_code == 500:
         print("Unable to get chunk", response.text)
@@ -19,7 +18,7 @@ resp = requests.post("http://localhost:8000/session/make", json=["Ramko9999"]).j
 session_id = resp["id"]
 print(session_id)
 
-print(requests.get(f"http://localhost:8000/session/{session_id}/pick").json())
+print(requests.get(f"http://localhost:8000/session/{session_id}/pick").status_code)
 dump_chunk(session_id)
 
 while True:
@@ -28,18 +27,20 @@ while True:
         print(
             requests.get(
                 f"http://localhost:8000/session/{session_id}/peek?direction=above"
-            ).json()
+            ).status_code
         )
         dump_chunk(session_id)
     elif keyboard_input.upper() == "S":
         print(
             requests.get(
                 f"http://localhost:8000/session/{session_id}/peek?direction=below"
-            ).json()
+            ).status_code
         )
         dump_chunk(session_id)
     elif keyboard_input.upper() == "N":
-        print(requests.get(f"http://localhost:8000/session/{session_id}/pick").json())
+        print(
+            requests.get(f"http://localhost:8000/session/{session_id}/pick").status_code
+        )
         dump_chunk(session_id)
     elif keyboard_input.upper() == "Q":
         break

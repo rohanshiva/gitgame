@@ -5,6 +5,10 @@ from services.file_rule import FileRule
 from typing import List
 import itertools
 import random
+import logging
+
+
+logger = logging.getLogger()
 
 # interface class to fetch code files from users
 class FileFetcher:
@@ -22,6 +26,7 @@ class GithubFileFetcher(FileFetcher):
         self.__max_repos_per_user = max_repos_per_user
 
     def get_files(self, users: List[str]) -> List[File]:
+        logging.info("Trying to get files for [%s]", ",".join(users))
         user_files = [self.__get_files(user) for user in users]
         return list(itertools.chain(*user_files))
 
@@ -31,6 +36,9 @@ class GithubFileFetcher(FileFetcher):
 
         # randomly sample repositories to pick code chunks from for a user
         shuffled_repo_indicies = [i for i in range(named_user.public_repos)]
+        logging.info(
+            "User [%s]; shuffling public repos among %d", user, named_user.public_repos
+        )
         random.shuffle(shuffled_repo_indicies)
 
         picked_count = 0
@@ -43,6 +51,9 @@ class GithubFileFetcher(FileFetcher):
 
             # only consider non-forked repositories
             if not repo.fork:
+                logger.info(
+                    "User [%s]; considering non-forked repo %s", user, repo.full_name
+                )
                 file_additions = 0
                 git_tree = repo.get_git_tree(repo.default_branch, recursive=True)
                 for element in git_tree.tree:
@@ -64,8 +75,10 @@ class GithubFileFetcher(FileFetcher):
                 if file_additions > 0:
                     picked_count += 1
                 else:
-                    print(
-                        f"Repo {repo.full_name} for user {user} didn't add any files, looking for another repo."
+                    logger.warn(
+                        "User [%s]; repo %s didn't add any files, choosing another repo to look in",
+                        user,
+                        repo.full_name,
                     )
 
         return files
