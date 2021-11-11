@@ -65,8 +65,10 @@ def get_session(session_id: str, direction: str = "above"):
     if session.can_peek():
         if direction == "above":
             session.peek_above()
+            return session.get_chunk().get_content()
         elif direction == "below":
             session.peek_below()
+            return session.get_chunk().get_content()
         else:
             return HTTPException(
                 status.HTTP_400_BAD_REQUEST,
