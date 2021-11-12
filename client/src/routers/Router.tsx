@@ -2,7 +2,8 @@ import React from "react";
 
 import { BrowserRouter as Router, Switch } from "react-router-dom";
 
-import routes_ from "../constants/route";
+
+import routes_, {baseRoutes_} from "../constants/route";
 import Home from "../components/home";
 import Game from "../components/game";
 
@@ -11,8 +12,8 @@ function AppRouter() {
   return (
     <Router>
       <Switch>
-        <CommonRoute component={Game} path={routes_.game} />
-        <CommonRoute component={Home} path={routes_.root} />
+        <CommonRoute component={Game} path={baseRoutes_.game} />
+        <CommonRoute component={Home} path={baseRoutes_.root} />
       </Switch>
     </Router>
   );

@@ -1,60 +1,75 @@
 import React, { useState, useEffect } from "react";
 
-import * as api from "../../utils/api";
-import config from "../../config/config";
-
 import { useHistory } from "react-router-dom";
 import "./Game.css";
-
-import Highlight, { defaultProps } from "prism-react-renderer";
+import Highlight, { defaultProps, Language } from "prism-react-renderer";
 import theme from "prism-react-renderer/themes/palenight";
+import Session from "../../interfaces/session";
+import routes_ from "../../constants/route";
+import { Chunk } from "../../interfaces/chunk";
+import SessionService from "../../services/session";
+import ChunkService from "../../services/chunk";
 
-const exampleCode = `
-(function someDemo() {
-  var test = "Hello World!";
-  console.log(test);
-})();
+function getSessionId(path: string){
+  const pathParts = path.split("/");
+  return pathParts[pathParts.length - 1];
+}
 
-return () => <App />;
-`.trim();
+function getPrismExtension(extension: string) : Language{
+  if(extension === "dart" || extension === "java"){
+    return "clike" as Language;
+  }
+  return extension as Language;
+}
 
 function Game(props: any) {
-  const [session, setSession] = useState({});
-  const [loading, setLoading] = useState(true);
 
   const history = useHistory();
-  const [chunk, setChunk] = useState("Loading...");
-  const [code, setCode] = useState("Loading...");
-  const getCodeChunk = async () => {
-    const pickUri = config.pick.uri.replace(":sessionId", session.id);
-    const chunkUri = config.chunk.uri.replace(":sessionId", session.id);
+  const sessionId = getSessionId(history.location.pathname);
 
-    try {
-      if (!loading) {
-        const pickReq = await api.get(pickUri);
-        if (pickReq.status == 200) {
-          const chunkReq = await api.get(chunkUri);
-          if (chunkReq.status == 200) {
-            console.log(chunkReq);
-          }
-        }
-      }
-    } catch (error) {}
-  };
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [chunk, setChunk] = useState<Chunk | null>(null);
+
   useEffect(() => {
-    setSession(props.location.state.session);
-    if (session.id) {
-      setLoading(false);
+    async function loadSession(){
+      try{
+        setSession(await SessionService.getSession(sessionId));
+        await pickChunk();
+        setLoading(false);
+      } catch (error: any){
+        console.error(error.message);
+      }
     }
-    getCodeChunk();
-  });
-
-  console.log("received session props", session);
+    loadSession();
+  }, []);
 
   const handleOnLeaveGame = () => {
     // TODO: leave game stuff
-    history.push("/");
+    history.push(routes_.root());
   };
+
+  const pickChunk = async () => {
+      setChunk(await SessionService.pick(sessionId));
+  };
+
+  const peekAbove = async () => {
+    try{
+      setChunk(await SessionService.peek(sessionId, "above"));
+    } catch(error: any){
+      console.log(`Unable to peek above: ${error.message}`);
+    }
+  }
+
+  const peekBelow = async () => {
+    try{
+      setChunk(await SessionService.peek(sessionId, "below"));
+    } catch(error: any){
+      console.log(`Unable to peek below: ${error.message}`);
+    }
+      
+  }
+
   return (
     <>
       {loading ? (
@@ -67,8 +82,8 @@ function Game(props: any) {
             <Highlight
               {...defaultProps}
               theme={theme}
-              code={exampleCode}
-              language="jsx"
+              code={ChunkService.getAsCode(chunk as Chunk)}
+              language={getPrismExtension((chunk as Chunk).extension)}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
                 <pre className={className} style={style}>
@@ -84,15 +99,16 @@ function Game(props: any) {
             </Highlight>
           </div>
           <div className="player_tags">
-            {session.players.map((name, key) => (
+            {(session as Session).players.map((name: string, key:number) => (
               <div className="player_tag" key={key}>
                 {name}
               </div>
             ))}
           </div>
           <div className="game_options">
-            <button onClick={handleOnLeaveGame}>Peak Above</button>
-            <button onClick={handleOnLeaveGame}>Peak Below</button>
+            <button onClick={pickChunk}> Pick Another Chunk </button>
+            <button onClick={peekAbove}>Peak Above</button>
+            <button onClick={peekBelow}>Peak Below</button>
             <button className="leave_button" onClick={handleOnLeaveGame}>
               Leave game
             </button>

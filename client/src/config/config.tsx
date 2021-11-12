@@ -11,6 +11,9 @@ const config = {
     },
     peek:  {
         uri: "session/:sessionId/peek?direction={direction}"
+    },
+    getSession: {
+        uri: "session/:sessionId"
     }
 }
 

@@ -1,24 +1,21 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import routes_ from "../../constants/route";
-
-import * as api from "../../utils/api";
-import config from "../../config/config";
-
 import "./Home.css";
+import SessionService from "../../services/session";
 
 function Home() {
   const history = useHistory();
-  const [username, setUsername] = useState("");
-  const [players, setPlayers] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState<string>("");
+  const [players, setPlayers] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [loading, setLoading] = useState<Boolean>(false);
 
-  const deletePlayer = (key) => {
-    setPlayers((_players) => _players.filter((_, _key) => _key !== key));
+  const deletePlayer = (key: number) => {
+    setPlayers((_players: string[]) => _players.filter((_, _key: number) => _key !== key));
   };
 
-  const onKeyDown = (event) => {
+  const onKeyDown = (event: any) => {
     const { key } = event;
     if (
       (key === "," || key === "Enter") &&
@@ -26,30 +23,27 @@ function Home() {
       !players.includes(username)
     ) {
       event.preventDefault();
-      setPlayers((_players) => [..._players, username]);
+      setPlayers((_players: string[]) => [..._players, username]);
       setUsername("");
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: any) => {
     event.preventDefault();
     // TODO: create session api
     setLoading(true);
-    api
-      .post(config.make.uri, players)
-      .then((res) => {
-        const session = res.data;
-        session.players = players;
-        setLoading(false);
+    SessionService.makeSession(players)
+      .then(({id}) => {
         history.replace({
-          pathname: routes_.game,
-          state: { session:session },
+          pathname: routes_.game(id)
         });
       })
       .catch((error) => {
         console.log(error);
+        setErrorMessage(error.message);
+      })
+      .finally(() => {
         setLoading(false);
-        // setErrorMessage(error.response.data.error.message);
       });
   };
 
@@ -70,7 +64,7 @@ function Home() {
         </form>
       </div>
       <div className="player_tags">
-        {players.map((name, key) => (
+        {players.map((name: string, key:number) => (
           <div className="player_tag" key={key} onClick={() => deletePlayer(key)}>
             {name}
           </div>

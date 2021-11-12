@@ -1,6 +1,13 @@
-const routes_ = {
+export const baseRoutes_ = {
     root: "/",
-    game: "/game",
-  };
+    game: "/game/:sessionId",
+};
+
+const routes_ = {
+    root: () => baseRoutes_.root,
+    game: (sessionId: string) => baseRoutes_.game.replace(":sessionId", sessionId)
+};
+
+
   
-  export default routes_;
+export default routes_;
