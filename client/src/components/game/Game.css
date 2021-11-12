@@ -1,0 +1,42 @@
+
+.game_options {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+button {
+  margin-top: 3rem;
+  height: 40px;
+  font-size: 18px;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  border-radius: 3px;
+  color: var(--color-bg);
+  background-color: var(--p1);
+  font-weight: 600;
+}
+
+pre {
+  text-align: left;
+  margin: 1em 0;
+  padding: 2em;
+  overflow: scroll;
+  border-radius: 0.5rem;
+}
+
+pre .token-line {
+  font-size: 15px;
+  line-height: 2em;
+  height: 2em;
+}
+
+pre::-webkit-scrollbar {
+    display: none;
+}
+.loading_tag {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--p1);
+}

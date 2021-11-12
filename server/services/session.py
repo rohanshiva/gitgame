@@ -1,6 +1,10 @@
 from services.chunk_fetcher import ChunkFetcher
 from services.file_fetcher import FileFetcher
 from services.chunk import Chunk
+from typing import List
+import logging
+
+logger = logging.getLogger()
 
 
 class Session:
@@ -32,7 +36,7 @@ class Session:
         if self.__chunk_fetcher.can_pick_chunk():
             self.__chunk_fetcher.pick_starting_chunk()
         else:
-            print("No more chunks to select")
+            logger.info("Session [%s]; no more chunks to pick")
 
     def can_peek(self) -> bool:
         return self.__chunk_fetcher.can_peek()
@@ -47,3 +51,6 @@ class Session:
 
     def get_chunk(self) -> Chunk:
         return self.__chunk_fetcher.get_chunk()
+
+    def get_players(self) -> List[str]:
+        return self.__users

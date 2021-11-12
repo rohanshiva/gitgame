@@ -35,14 +35,15 @@ def pick_chunk(session_id: str):
     session = db[session_id]
     if session.can_pick():
         session.pick()
+        return session.get_chunk().get_content()
     else:
         raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "ran out of files to pick amongst"
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "ran out of files to pick"
         )
 
 
 @router.get("/{session_id}/chunk", status_code=status.HTTP_200_OK)
-def get_session(session_id: str):
+def get_chunk(session_id: str):
     if not session_id in db:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
@@ -52,13 +53,13 @@ def get_session(session_id: str):
     if not chunk:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-            "get_chunk() called on a session which may have never picked a file",
+            "get_chunk() called on a session which may have never even picked a file",
         )
     return chunk.get_content()
 
 
 @router.get("/{session_id}/peek", status_code=status.HTTP_200_OK)
-def get_session(session_id: str, direction: str = "above"):
+def peek_on_chunk(session_id: str, direction: str = "above"):
     if not session_id in db:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
@@ -81,3 +82,13 @@ def get_session(session_id: str, direction: str = "above"):
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "unable to call peek"
         )
+
+
+@router.get("/{session_id}", status_code=status.HTTP_200_OK)
+def get_session(session_id: str):
+    if not session_id in db:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
+        )
+    session = db[session_id]
+    return {"id": session_id, "players": session.get_players()}
