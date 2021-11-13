@@ -3,7 +3,7 @@ import React from "react";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
 
 
-import routes_, {baseRoutes_} from "../constants/route";
+import {baseRoutes_} from "../constants/route";
 import Home from "../components/home";
 import Game from "../components/game";
 
