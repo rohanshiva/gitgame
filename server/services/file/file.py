@@ -1,14 +1,14 @@
-from math import log
 from pathlib import Path
 from typing import Dict, List
 from http import HTTPStatus
+from abc import ABC, abstractmethod
 import requests
 import logging
 
 logger = logging.getLogger()
 
 
-class File:
+class File(ABC):
     def __str__(self) -> str:
         return f"{self.get_repo()} : {self.get_path()}"
 
@@ -20,21 +20,27 @@ class File:
             "size": self.get_size(),
         }
 
+    @abstractmethod
     def get_user(self) -> str:
         pass
 
+    @abstractmethod
     def get_path(self) -> str:
         pass
 
+    @abstractmethod
     def get_filename(self) -> str:
         pass
 
+    @abstractmethod
     def get_repo(self) -> str:
         pass
 
+    @abstractmethod
     def get_size(self) -> int:
         pass
 
+    @abstractmethod
     def readlines(self) -> List[str]:
         pass
 
