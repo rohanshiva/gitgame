@@ -3,7 +3,6 @@ from services.file.file import File
 from typing import List
 from abc import ABC, abstractmethod
 
-
 class FileRule(ABC):
     @abstractmethod
     def is_valid(self, file: File) -> bool:
