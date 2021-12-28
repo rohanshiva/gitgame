@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-from services.file.file import File
+from gitgame.services.file.file import File
 import random
 
 

@@ -1,14 +1,13 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List, Dict
-from dependency.injection import get_session_factory
-from services.session import Session
+from gitgame.dependency import get_session_factory
+from gitgame.services import Session
 from nanoid import generate
 import logging
 
 router = APIRouter(prefix="/session", tags=["session"])
 
 db: Dict[str, Session] = {}
-
 
 @router.post("/make", status_code=status.HTTP_201_CREATED)
 def make_session(users: List[str]):

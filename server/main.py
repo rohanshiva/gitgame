@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import session
+from gitgame.routes import session
 import uvicorn
 
 app = FastAPI()

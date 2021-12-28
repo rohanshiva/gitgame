@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
-from services.file.file_rule import FileRule
-from services.file.file import File
-from services.file.file import File, NetworkFile
+from gitgame.services.file.file_rule import FileRule
+from gitgame.services.file.file import File
+from gitgame.services.file.file import File, NetworkFile
 from github import Github, GithubException, Repository
 import random
 import logging
