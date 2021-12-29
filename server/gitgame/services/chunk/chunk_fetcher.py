@@ -8,7 +8,7 @@ logger = logging.getLogger()
 
 class ChunkFetcher(ABC):
     @abstractmethod
-    def set_file(self, file: File):
+    def use_file(self, file: File):
         pass
 
     @abstractmethod
@@ -40,12 +40,11 @@ class WindowChunkFetcher(ChunkFetcher):
         self.__initial_chunk_size = initial_chunk_size
         self.__peek_size = peek_size
         self.__max_peeks = max_peeks
-
         self.__current_peeks = 0
         self.__chunk = None
         self.__lines = None
 
-    def set_file(self, file: File):
+    def use_file(self, file: File):
         self.__file = file
         self.__current_peeks = 0
         self.__pick_starting_chunk()
@@ -55,7 +54,7 @@ class WindowChunkFetcher(ChunkFetcher):
 
     def __pick_starting_chunk(self):
         logger.info(
-            "User [%s] Repo [%s]; picking chunk in file %s",
+            "User [%s] Repo [%s]; trying to pick chunk in file %s",
             self.__file.get_user(),
             self.__file.get_repo(),
             self.__file.get_path(),
@@ -88,7 +87,7 @@ class WindowChunkFetcher(ChunkFetcher):
         self.__lines = lines
 
     def can_peek(self) -> bool:
-        return not (self.__file is None) and self.__current_peeks < self.__max_peeks
+        return self.can_pick_chunk() and self.__current_peeks < self.__max_peeks
 
     def peek_above(self):
         if self.can_peek():

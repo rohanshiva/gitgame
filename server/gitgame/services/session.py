@@ -36,11 +36,18 @@ class Session:
         return self.__file_pool.can_pick()
 
     def pick(self):
-        if self.can_pick():
+        is_using_file = False
+        while self.can_pick() and not is_using_file:
             file = self.__file_pool.pick()
-            self.__chunk_fetcher.set_file(file)
-        else:
-            logger.info("Session [%s]; no more chunks to pick")
+            try:
+                self.__chunk_fetcher.use_file(file)
+                is_using_file = True
+            except Exception as e:
+                # keep trying to pick more files to use until we are able to use a file in the chunk fetcher without issues
+                pass
+        
+        if not is_using_file:
+            logger.info("Session [%s]; no more files to pick chunks from")
 
     def can_peek(self) -> bool:
         return self.__chunk_fetcher.can_peek()
