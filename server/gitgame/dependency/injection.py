@@ -1,12 +1,7 @@
 from config import GITHUB_ACCESS_TOKEN
 from github import Github
-from services.file.file_picker import RandomFilePicker
-from services.file.file_pool import FilePool, PlayerFilePool
-from services.session import Session
-from services.file.file_picker import FilePicker
-from services.file.file_source import FileSource, LazyGithubFileSource
-from services.file.file_rule import FileRule, CodeFileRule
-from services.chunk.chunk_fetcher import ChunkFetcher, WindowChunkFetcher
+
+from gitgame.services import RandomFilePicker, PlayerFilePool, FilePool, Session, FilePicker, FileSource, LazyGithubFileSource, FileRule, FileExtensionRule, ChunkFetcher, WindowChunkFetcher
 from typing import List
 
 
@@ -28,7 +23,7 @@ def get_file_rule() -> FileRule:
         "cpp",
         "c",
     ]
-    return CodeFileRule(extensions)
+    return FileExtensionRule(extensions)
 
 
 def get_file_picker() -> FilePicker:

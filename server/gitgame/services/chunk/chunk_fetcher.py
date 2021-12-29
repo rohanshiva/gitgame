@@ -1,5 +1,5 @@
-from services.chunk.chunk import Chunk
-from services.file.file import File
+from gitgame.services.chunk.chunk import Chunk
+from gitgame.services.file.file import File
 import logging
 from abc import ABC, abstractmethod
 

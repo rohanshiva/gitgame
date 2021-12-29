@@ -1,7 +1,7 @@
 from collections import defaultdict
-from services.file.file_picker import FilePicker
-from services.file.file_source import FileSource
-from services.file.file import File
+from gitgame.services.file.file_picker import FilePicker
+from gitgame.services.file.file_source import FileSource
+from gitgame.services.file.file import File
 from typing import Dict
 from abc import ABC, abstractmethod
 import logging

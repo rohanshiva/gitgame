@@ -1,5 +1,5 @@
 import pathlib
-from services.file.file import File
+from gitgame.services.file.file import File
 from typing import List
 from abc import ABC, abstractmethod
 
@@ -10,7 +10,7 @@ class FileRule(ABC):
 
 
 # only consider files which have supported language extensions
-class CodeFileRule(FileRule):
+class FileExtensionRule(FileRule):
     def __init__(self, supported_extensions: List[str]):
         self.__supported_extensions = set(supported_extensions)
 

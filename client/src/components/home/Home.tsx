@@ -30,10 +30,9 @@ function Home() {
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    // TODO: create session api
     setLoading(true);
     SessionService.makeSession(players)
-      .then(({id}) => {
+      .then(({ id }) => {
         history.replace({
           pathname: routes_.game(id)
         });
@@ -64,7 +63,7 @@ function Home() {
         </form>
       </div>
       <div className="player_tags">
-        {players.map((name: string, key:number) => (
+        {players.map((name: string, key: number) => (
           <div className="player_tag" key={key} onClick={() => deletePlayer(key)}>
             {name}
           </div>

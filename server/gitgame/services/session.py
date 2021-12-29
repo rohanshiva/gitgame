@@ -1,7 +1,7 @@
-from services.file.file_source import FileSource
-from services.file.file_pool import FilePool
-from services.chunk.chunk_fetcher import ChunkFetcher
-from services.chunk.chunk import Chunk
+from gitgame.services.file.file_source import FileSource
+from gitgame.services.file.file_pool import FilePool
+from gitgame.services.chunk.chunk_fetcher import ChunkFetcher
+from gitgame.services.chunk.chunk import Chunk
 from typing import List, Callable
 import logging
 
