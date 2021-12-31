@@ -6,5 +6,4 @@ from .file.file_picker import FilePicker, RandomFilePicker
 from .file.file_pool import FilePool, PlayerFilePool
 from .file.file_rule import FileRule, FileExtensionRule
 from .file.file_source import FileSource, LazyGithubFileSource
-
-
+from .player.player import Player

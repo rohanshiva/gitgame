@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, WebSocket, WebSocketDisconnect
 from typing import List, Dict
 from gitgame.dependency import get_session_factory
-from gitgame.services import Session
+from gitgame.services import Session, Player
 from nanoid import generate
 import logging
 
@@ -10,9 +10,9 @@ router = APIRouter(prefix="/session", tags=["session"])
 db: Dict[str, Session] = {}
 
 @router.post("/make", status_code=status.HTTP_201_CREATED)
-def make_session(users: List[str]):
+def make_session(pre_determined_authors: List[str]):
     id = generate(size=10)
-    session = get_session_factory(id, users)
+    session = get_session_factory(id, pre_determined_authors)
     try:
         session.setup()
         db[id] = session
@@ -88,4 +88,4 @@ def get_session(session_id: str):
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
         )
     session = db[session_id]
-    return {"id": session_id, "players": session.get_players()}
+    return {"id": session_id, "authors": session.get_authors(), "players": session.get_players()}

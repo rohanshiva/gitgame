@@ -2,6 +2,7 @@ from gitgame.services.file.file_source import FileSource
 from gitgame.services.file.file_pool import FilePool
 from gitgame.services.chunk.chunk_fetcher import ChunkFetcher
 from gitgame.services.chunk.chunk import Chunk
+from gitgame.services.player.player import Player
 from typing import List, Callable
 import logging
 
@@ -12,25 +13,37 @@ class Session:
     def __init__(
         self,
         id: str,
-        players: list[str],
+        authors: list[str],
         file_source_factory: Callable[[str], FileSource],
         file_pool: FilePool,
         chunk_fetcher: ChunkFetcher,
     ):
         self.__id = id
-        self.__players = players
+        self.__authors = authors
+        self.__players: List[Player] = []
         self.__file_source_factory = file_source_factory
         self.__file_pool = file_pool
         self.__chunk_fetcher = chunk_fetcher
         self.__has_setup = False
-
+    
     def setup(self):
-        for player in self.__players:
-            self.__file_pool.add_player(player, self.__file_source_factory(player))
+        for author in self.__authors:
+            self.__file_pool.add_player(author, self.__file_source_factory(author))
         self.__has_setup = True
 
     def is_setup(self) -> bool:
         return self.__has_setup
+
+    async def connect(self, player: Player):
+        await player.websocket.accept()
+        await player.websocket.send_json({"msg": f"{player} connected lobby {self.__id}"})
+        self.__players.append(player)
+        if player.username not in self.__authors:
+            self.__authors.append(player.username)
+            self.__file_pool.add_player(player.username, self.__file_source_factory(player.username))
+    
+    def disconnect(self, player: Player):
+        self.__players.remove(player)
 
     def can_pick(self) -> bool:
         return self.__file_pool.can_pick()
@@ -55,6 +68,12 @@ class Session:
 
     def get_chunk(self) -> Chunk:
         return self.__chunk_fetcher.get_chunk()
-
+    
     def get_players(self) -> List[str]:
-        return self.__players
+        res = []
+        for player in self.__players:
+            res.append(player.username)
+        return res
+        
+    def get_authors(self) -> List[str]:
+        return self.__authors
