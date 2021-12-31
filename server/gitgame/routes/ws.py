@@ -4,6 +4,7 @@ from gitgame.services import Player
 
 socket_app = FastAPI()
 
+
 @socket_app.websocket("/{session_id}/{username}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str, username: str):
     if not session_id in db:

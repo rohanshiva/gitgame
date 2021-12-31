@@ -89,4 +89,8 @@ def get_session(session_id: str):
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
         )
     session = db[session_id]
-    return {"id": session_id, "authors": session.get_authors(), "players": session.get_players()}
+    return {
+        "id": session_id,
+        "authors": session.get_authors(),
+        "players": session.get_players(),
+    }
