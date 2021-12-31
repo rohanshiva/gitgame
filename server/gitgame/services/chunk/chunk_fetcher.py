@@ -8,11 +8,11 @@ logger = logging.getLogger()
 
 class ChunkFetcher(ABC):
     @abstractmethod
-    def set_file(self, file: File):
+    def pick_starting_chunk(self):
         pass
 
     @abstractmethod
-    def can_pick_chunk(self) -> bool:
+    def can_get_chunk(self) -> bool:
         pass
 
     @abstractmethod
@@ -34,28 +34,25 @@ class ChunkFetcher(ABC):
 
 class WindowChunkFetcher(ChunkFetcher):
     def __init__(
-        self, initial_chunk_size: int = 20, peek_size: int = 10, max_peeks: int = 10
+        self,
+        file: File,
+        starting_chunk_size: int = 20,
+        peek_size: int = 10,
+        remaining_peeks: int = 10,
     ):
-        self.__file = None
-        self.__initial_chunk_size = initial_chunk_size
+        self.__file = file
+        self.__starting_chunk_size = starting_chunk_size
         self.__peek_size = peek_size
-        self.__max_peeks = max_peeks
-
-        self.__current_peeks = 0
+        self.__remaining_peeks = remaining_peeks
         self.__chunk = None
         self.__lines = None
 
-    def set_file(self, file: File):
-        self.__file = file
-        self.__current_peeks = 0
-        self.__pick_starting_chunk()
+    def can_get_chunk(self) -> bool:
+        return not (self.__chunk is None)
 
-    def can_pick_chunk(self) -> bool:
-        return not (self.__file is None)
-
-    def __pick_starting_chunk(self):
+    def pick_starting_chunk(self):
         logger.info(
-            "User [%s] Repo [%s]; picking chunk in file %s",
+            "User [%s] Repo [%s]; trying to pick chunk in file %s",
             self.__file.get_user(),
             self.__file.get_repo(),
             self.__file.get_path(),
@@ -65,20 +62,25 @@ class WindowChunkFetcher(ChunkFetcher):
         best_start_line = 0
         current_size_sum = 0
 
-        for i in range(min(len(lines), self.__initial_chunk_size)):
+        """
+        the starting chunk is found by selecting a window of file lines (the window's size is starting_chunk_size) and maximizing 
+        the sum of the trimmed file lines in the window. 
+        """
+
+        for i in range(min(len(lines), self.__starting_chunk_size)):
             current_size_sum += self.__get_line_size(lines[i])
 
         optimal_size_sum = current_size_sum
-        for i in range(self.__initial_chunk_size, len(lines)):
+        for i in range(self.__starting_chunk_size, len(lines)):
             current_size_sum -= self.__get_line_size(
-                lines[i - self.__initial_chunk_size]
+                lines[i - self.__starting_chunk_size]
             )
             current_size_sum += self.__get_line_size(lines[i])
             if current_size_sum >= optimal_size_sum:
                 optimal_size_sum = current_size_sum
-                best_start_line = (i - self.__initial_chunk_size) + 1
+                best_start_line = (i - self.__starting_chunk_size) + 1
 
-        best_end_line = best_start_line + min(len(lines), self.__initial_chunk_size)
+        best_end_line = best_start_line + min(len(lines), self.__starting_chunk_size)
         self.__chunk = Chunk(
             self.__file.get_filename(),
             best_start_line,
@@ -88,56 +90,50 @@ class WindowChunkFetcher(ChunkFetcher):
         self.__lines = lines
 
     def can_peek(self) -> bool:
-        return not (self.__file is None) and self.__current_peeks < self.__max_peeks
+        return self.can_get_chunk() and self.__remaining_peeks > 0
 
     def peek_above(self):
         if self.can_peek():
             start_line = self.__chunk.get_start_line()
             above_start_line = max(start_line - self.__peek_size, 0)
-            above_contents = []
-            for i in range(above_start_line, start_line):
-                above_contents.append(self.__lines[i])
 
             self.__chunk.merge_chunk(
                 Chunk(
                     self.__file.get_filename(),
                     above_start_line,
                     start_line,
-                    above_contents,
+                    self.__lines[above_start_line:start_line],
                 )
             )
-            self.__current_peeks += 1
+            self.__remaining_peeks -= 1
             logger.info(
                 "User [%s] Repo [%s] File [%s]; peeked above, remaining %d peeks",
                 self.__file.get_user(),
                 self.__file.get_repo(),
                 self.__file.get_path(),
-                self.__max_peeks - self.__current_peeks,
+                self.__remaining_peeks,
             )
 
     def peek_below(self):
         if self.can_peek():
             end_line = self.__chunk.get_end_line()
             below_end_line = min(end_line + self.__peek_size, len(self.__lines))
-            below_contents = []
-            for i in range(end_line, below_end_line):
-                below_contents.append(self.__lines[i])
 
             self.__chunk.merge_chunk(
                 Chunk(
                     self.__file.get_filename(),
                     end_line,
                     below_end_line,
-                    below_contents,
+                    self.__lines[end_line:below_end_line],
                 )
             )
-            self.__current_peeks += 1
+            self.__remaining_peeks -= 1
             logger.info(
                 "User [%s] Repo [%s] File [%s]; peeked below, remaining %d peeks",
                 self.__file.get_user(),
                 self.__file.get_repo(),
                 self.__file.get_path(),
-                self.__max_peeks - self.__current_peeks,
+                self.__remaining_peeks,
             )
 
     def get_chunk(self):

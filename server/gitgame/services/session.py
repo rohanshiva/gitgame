@@ -3,6 +3,7 @@ from gitgame.services.file.file_pool import FilePool
 from gitgame.services.chunk.chunk_fetcher import ChunkFetcher
 from gitgame.services.chunk.chunk import Chunk
 from gitgame.services.player.player import Player
+from gitgame.services.file.file import File
 from typing import List, Callable
 import logging
 
@@ -16,14 +17,15 @@ class Session:
         authors: list[str],
         file_source_factory: Callable[[str], FileSource],
         file_pool: FilePool,
-        chunk_fetcher: ChunkFetcher,
+        chunk_fetcher_factory: Callable[[File], ChunkFetcher],
     ):
         self.__id = id
         self.__authors = authors
         self.__players: List[Player] = []
         self.__file_source_factory = file_source_factory
         self.__file_pool = file_pool
-        self.__chunk_fetcher = chunk_fetcher
+        self.__chunk_fetcher_factory = chunk_fetcher_factory
+        self.__chunk_fetcher = None
         self.__has_setup = False
     
     def setup(self):
@@ -45,18 +47,30 @@ class Session:
     def disconnect(self, player: Player):
         self.__players.remove(player)
 
-    def can_pick(self) -> bool:
+    def can_pick_file(self) -> bool:
         return self.__file_pool.can_pick()
 
-    def pick(self):
-        if self.can_pick():
+    def can_get_chunk(self) -> bool:
+        return (
+            not (self.__chunk_fetcher is None) and self.__chunk_fetcher.can_get_chunk()
+        )
+
+    def pick_file(self):
+        self.__chunk_fetcher = None
+        while self.can_pick_file() and (not self.can_get_chunk()):
             file = self.__file_pool.pick()
-            self.__chunk_fetcher.set_file(file)
-        else:
-            logger.info("Session [%s]; no more chunks to pick")
+            try:
+                self.__chunk_fetcher = self.__chunk_fetcher_factory(file)
+                self.__chunk_fetcher.pick_starting_chunk()
+            except Exception as e:
+                # keep trying to pick more files to use until we are able to get chunks from a file
+                logger.error("Session [%s], Failed to pick starting chunk", self.__id)
+
+        if not self.can_get_chunk():
+            logger.info("Session [%s]; no more files to pick chunks from", self.__id)
 
     def can_peek(self) -> bool:
-        return self.__chunk_fetcher.can_peek()
+        return self.can_get_chunk() and self.__chunk_fetcher.can_peek()
 
     def peek_above(self):
         if self.can_peek():
@@ -67,8 +81,10 @@ class Session:
             self.__chunk_fetcher.peek_below()
 
     def get_chunk(self) -> Chunk:
-        return self.__chunk_fetcher.get_chunk()
-    
+        if self.can_get_chunk():
+            return self.__chunk_fetcher.get_chunk()
+        return None
+
     def get_players(self) -> List[str]:
         res = []
         for player in self.__players:

@@ -76,7 +76,7 @@ class NetworkFile(File):
     def readlines(self) -> List[str]:
         response = requests.get(self.__download_url)
         logging.info(
-            "User [%s] Repo [%s] Path [%s]; downloading via %s",
+            "User [%s] Repo [%s] Path [%s]; downloading via url: %s",
             self.__user,
             self.__repo,
             self.__path,
@@ -93,4 +93,6 @@ class NetworkFile(File):
                 response.status_code,
                 response.text,
             )
-            return []
+            raise Exception(
+                f"Unable to download file {self.get_path()}: {response.text}"
+            )
