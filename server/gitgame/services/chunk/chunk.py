@@ -16,7 +16,7 @@ class Chunk:
 
     def get_end_line(self) -> int:
         return self.__end
-        
+
     def get_content(self):
         chunk_lines = []
         for i in range(len(self.__content)):

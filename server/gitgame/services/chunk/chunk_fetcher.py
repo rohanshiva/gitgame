@@ -31,9 +31,14 @@ class ChunkFetcher(ABC):
     def get_chunk(self) -> Chunk:
         pass
 
+
 class WindowChunkFetcher(ChunkFetcher):
     def __init__(
-        self, file:File, starting_chunk_size: int = 20, peek_size: int = 10, remaining_peeks: int = 10
+        self,
+        file: File,
+        starting_chunk_size: int = 20,
+        peek_size: int = 10,
+        remaining_peeks: int = 10,
     ):
         self.__file = file
         self.__starting_chunk_size = starting_chunk_size
@@ -57,10 +62,10 @@ class WindowChunkFetcher(ChunkFetcher):
         best_start_line = 0
         current_size_sum = 0
 
-        '''
+        """
         the starting chunk is found by selecting a window of file lines (the window's size is starting_chunk_size) and maximizing 
         the sum of the trimmed file lines in the window. 
-        '''
+        """
 
         for i in range(min(len(lines), self.__starting_chunk_size)):
             current_size_sum += self.__get_line_size(lines[i])
@@ -91,13 +96,13 @@ class WindowChunkFetcher(ChunkFetcher):
         if self.can_peek():
             start_line = self.__chunk.get_start_line()
             above_start_line = max(start_line - self.__peek_size, 0)
-            
+
             self.__chunk.merge_chunk(
                 Chunk(
                     self.__file.get_filename(),
                     above_start_line,
                     start_line,
-                    self.__lines[above_start_line : start_line],
+                    self.__lines[above_start_line:start_line],
                 )
             )
             self.__remaining_peeks -= 1
@@ -119,7 +124,7 @@ class WindowChunkFetcher(ChunkFetcher):
                     self.__file.get_filename(),
                     end_line,
                     below_end_line,
-                    self.__lines[end_line : below_end_line],
+                    self.__lines[end_line:below_end_line],
                 )
             )
             self.__remaining_peeks -= 1
