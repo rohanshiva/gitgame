@@ -9,6 +9,7 @@ router = APIRouter(prefix="/session", tags=["session"])
 
 db: Dict[str, Session] = {}
 
+
 @router.post("/make", status_code=status.HTTP_201_CREATED)
 def make_session(users: List[str]):
     id = generate(size=10)

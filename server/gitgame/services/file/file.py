@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger()
 
+
 class File(ABC):
     def __str__(self) -> str:
         return f"{self.get_repo()} : {self.get_path()}"
@@ -92,4 +93,6 @@ class NetworkFile(File):
                 response.status_code,
                 response.text,
             )
-            raise Exception(f"Unable to download file {self.get_path()}: {response.text}")
+            raise Exception(
+                f"Unable to download file {self.get_path()}: {response.text}"
+            )

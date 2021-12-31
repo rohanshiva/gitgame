@@ -16,7 +16,7 @@ class Session:
         players: list[str],
         file_source_factory: Callable[[str], FileSource],
         file_pool: FilePool,
-        chunk_fetcher_factory: Callable[[File], ChunkFetcher]
+        chunk_fetcher_factory: Callable[[File], ChunkFetcher],
     ):
         self.__id = id
         self.__players = players
@@ -36,9 +36,11 @@ class Session:
 
     def can_pick_file(self) -> bool:
         return self.__file_pool.can_pick()
-    
+
     def can_get_chunk(self) -> bool:
-        return not (self.__chunk_fetcher is None) and self.__chunk_fetcher.can_get_chunk()
+        return (
+            not (self.__chunk_fetcher is None) and self.__chunk_fetcher.can_get_chunk()
+        )
 
     def pick_file(self):
         self.__chunk_fetcher = None
@@ -50,7 +52,7 @@ class Session:
             except Exception as e:
                 # keep trying to pick more files to use until we are able to get chunks from a file
                 logger.error("Session [%s], Failed to pick starting chunk", self.__id)
-        
+
         if not self.can_get_chunk():
             logger.info("Session [%s]; no more files to pick chunks from", self.__id)
 

@@ -9,7 +9,6 @@ import logging
 
 
 class FileSource(ABC):
-
     @abstractmethod
     def setup(self):
         pass
@@ -41,7 +40,7 @@ class LazyGithubFileSource(FileSource):
         self.__repo_indicies = repo_indicies[:]
         self.__max_loadable_repos = max_loadable_repos
         self.__paginated_repos = None
-    
+
     def setup(self):
         if not self.__paginated_repos:
             named_user = self.__github.get_user(self.__user)
