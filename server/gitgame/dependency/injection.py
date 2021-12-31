@@ -56,7 +56,7 @@ def file_source_factory(player: str) -> FileSource:
     return LazyGithubFileSource(get_github_instance(), get_file_rule(), player)
 
 
-def session_factory(id: str, players: List[str]) -> Session:
+def session_factory(id: str, authors: List[str]) -> Session:
     return Session(
-        id, players, file_source_factory, get_file_pool(), chunk_fetcher_factory
+        id, authors, file_source_factory, get_file_pool(), chunk_fetcher_factory
     )
