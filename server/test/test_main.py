@@ -25,7 +25,7 @@ def test_websocket_connection():
     assert response.status_code == 201
     session_id = response.json()["id"]
     username = "TanushN"
-    socket_url = f"/socket/{session_id}/{username}/ws"
+    socket_url = f"/{session_id}/{username}/ws"
     with client.websocket_connect(socket_url) as websocket:
         data = websocket.receive_json()
         assert data == {"msg": f"{username} connected lobby {session_id}"}
