@@ -10,7 +10,7 @@ const config = {
         uri: "session/:sessionId/chunk"
     },
     peek:  {
-        uri: "session/:sessionId/peek?direction={direction}"
+        uri: "session/:sessionId/peek"
     },
     getSession: {
         uri: "session/:sessionId"

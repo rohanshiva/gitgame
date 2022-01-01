@@ -92,5 +92,5 @@ def get_session(session_id: str):
     return {
         "id": session_id,
         "authors": session.get_authors(),
-        "players": session.get_players(),
+        "players": session.get_player_names(),
     }

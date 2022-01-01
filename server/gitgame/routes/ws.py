@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, HTTPException, status
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, status
 from gitgame.routes.session import db
 from gitgame.services import Player
 
@@ -14,3 +14,11 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, username: st
     session = db[session_id]
     player = Player(username, websocket)
     await session.connect(player)
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            await session.handle_client_event(player, data)
+
+    except WebSocketDisconnect as e:
+        session.disconnect(player)
