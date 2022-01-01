@@ -2,13 +2,11 @@ from gitgame.services.file.file_source import FileSource
 from gitgame.services.file.file_pool import FilePool
 from gitgame.services.chunk.chunk_fetcher import ChunkFetcher
 from gitgame.services.chunk.chunk import Chunk
-from gitgame.services.session.player import Player
+from gitgame.services.session.player import Player, PlayerState
 from gitgame.services.session.player_manager import PlayerManager
 from gitgame.services.file.file import File
 from typing import List, Callable, Dict
 import logging
-
-from server.gitgame.services.session.player import PlayerState
 
 logger = logging.getLogger()
 
@@ -33,7 +31,7 @@ class Session:
     ):
         self.__id = id
         self.__authors = authors
-        self.__player_manager = PlayerManager()
+        self.__players: List[Player] = []
         self.__file_source_factory = file_source_factory
         self.__file_pool = file_pool
         self.__chunk_fetcher_factory = chunk_fetcher_factory
@@ -51,18 +49,18 @@ class Session:
 
     async def connect(self, player: Player):
         await player.get_websocket().accept()
-
-        self.__player_manager.add_player(player)
+        
+        self.__players.append(player)
         if player.get_username() not in self.__authors:
             self.__authors.append(player.get_username())
             self.__file_pool.add_player(
                 player.get_username(), self.__file_source_factory(player.get_username())
             )
-        self.__broadcast_lobby()
+        await self.__broadcast_lobby()
 
-    def disconnect(self, player: Player):
-        self.__player_manager.remove_player(player)
-        self.__broadcast_lobby()
+    async def disconnect(self, player: Player):
+        self.__players.remove(player)
+        await self.__broadcast_lobby()
 
     def can_pick_file(self) -> bool:
         return self.__file_pool.can_pick()
@@ -101,20 +99,20 @@ class Session:
         return self.__chunk_fetcher.get_chunk()
 
     def get_player_names(self) -> List[str]:
-        return list(map(lambda player: player.get_username()), self.__player_manager.get_players())
+        return list(map(lambda player: player.get_username()), self.__players)
 
     def get_authors(self) -> List[str]:
         return self.__authors
 
     async def __broadcast(self, message_type: str, message):
         for player in self.__players:
-            await player.websocket.send_json({
-                "msg_type": message_type,
+            await player.get_websocket().send_json({
+                "message_type": message_type,
                 "message": message
             })
     
     async def __broadcast_lobby(self):
-        players_json = list(map(lambda player: player.serialize(), self.__player_manager.get_players()))
+        players_json = list(map(lambda player: player.serialize(), self.__players))
         await self.__broadcast(MessageType.LOBBY, players_json)
     
     async def handle_client_event(self, player: Player, data: Dict):

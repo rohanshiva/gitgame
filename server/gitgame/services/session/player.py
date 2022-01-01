@@ -34,3 +34,6 @@ class Player:
 
     def serialize(self) -> Dict:
         return {"username": self.__username, "state": self.__state}
+    
+    def __eq__(self, __o: object) -> bool:
+        return type(__o) == Player and self.__username == __o.get_username()
