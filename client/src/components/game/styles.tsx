@@ -5,7 +5,6 @@ export const Pre = styled.pre`
   margin: 1em 0;
   padding: 2em;
   max-height: 512px;
-  height: 512px;
   overflow-y: scroll;
 
   & .token-line {
