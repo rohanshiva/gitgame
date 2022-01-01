@@ -8,6 +8,10 @@ class ChunkService {
             return chunkLine.content.trimEnd();
         }).join("\n");
     }
+
+    static getStartLine(chunk: Chunk): number {
+        return chunk.lines[0].line_number;
+    }
 }
 
 export default ChunkService;
