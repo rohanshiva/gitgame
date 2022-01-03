@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, WebSocket, WebSocketDisconnect
 from typing import List, Dict
-from gitgame.dependency import session_factory
+from gitgame.dependency import session_factory, validate_authors
 from gitgame.services import Session, Player
 from nanoid import generate
 import logging
@@ -13,6 +13,12 @@ db: Dict[str, Session] = {}
 @router.post("/make", status_code=status.HTTP_201_CREATED)
 def make_session(pre_determined_authors: List[str]):
     id = generate(size=10)
+    invalid_authors = validate_authors(pre_determined_authors)
+    if invalid_authors:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            f"Failed to make a session due to invalid usernames: {invalid_authors}",
+        )
     session = session_factory(id, pre_determined_authors)
     try:
         session.setup()

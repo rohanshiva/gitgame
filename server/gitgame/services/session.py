@@ -37,7 +37,6 @@ class Session:
         return self.__has_setup
 
     async def connect(self, player: Player):
-        await player.websocket.accept()
         await player.websocket.send_json(
             {"msg": f"{player} connected lobby {self.__id}"}
         )

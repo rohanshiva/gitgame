@@ -22,6 +22,16 @@ def get_github_instance() -> Github:
     return Github(GITHUB_ACCESS_TOKEN)
 
 
+def validate_authors(authors: List[str]) -> List[str]:
+    res = []
+    for author in authors:
+        try:
+            get_github_instance().get_user(author)
+        except Exception:
+            res.append(author)
+    return res if len(res) > 0 else None
+
+
 def get_file_rule() -> FileRule:
     extensions = [
         "py",
