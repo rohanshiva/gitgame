@@ -86,10 +86,14 @@ class Session:
             await self.__send(
                 player, ServerMessageType.PROMPT, self.__get_prompt_json()
             )
+        else:
+            if self.__state == SessionState.DONE_GUESSING:
+                await self.__send(
+                    player, ServerMessageType.ANSWER_REVEAL, self.__get_answer_reveal_json()
+                )
 
     async def disconnect(self, player: Player):
         self.__players.remove(player)
-
         # randomly assign another player to be the host
         if player == self.__host:
             self.__host = None
@@ -142,9 +146,6 @@ class Session:
     def get_chunk(self) -> Chunk:
         return self.__chunk_fetcher.get_chunk()
 
-    def get_player_names(self) -> List[str]:
-        return list(map(lambda player: player.get_username()), self.__players)
-
     def get_authors(self) -> List[str]:
         return self.__file_pool_authors
 
@@ -175,6 +176,9 @@ class Session:
 
     async def __broadcast_prompt(self):
         await self.__broadcast(ServerMessageType.PROMPT, self.__get_prompt_json())
+    
+    async def __broadcast_answer_reveal(self):
+        await self.__broadcast(ServerMessageType.ANSWER_REVEAL, self.__get_answer_reveal_json())
 
     async def handle_client_event(self, player: Player, data: Dict):
         handlers = {
@@ -216,17 +220,27 @@ class Session:
                 await self.__broadcast_out_of_chunks()
             else:
                 self.__state = SessionState.IN_GUESSING
+                for player in self.__players:
+                    player.clear_guess()
                 await self.__broadcast_prompt()
 
     async def __handle_guess(self, player: Player, data: Dict):
-        guess = data["guess"]
-        player.set_guess(guess)
+        if self.__state == SessionState.IN_GUESSING:
+            guess = data["guess"]
+            player.set_guess(guess)
 
-        if all(list(map(lambda player: player.has_guessed(), self.__players))):
-            # display the scores
-            pass
+            if all(list(map(lambda player: player.has_guessed(), self.__players))):
+                await self.__handle_answer_reveal()
+            else:
+                await self.__broadcast_lobby()
 
-        await self.__broadcast_lobby()
+    async def __handle_answer_reveal(self):
+        for player in self.__players:
+            if player.has_guessed() and player.get_guess() == self.__prompt.get_correct_choice():
+                player.increment_score()
+        
+        self.__state = SessionState.DONE_GUESSING
+        await self.__broadcast_answer_reveal()
 
     def serialize(self):
         return {
@@ -256,3 +270,10 @@ class Session:
 
     def __get_prompt_json(self):
         return self.__prompt.serialize()
+    
+    def __get_answer_reveal_json(self):
+        players_json = list(map(lambda player: player.serialize(with_guess=True), self.__players))
+        return {
+            "players": players_json,
+            "correct_choice": self.__prompt.get_correct_choice()
+        }
