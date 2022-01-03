@@ -19,7 +19,7 @@ def test_make_session_invalid_authors():
     response = client.post(
         "/session/make",
         headers={"accept": "application/json", "Content-Type": "application/json"},
-        json=["rohanshiva", "ramko9999", "ramko99", "ramkkjd99990"],
+        json=["rohanshiva", "ramko9999", "ramko99", "ramko989"],
     )
     assert response.status_code == 422
     assert (
