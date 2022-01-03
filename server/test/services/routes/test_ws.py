@@ -6,6 +6,7 @@ from server.gitgame.routes import session
 
 client = TestClient(app)
 
+
 def test_make_session_invalid_authors():
     response = client.post(
         "/session/make",

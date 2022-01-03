@@ -21,6 +21,7 @@ from typing import List
 def get_github_instance() -> Github:
     return Github(GITHUB_ACCESS_TOKEN)
 
+
 def get_file_rule() -> FileRule:
     extensions = [
         "py",
