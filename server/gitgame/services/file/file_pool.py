@@ -13,7 +13,7 @@ class FilePool(ABC):
         pass
 
     @abstractmethod
-    def add_player(self, player: str, file_source: FileSource):
+    def add_author(self, author: str, file_source: FileSource):
         pass
 
     @abstractmethod
@@ -21,48 +21,46 @@ class FilePool(ABC):
         pass
 
 
-class PlayerFilePool(FilePool):
+class ReplenishingFilePool(FilePool):
     def __init__(self, file_picker: FilePicker):
-        self.file_picker = file_picker
-        self.player_file_counter = defaultdict(int)
-        self.player_file_source: Dict[str, FileSource] = {}
+        self.__file_picker = file_picker
+        self.__author_file_counter = defaultdict(int)
+        self.__author_file_source: Dict[str, FileSource] = {}
 
     def can_pick(self) -> bool:
-        return self.file_picker.can_pick_file()
+        return self.__file_picker.can_pick_file()
 
-    def add_player(self, player: str, file_source: FileSource):
-        file_source.setup()
-        if file_source.can_get_files():
-            fetched_files = file_source.get_next_files()
-            self.file_picker.add_files(fetched_files)
-            self.player_file_counter[player] = len(fetched_files)
-            self.player_file_source[player] = file_source
-        else:
-            logging.error(
-                "Player [%s]; unable to retrieve any files upon initial addition",
-                player,
-            )
+    def add_author(self, author: str, file_source: FileSource):
+        self.__author_file_source[author] = file_source
+        self.__put_files_in_pool(author)
 
     def pick(self) -> File:
-        if self.can_pick():
-            picked_file = self.file_picker.pick_file()
-            player = picked_file.get_user()
-            self.player_file_counter[player] -= 1
-            if self.player_file_counter[player] == 0:
-                logging.info(
-                    "Player [%s] Repo [%s]; player has exhausted files from pool, trying to fetch some more",
-                    player,
-                    picked_file.get_repo(),
-                )
+        picked_file = self.__file_picker.pick_file()
+        author = picked_file.get_user()
+        self.__author_file_counter[author] -= 1
+        if self.__author_file_counter[author] == 0:
+            logging.info(
+                "author [%s] Repo [%s]; author has exhausted files from pool, trying to fetch some more",
+                author,
+                picked_file.get_repo(),
+            )
 
-                if self.player_file_source[player].can_get_files():
-                    fetched_files = self.player_file_source[player].get_next_files()
-                    self.file_picker.add_files(fetched_files)
-                    self.player_file_counter[player] += len(fetched_files)
-                    logging.info("Player [%s]; fetched more files for player", player)
-                else:
-                    logging.info(
-                        "Player [%s]; no more files can be fetched for this player"
-                    )
-            return picked_file
-        return None
+            self.__put_files_in_pool(author)
+        return picked_file
+
+    def __put_files_in_pool(self, author: str):
+        file_source = self.__author_file_source[author]
+        if not file_source.is_setup():
+            file_source.setup()
+
+        if file_source.can_get_files():
+            fetched_files = file_source.get_next_files()
+            self.__file_picker.add_files(fetched_files)
+            self.__author_file_counter[author] += len(fetched_files)
+
+        if self.__author_file_counter[author] == 0:
+            logging.info(
+                "author [%s]; no more files can be fetched for this author", author
+            )
+        else:
+            logging.info("author [%s]; fetched more files for author", author)

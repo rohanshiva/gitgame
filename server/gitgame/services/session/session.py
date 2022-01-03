@@ -2,64 +2,101 @@ from gitgame.services.file.file_source import FileSource
 from gitgame.services.file.file_pool import FilePool
 from gitgame.services.chunk.chunk_fetcher import ChunkFetcher
 from gitgame.services.chunk.chunk import Chunk
-from gitgame.services.session.player import Player, PlayerState
-from gitgame.services.session.player_manager import PlayerManager
+from gitgame.services.session.player import Player
+from gitgame.services.session.prompt import Prompt
 from gitgame.services.file.file import File
 from typing import List, Callable, Dict
+import random
 import logging
 
 logger = logging.getLogger()
 
 # this class with constants is used to specify the type of message the server sends to the clients through the websockets
-class MessageType:
+class ServerMessageType:
     LOBBY = "lobby"
+    HOST_CHANGE = "host_change"
+    OUT_OF_CHUNKS = "out_of_chunks"
+    PROMPT = "prompt"
+    ANSWER_REVEAL = "answer_reveal"
+    ALL_SESSION_DATA = "all"
+
 
 class SessionState:
-    WAITING = "waiting"
+    NEWLY_CREATED = "newly_created"
+    IN_LOBBY = "in_lobby"
+    IN_GUESSING = "in_guessing"
+    DONE_GUESSING = "done_guessing"
+    OUT_OF_CHUNKS = "out_of_chunks"
+
 
 class ClientEventType:
-    TOGGLE_READY = "toggle_ready"
+    START_GAME = "start_game"
+    NEXT_ROUND = "next_round"
+    GUESS = "guess"
+
 
 class Session:
     def __init__(
         self,
         id: str,
-        authors: list[str],
+        file_pool_authors: list[str],
         file_source_factory: Callable[[str], FileSource],
         file_pool: FilePool,
         chunk_fetcher_factory: Callable[[File], ChunkFetcher],
+        state: str = SessionState.NEWLY_CREATED,
+        peek_frequency: int = 5,  # time in seconds between each code peek
+        guessing_time_limit: int = 60,  # time in seconds to guess
+        max_prompt_choices: int = 4,
     ):
         self.__id = id
-        self.__authors = authors
+        self.__file_pool_authors = file_pool_authors
         self.__players: List[Player] = []
+        self.__host: Player = None
         self.__file_source_factory = file_source_factory
         self.__file_pool = file_pool
         self.__chunk_fetcher_factory = chunk_fetcher_factory
+        self.__state = state
+        self.__peek_frequency = peek_frequency
+        self.__guessing_time_limit = guessing_time_limit
+        self.__max_prompt_choices = max_prompt_choices
         self.__chunk_fetcher = None
-        self.__has_setup = False
+        self.__prompt = None
 
     def setup(self):
         # add any of the predetermined authors' file sources
-        for author in self.__authors:
-            self.__file_pool.add_player(author, self.__file_source_factory(author))
-        self.__has_setup = True
-
-    def is_setup(self) -> bool:
-        return self.__has_setup
+        for author in self.__file_pool_authors:
+            self.__file_pool.add_author(author, self.__file_source_factory(author))
 
     async def connect(self, player: Player):
         await player.get_websocket().accept()
-        
+        # first person to join the session becomes the host
+        if self.__host is None:
+            self.__host = player
+            self.__state = SessionState.IN_LOBBY
+
         self.__players.append(player)
-        if player.get_username() not in self.__authors:
-            self.__authors.append(player.get_username())
-            self.__file_pool.add_player(
+        if player.get_username() not in self.__file_pool_authors:
+            self.__file_pool_authors.append(player.get_username())
+            self.__file_pool.add_author(
                 player.get_username(), self.__file_source_factory(player.get_username())
             )
+
         await self.__broadcast_lobby()
+        if self.__state == SessionState.IN_GUESSING:
+            await self.__send(
+                player, ServerMessageType.PROMPT, self.__get_prompt_json()
+            )
 
     async def disconnect(self, player: Player):
         self.__players.remove(player)
+
+        # randomly assign another player to be the host
+        if player == self.__host:
+            self.__host = None
+            if len(self.__players) > 0:
+                self.__host = random.choice(self.__players)
+                await self.__broadcast_host_change()
+
         await self.__broadcast_lobby()
 
     def can_pick_file(self) -> bool:
@@ -71,18 +108,25 @@ class Session:
         )
 
     def pick_file(self):
+        self.__prompt = None
         self.__chunk_fetcher = None
         while self.can_pick_file() and (not self.can_get_chunk()):
             file = self.__file_pool.pick()
             try:
                 self.__chunk_fetcher = self.__chunk_fetcher_factory(file)
                 self.__chunk_fetcher.pick_starting_chunk()
+                self.__prompt = Prompt(
+                    self.get_chunk(),
+                    self.__generate_prompt_choices(file),
+                    file.get_user(),
+                )
             except Exception as e:
                 # keep trying to pick more files to use until we are able to get chunks from a file
                 logger.error("Session [%s], Failed to pick starting chunk", self.__id)
 
         if not self.can_get_chunk():
             logger.info("Session [%s]; no more files to pick chunks from", self.__id)
+            self.__state = SessionState.OUT_OF_CHUNKS
 
     def can_peek(self) -> bool:
         return self.can_get_chunk() and self.__chunk_fetcher.can_peek()
@@ -102,41 +146,113 @@ class Session:
         return list(map(lambda player: player.get_username()), self.__players)
 
     def get_authors(self) -> List[str]:
-        return self.__authors
+        return self.__file_pool_authors
+
+    async def __send(self, player: Player, message_type: str, message):
+        await player.get_websocket().send_json(
+            {"message_type": message_type, "message": message}
+        )
 
     async def __broadcast(self, message_type: str, message):
         for player in self.__players:
-            await player.get_websocket().send_json({
-                "message_type": message_type,
-                "message": message
-            })
-    
+            await self.__send(player, message_type, message)
+
     async def __broadcast_lobby(self):
         players_json = list(map(lambda player: player.serialize(), self.__players))
-        await self.__broadcast(MessageType.LOBBY, players_json)
-    
+        await self.__broadcast(
+            ServerMessageType.LOBBY,
+            {"players": players_json, "host": self.__host.serialize()},
+        )
+
+    async def __broadcast_host_change(self):
+        host_json = self.__host.serialize()
+        await self.__broadcast(ServerMessageType.HOST_CHANGE, host_json)
+
+    async def __broadcast_out_of_chunks(self):
+        await self.__broadcast(
+            ServerMessageType.OUT_OF_CHUNKS, "We ran out of chunks for you to guess on."
+        )
+
+    async def __broadcast_prompt(self):
+        await self.__broadcast(ServerMessageType.PROMPT, self.__get_prompt_json())
+
     async def handle_client_event(self, player: Player, data: Dict):
         handlers = {
-            ClientEventType.TOGGLE_READY: self.__handle_toggle_ready
+            ClientEventType.START_GAME: self.__handle_start_game,
+            ClientEventType.NEXT_ROUND: self.__handle_next_round,
+            ClientEventType.GUESS: self.__handle_guess,
         }
+
         if not ("event_type" in data):
-            logger.error("Session [%s]; recieved data from client without an event type", self.__id)
-            return 
+            logger.error(
+                "Session [%s]; recieved data from client without an event type",
+                self.__id,
+            )
+            return
 
         if not (data["event_type"] in handlers):
-            logger.error("Session [%s]; recieved data from client with invalid event type: %s", self.__id, data["event_type"])
+            logger.error(
+                "Session [%s]; recieved data from client with invalid event type: %s",
+                self.__id,
+                data["event_type"],
+            )
             return
-        
+
         await handlers[data["event_type"]](player, data)
-    
-    async def __handle_toggle_ready(self, player: Player, data: Dict):
-        if player.get_state() == PlayerState.NOT_READY:
-            player.set_state(PlayerState.READY)
-        else:
-            player.get_state(PlayerState.NOT_READY)
+
+    async def __handle_start_game(self, player: Player, data: Dict):
+        if player == self.__host and self.__state == SessionState.IN_LOBBY:
+            self.pick_file()
+            if self.__state == SessionState.OUT_OF_CHUNKS:
+                await self.__broadcast_out_of_chunks()
+            else:
+                self.__state = SessionState.IN_GUESSING
+                await self.__broadcast_prompt()
+
+    async def __handle_next_round(self, player: Player, data: Dict):
+        if player == self.__host:
+            self.pick_file()
+            if self.__state == SessionState.OUT_OF_CHUNKS:
+                await self.__broadcast_out_of_chunks()
+            else:
+                self.__state = SessionState.IN_GUESSING
+                await self.__broadcast_prompt()
+
+    async def __handle_guess(self, player: Player, data: Dict):
+        guess = data["guess"]
+        player.set_guess(guess)
+
+        if all(list(map(lambda player: player.has_guessed(), self.__players))):
+            # display the scores
+            pass
 
         await self.__broadcast_lobby()
 
+    def serialize(self):
+        return {
+            "id": self.__id,
+            "players": list(map(lambda player: player.get_username(), self.__players)),
+            "authors": self.__file_pool_authors,
+            "host": self.__host.get_username()
+            if not (self.__host is None)
+            else "No host",
+            "state": self.__state,
+            "prompt": self.__get_prompt_json() if not (self.__prompt is None) else {},
+        }
 
+    def can_be_removed(self):
+        return self.__state != SessionState.NEWLY_CREATED and len(self.__players) == 0
 
-        
+    def __generate_prompt_choices(self, file: File):
+        potential_choices = self.__file_pool_authors[:]
+        choices = [file.get_user()]
+
+        potential_choices.remove(file.get_user())
+        for _ in range(min(self.__max_prompt_choices - 1, len(potential_choices))):
+            choice = random.choice(potential_choices)
+            choices.append(choice)
+            potential_choices.remove(choice)
+        return choices
+
+    def __get_prompt_json(self):
+        return self.__prompt.serialize()

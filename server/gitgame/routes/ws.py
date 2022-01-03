@@ -14,11 +14,16 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, username: st
     session = db[session_id]
     player = Player(username, websocket)
     await session.connect(player)
-    
+
     try:
         while True:
             data = await websocket.receive_json()
             await session.handle_client_event(player, data)
 
     except WebSocketDisconnect as e:
-        session.disconnect(player)
+        await session.disconnect(player)
+
+        """
+        if session.can_be_removed():
+            del db[session_id]
+        """
