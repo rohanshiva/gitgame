@@ -19,7 +19,7 @@ class ServerMessageType:
     OUT_OF_CHUNKS = "out_of_chunks"
     PROMPT = "prompt"
     ANSWER_REVEAL = "answer_reveal"
-    ALL_SESSION_DATA = "all"
+    PEEK = "peek"
 
 
 class SessionState:
@@ -45,8 +45,8 @@ class Session:
         file_pool: FilePool,
         chunk_fetcher_factory: Callable[[File], ChunkFetcher],
         state: str = SessionState.NEWLY_CREATED,
-        peek_period: int = 5,  # time in seconds between each code peek
-        guessing_time_limit: int = 60,  # time in seconds to guess
+        peek_period: int = 10,  # time in seconds between each code peek
+        guessing_time_limit: int = 30,  # time in seconds to guess
         max_prompt_choices: int = 4,
     ):
         self.__id = id
@@ -103,7 +103,9 @@ class Session:
                 self.__host = random.choice(self.__players)
                 await self.__broadcast_host_change()
 
-        await self.__broadcast_lobby()
+        if len(self.__players) > 0:
+            await self.__broadcast_lobby()
+
         if self.__state == SessionState.IN_GUESSING:
              if all(list(map(lambda player: player.has_guessed(), self.__players))):
                 self.__timer_task.cancel()
@@ -139,16 +141,17 @@ class Session:
             logger.info("Session [%s]; no more files to pick chunks from", self.__id)
             self.__state = SessionState.OUT_OF_CHUNKS
 
-    def can_peek(self) -> bool:
-        return self.can_get_chunk() and self.__chunk_fetcher.can_peek()
+    def can_peek_above(self) -> bool:
+        return self.can_get_chunk() and self.__chunk_fetcher.can_peek_above()
+    
+    def can_peek_below(self) -> bool:
+        return self.can_get_chunk() and self.__chunk_fetcher.can_peek_below()
 
     def peek_above(self):
-        if self.can_peek():
-            self.__chunk_fetcher.peek_above()
+        self.__chunk_fetcher.peek_above()
 
     def peek_below(self):
-        if self.can_peek():
-            self.__chunk_fetcher.peek_below()
+        self.__chunk_fetcher.peek_below()
 
     def get_chunk(self) -> Chunk:
         return self.__chunk_fetcher.get_chunk()
@@ -189,6 +192,9 @@ class Session:
     
     async def __broadcast_answer_reveal(self):
         await self.__broadcast(ServerMessageType.ANSWER_REVEAL, self.__get_answer_reveal_json())
+    
+    async def __broadcast_peek(self, direction:str):
+        await self.__broadcast(ServerMessageType.PEEK, {"direction": direction})
 
     async def handle_client_event(self, player: Player, data: Dict):
         handlers = {
@@ -233,6 +239,10 @@ class Session:
                 self.__state = SessionState.IN_GUESSING
                 for player in self.__players:
                     player.clear_guess()
+                
+                if not (self.__timer_task is None):
+                    self.__timer_task.cancel()
+
                 await self.__broadcast_prompt()
                 self.__timer_task = asyncio.create_task(self.__guessing_timer())
 
@@ -260,9 +270,7 @@ class Session:
             "id": self.__id,
             "players": list(map(lambda player: player.get_username(), self.__players)),
             "authors": self.__file_pool_authors,
-            "host": self.__host.get_username()
-            if not (self.__host is None)
-            else "No host",
+            "host": self.__host.get_username() if not (self.__host is None) else "No host",
             "state": self.__state,
             "prompt": self.__get_prompt_json() if not (self.__prompt is None) else {},
         }
@@ -295,7 +303,23 @@ class Session:
         elapsed_time = 0
         while elapsed_time < self.__guessing_time_limit:
             await asyncio.sleep(self.__peek_period)
-            await self.__broadcast_prompt() 
+
+            peek_directions = []
+            if self.can_peek_above():
+                peek_directions.append("above")
+            if self.can_peek_below():
+                peek_directions.append("below")
+            
+            if len(peek_directions) > 0:
+                peek_dir = random.choice(peek_directions)
+                if peek_dir == "above":
+                    self.peek_above()
+                else:
+                    self.peek_below() 
+                await self.__broadcast_peek(peek_dir)
+                self.__prompt.set_chunk(self.get_chunk())               
+                await self.__broadcast_prompt() 
+            
             elapsed_time += self.__peek_period
 
         if self.__state == SessionState.IN_GUESSING:

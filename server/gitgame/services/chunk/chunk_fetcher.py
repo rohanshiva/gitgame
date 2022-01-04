@@ -16,7 +16,11 @@ class ChunkFetcher(ABC):
         pass
 
     @abstractmethod
-    def can_peek(self) -> bool:
+    def can_peek_below(self) -> bool:
+        pass
+
+    @abstractmethod
+    def can_peek_above(self) -> bool:
         pass
 
     @abstractmethod
@@ -89,11 +93,17 @@ class WindowChunkFetcher(ChunkFetcher):
         )
         self.__lines = lines
 
-    def can_peek(self) -> bool:
+    def __can_peek(self) -> bool:
         return self.can_get_chunk() and self.__remaining_peeks > 0
+    
+    def can_peek_above(self) -> bool:
+        return self.__can_peek() and self.get_chunk().get_start_line() > 0
+    
+    def can_peek_below(self) -> bool:
+        return self.__can_peek() and self.get_chunk().get_end_line() < len(self.__lines)
 
     def peek_above(self):
-        if self.can_peek():
+        if self.can_peek_above():
             start_line = self.__chunk.get_start_line()
             above_start_line = max(start_line - self.__peek_size, 0)
 
@@ -115,7 +125,7 @@ class WindowChunkFetcher(ChunkFetcher):
             )
 
     def peek_below(self):
-        if self.can_peek():
+        if self.can_peek_below():
             end_line = self.__chunk.get_end_line()
             below_end_line = min(end_line + self.__peek_size, len(self.__lines))
 
