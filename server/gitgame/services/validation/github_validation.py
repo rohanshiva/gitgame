@@ -2,11 +2,11 @@ from github import Github
 from typing import List
 
 
-def validate_authors(github_insatnce: Github, authors: List[str]) -> List[str]:
-    res = []
+def validate_authors(github_instance: Github, authors: List[str]) -> List[str]:
+    invalid_authors = []
     for author in authors:
         try:
-            github_insatnce.get_user(author)
+            github_instance.get_user(author)
         except Exception:
-            res.append(author)
-    return res if len(res) > 0 else None
+            invalid_authors.append(author)
+    return invalid_authors
