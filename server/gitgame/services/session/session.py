@@ -8,6 +8,7 @@ from gitgame.services.file.file import File
 from typing import List, Callable, Dict
 import random
 import logging
+import asyncio
 
 logger = logging.getLogger()
 
@@ -44,7 +45,7 @@ class Session:
         file_pool: FilePool,
         chunk_fetcher_factory: Callable[[File], ChunkFetcher],
         state: str = SessionState.NEWLY_CREATED,
-        peek_frequency: int = 5,  # time in seconds between each code peek
+        peek_period: int = 5,  # time in seconds between each code peek
         guessing_time_limit: int = 60,  # time in seconds to guess
         max_prompt_choices: int = 4,
     ):
@@ -56,11 +57,12 @@ class Session:
         self.__file_pool = file_pool
         self.__chunk_fetcher_factory = chunk_fetcher_factory
         self.__state = state
-        self.__peek_frequency = peek_frequency
+        self.__peek_period = peek_period
         self.__guessing_time_limit = guessing_time_limit
         self.__max_prompt_choices = max_prompt_choices
         self.__chunk_fetcher = None
         self.__prompt = None
+        self.__timer_task = None
 
     def setup(self):
         # add any of the predetermined authors' file sources
@@ -102,6 +104,11 @@ class Session:
                 await self.__broadcast_host_change()
 
         await self.__broadcast_lobby()
+        if self.__state == SessionState.IN_GUESSING:
+             if all(list(map(lambda player: player.has_guessed(), self.__players))):
+                self.__timer_task.cancel()
+                await self.__handle_answer_reveal()
+
 
     def can_pick_file(self) -> bool:
         return self.__file_pool.can_pick()
@@ -155,8 +162,11 @@ class Session:
         )
 
     async def __broadcast(self, message_type: str, message):
+        tasks = []
         for player in self.__players:
-            await self.__send(player, message_type, message)
+            tasks.append(self.__send(player, message_type, message))
+        
+        await asyncio.gather(*(tasks))
 
     async def __broadcast_lobby(self):
         players_json = list(map(lambda player: player.serialize(), self.__players))
@@ -212,6 +222,7 @@ class Session:
             else:
                 self.__state = SessionState.IN_GUESSING
                 await self.__broadcast_prompt()
+                self.__timer_task = asyncio.create_task(self.__guessing_timer())
 
     async def __handle_next_round(self, player: Player, data: Dict):
         if player == self.__host:
@@ -223,6 +234,7 @@ class Session:
                 for player in self.__players:
                     player.clear_guess()
                 await self.__broadcast_prompt()
+                self.__timer_task = asyncio.create_task(self.__guessing_timer())
 
     async def __handle_guess(self, player: Player, data: Dict):
         if self.__state == SessionState.IN_GUESSING:
@@ -230,6 +242,7 @@ class Session:
             player.set_guess(guess)
 
             if all(list(map(lambda player: player.has_guessed(), self.__players))):
+                self.__timer_task.cancel()
                 await self.__handle_answer_reveal()
             else:
                 await self.__broadcast_lobby()
@@ -277,3 +290,13 @@ class Session:
             "players": players_json,
             "correct_choice": self.__prompt.get_correct_choice()
         }
+
+    async def __guessing_timer(self):
+        elapsed_time = 0
+        while elapsed_time < self.__guessing_time_limit:
+            await asyncio.sleep(self.__peek_period)
+            await self.__broadcast_prompt() 
+            elapsed_time += self.__peek_period
+
+        if self.__state == SessionState.IN_GUESSING:
+            await self.__handle_answer_reveal()
