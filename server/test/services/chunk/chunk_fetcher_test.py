@@ -104,7 +104,7 @@ def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
 
     assert actual_chunk_lines == expected_chunk_lines
 
-    assert chunk_fetcher.can_peek() is True
+    assert chunk_fetcher.can_peek_above() is True
     chunk_fetcher.peek_above()
     actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
 
@@ -112,7 +112,7 @@ def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
     expected_chunk_lines = test_file_lines[7 - PEEK_SIZE : 7 + STARTING_CHUNK_SIZE]
     assert actual_chunk_lines == expected_chunk_lines
 
-    assert chunk_fetcher.can_peek() is True
+    assert chunk_fetcher.can_peek_below() is True
     chunk_fetcher.peek_below()
     actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
 
@@ -122,12 +122,15 @@ def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
     ]
     assert actual_chunk_lines == expected_chunk_lines
 
-    assert chunk_fetcher.can_peek() is True
+    assert chunk_fetcher.can_peek_above() is True
     chunk_fetcher.peek_above()
 
-    assert chunk_fetcher.can_peek() is True
+    assert chunk_fetcher.can_peek_below() is True
     chunk_fetcher.peek_below()
 
     actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
     expected_chunk_lines = test_file_lines
     assert actual_chunk_lines == expected_chunk_lines
+    
+    assert chunk_fetcher.can_peek_above() is False
+    assert chunk_fetcher.can_peek_below() is False

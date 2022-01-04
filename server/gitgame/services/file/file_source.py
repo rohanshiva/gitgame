@@ -14,6 +14,10 @@ class FileSource(ABC):
         pass
 
     @abstractmethod
+    def is_setup(self) -> bool:
+        pass
+
+    @abstractmethod
     def get_next_files(self) -> List[File]:
         pass
 
@@ -31,15 +35,18 @@ class LazyGithubFileSource(FileSource):
         github: Github,
         file_rule: FileRule,
         user: str,
-        repo_indicies: List[int] = [],
+        repo_indicies: List[int] = None,
         max_loadable_repos: int = 1,
     ):
         self.__github = github
         self.__file_rule = file_rule
         self.__user = user
-        self.__repo_indicies = repo_indicies[:]
+        self.__repo_indicies = repo_indicies
         self.__max_loadable_repos = max_loadable_repos
         self.__paginated_repos = None
+
+    def is_setup(self) -> bool:
+        return not (self.__paginated_repos is None)
 
     def setup(self):
         if not self.__paginated_repos:

@@ -71,22 +71,24 @@ def peek_on_chunk(session_id: str, direction: str = "above"):
         )
     session = db[session_id]
 
-    if session.can_peek():
+    can_peek = (session.can_peek_above() and direction == "above") or (session.can_peek_below() and direction == "below")
+    if can_peek:
         if direction == "above":
             session.peek_above()
             return session.get_chunk().get_content()
-        elif direction == "below":
+        else:
             session.peek_below()
             return session.get_chunk().get_content()
-        else:
+    else:
+        if direction != "above" and direction != "below":
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
                 "direction query parameter can only be 'above' or 'below'",
             )
-    else:
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "unable to call peek"
-        )
+        else:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY, "unable to call peek"
+            )
 
 
 @router.get("/{session_id}", status_code=status.HTTP_200_OK)
@@ -96,8 +98,4 @@ def get_session(session_id: str):
             status.HTTP_404_NOT_FOUND, f"session {session_id} doesn't exist"
         )
     session = db[session_id]
-    return {
-        "id": session_id,
-        "authors": session.get_authors(),
-        "players": session.get_players(),
-    }
+    return session.serialize()
