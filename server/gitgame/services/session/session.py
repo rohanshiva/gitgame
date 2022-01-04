@@ -70,7 +70,6 @@ class Session:
             self.__file_pool.add_author(author, self.__file_source_factory(author))
 
     async def connect(self, player: Player):
-        await player.get_websocket().accept()
         # first person to join the session becomes the host
         if self.__host is None:
             self.__host = player
@@ -243,7 +242,7 @@ class Session:
                 for player in self.__players:
                     player.clear_guess()
                 
-                if not (self.__timer_task is None):
+                if not (self.__timer_task is None) and (not self.__timer_task.cancelled()):
                     self.__timer_task.cancel()
 
                 await self.__broadcast_prompt()
