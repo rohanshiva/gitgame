@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import "./Game.css";
 import Highlight, { defaultProps, Language } from "prism-react-renderer";
+import { Pre, Line, LineNo, LineContent } from "./styles";
 import theme from "prism-react-renderer/themes/palenight";
 import Session from "../../interfaces/session";
 import routes_ from "../../constants/route";
@@ -86,15 +87,18 @@ function Game(props: any) {
               language={getPrismExtension((chunk as Chunk).extension)}
             >
               {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                <pre className={className} style={style}>
-                  {tokens.map((line, i) => (
-                    <div {...getLineProps({ line, key: i })}>
-                      {line.map((token, key) => (
-                        <span {...getTokenProps({ token, key })} />
-                      ))}
-                    </div>
+                <Pre className={className} style={style}>
+                  {tokens.map((line, i)=> (
+                    <Line key={i} {...getLineProps({line, key: i})}>
+                      <LineNo> { ChunkService.getStartLine(chunk as Chunk) + (i + 1) } </LineNo>
+                      <LineContent>
+                        {line.map((token, key) => (
+                          <span key={key} {...getTokenProps({ token, key })}/>
+                        ))}
+                      </LineContent>
+                    </Line>
                   ))}
-                </pre>
+                </Pre>
               )}
             </Highlight>
           </div>

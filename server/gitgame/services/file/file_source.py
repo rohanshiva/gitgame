@@ -95,7 +95,7 @@ class LazyGithubFileSource(FileSource):
                     if file_additions > 0:
                         repos_picked += 1
                     else:
-                        logging.warn(
+                        logging.warning(
                             "User [%s]; repo %s didn't add any files, choosing another repo to look in",
                             self.__user,
                             repo.full_name,

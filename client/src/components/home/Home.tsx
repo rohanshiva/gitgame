@@ -59,7 +59,7 @@ function Home() {
             onChange={(event) => setUsername(event.target.value)}
             value={username}
           />
-          <input className="name_submit" type="submit" value="Play 🤘🏿" />
+          <input className="name_submit" type="submit" value="Play" />
         </form>
       </div>
       <div className="player_tags">

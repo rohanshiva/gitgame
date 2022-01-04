@@ -1,8 +1,7 @@
-
 .game_options {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
 }
 
 button {
@@ -18,7 +17,11 @@ button {
   font-weight: 600;
 }
 
-pre {
+.code_container {
+  border-radius: 3px;
+}
+
+/* pre {
   text-align: left;
   margin: 1em 0;
   padding: 2em;
@@ -34,9 +37,22 @@ pre .token-line {
 
 pre::-webkit-scrollbar {
     display: none;
-}
+} */
+
 .loading_tag {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--p1);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--p1);
+}
+
+::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--p1);
 }
