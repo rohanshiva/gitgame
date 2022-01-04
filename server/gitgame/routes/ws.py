@@ -19,7 +19,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, username: st
         await websocket.close()
     else:
         session = db[session_id]
-        if username not in session.get_players():
+        if not session.has_player(player):
             await session.connect(player)
             try:
                 while True:

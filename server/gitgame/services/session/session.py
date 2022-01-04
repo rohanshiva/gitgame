@@ -119,6 +119,9 @@ class Session:
         return (
             not (self.__chunk_fetcher is None) and self.__chunk_fetcher.can_get_chunk()
         )
+    
+    def has_player(self, player: Player):
+        return player in self.__players
 
     def pick_file(self):
         self.__prompt = None
