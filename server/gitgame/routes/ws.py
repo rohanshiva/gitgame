@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, status
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from gitgame.routes.session import db
 from gitgame.dependency import get_github_instance
 from gitgame.services import Player
@@ -19,5 +19,17 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, username: st
         await websocket.close()
     else:
         session = db[session_id]
-        if username not in session.get_players():
+        if not session.has_player(player):
             await session.connect(player)
+            try:
+                while True:
+                    data = await websocket.receive_json()
+                    await session.handle_client_event(player, data)
+
+            except WebSocketDisconnect as e:
+                await session.disconnect(player)
+                if session.can_be_removed():
+                    del db[session_id]
+        else:
+            await websocket.send_json({"error": f"this account {username} is already in the session"})
+            await websocket.close()

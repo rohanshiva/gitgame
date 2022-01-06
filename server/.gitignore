@@ -4,8 +4,5 @@ __pycache__
 **.json
 chunk-test/
 
-# exclude env
-.env
-
 # exclude generated logs
 **.log

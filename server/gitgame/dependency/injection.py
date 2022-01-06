@@ -4,7 +4,7 @@ from github import Github
 from gitgame.services import (
     File,
     RandomFilePicker,
-    PlayerFilePool,
+    ReplenishingFilePool,
     FilePool,
     Session,
     FilePicker,
@@ -45,7 +45,7 @@ def get_file_picker() -> FilePicker:
 
 
 def get_file_pool() -> FilePool:
-    return PlayerFilePool(get_file_picker())
+    return ReplenishingFilePool(get_file_picker())
 
 
 def chunk_fetcher_factory(file: File) -> ChunkFetcher:
