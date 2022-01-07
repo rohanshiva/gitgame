@@ -18,7 +18,7 @@ def make_session(pre_determined_authors: List[str]):
     if invalid_authors:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            f"Failed to make a session due to invalid usernames: {invalid_authors}",
+            f"invalid usernames: {invalid_authors}",
         )
     session = session_factory(id, pre_determined_authors)
     try:
@@ -71,7 +71,9 @@ def peek_on_chunk(session_id: str, direction: str = "above"):
         )
     session = db[session_id]
 
-    can_peek = (session.can_peek_above() and direction == "above") or (session.can_peek_below() and direction == "below")
+    can_peek = (session.can_peek_above() and direction == "above") or (
+        session.can_peek_below() and direction == "below"
+    )
     if can_peek:
         if direction == "above":
             session.peek_above()
