@@ -1,6 +1,7 @@
 from gitgame.services import WindowChunkFetcher, File, Chunk, ChunkFetcher
 from unittest.mock import Mock
 from typing import Callable, List
+import os
 
 STARTING_CHUNK_SIZE = 10
 PEEK_SIZE = 5
@@ -38,9 +39,13 @@ def get_chunk_lines(chunk: Chunk) -> List[str]:
     return list(map(lambda code_line: code_line["content"], content["lines"]))
 
 
+# file path should be based from ./server/test
 def get_disk_file_lines(file_path: str) -> List[str]:
+    file_path_from_server = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), "..", "..", file_path)
+    )
     file_lines = []
-    with open(file_path, "r") as f:
+    with open(file_path_from_server, "r") as f:
         file_lines = f.readlines()
     return file_lines
 
@@ -63,7 +68,7 @@ def test_fileLinesLessThanStartingChunkSize_entireFileShouldBeChunk():
 
 
 def test_fileLinesLargerThanStartingChunkSize_shouldPickMostSignificantChunk():
-    test_file_path = "./test/test-data/index.js"
+    test_file_path = "./test-data/index.js"
     test_file_lines = get_disk_file_lines(test_file_path)
 
     def readlines_callback() -> List[str]:
@@ -85,7 +90,7 @@ def test_fileLinesLargerThanStartingChunkSize_shouldPickMostSignificantChunk():
 
 
 def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
-    test_file_path = "./test/test-data/main.py"
+    test_file_path = "./test-data/main.py"
     test_file_lines = get_disk_file_lines(test_file_path)
 
     def readlines_callback() -> List[str]:
@@ -131,6 +136,6 @@ def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
     actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
     expected_chunk_lines = test_file_lines
     assert actual_chunk_lines == expected_chunk_lines
-    
+
     assert chunk_fetcher.can_peek_above() is False
     assert chunk_fetcher.can_peek_below() is False
