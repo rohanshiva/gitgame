@@ -54,15 +54,18 @@ function Home() {
   const handleMakeFormSubmit = (event: any) => {
     event.preventDefault();
     const loadingToast = toast.loading("Making session...", LOADING as any);
-    SessionService.makeSession(makeData.preDeterminedAuthors)
+    const preDeterminedAuthors = makeData.preDeterminedAuthors;
+    const username = makeData.username;
+    SessionService.makeSession(preDeterminedAuthors)
       .then(({ id }) => {
         toast.dismiss(loadingToast);
         toast("Session created successfully!", SUCCESS as any);
         history.replace({
-          pathname: routes_.game(id)
+          pathname: routes_.game(id, username),
         });
       })
       .catch((error) => {
+        console.log(error);
         toast.dismiss(loadingToast);
         toast(
           `Failed to create session with error: ${error.message}`,
@@ -76,7 +79,9 @@ function Home() {
 
   const handleJoinFormSubmit = (event: any) => {
     event.preventDefault();
-    const loadingToast = toast.loading("Joining session...", LOADING as any);
+    history.replace({
+      pathname: routes_.game(joinData.sessionId, joinData.username),
+    });
   };
 
   return (

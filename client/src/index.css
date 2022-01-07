@@ -1,20 +1,27 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 :root {
-  --bg: #131415;
+  --bg: #0F0E10;
   --primary: #fafbfb;
   --accent: #b3e7eb;
   --secondary: #3a3a3b;
 }
 
 body {
-  max-width: 1024px;
-  margin: 8px auto;
-  font-family: "Inter", sans-serif;
   background-color: var(--bg);
   color: var(--primary);
+  font-family: "Inter", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
 }
-
+.app {
+  max-width: 1024px;
+  width: 1024px;
+  display: flex;
+  flex-direction: column;
+}
 a {
   text-decoration: none;
   color: var(--primary);

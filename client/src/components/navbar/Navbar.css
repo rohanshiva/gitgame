@@ -1,0 +1,27 @@
+nav {
+    max-width: 1280px;
+    width: 1280px;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    color: var(--accent);
+  }
+  .logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .links {
+    font-weight: 600;
+    font-size: 24px;
+    display: flex;
+    column-gap: 1rem;
+    justify-content: space-around;
+  }
+  
+  
