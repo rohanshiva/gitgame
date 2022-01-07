@@ -39,7 +39,7 @@ const dummyPlayer: IPlayer = { username: "", score: 0, has_guessed: false };
 const initialState: IGameState = {
   players: [],
   host: dummyPlayer,
-  state: SessionState.NEWLY_CREATED,
+  state: SessionState.IN_LOBBY,
 };
 
 function Game(props: any) {
