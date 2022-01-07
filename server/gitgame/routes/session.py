@@ -18,7 +18,7 @@ def make_session(pre_determined_authors: List[str]):
     if invalid_authors:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            f"Failed to make a session due to invalid usernames: {invalid_authors}",
+            f"invalid usernames: {invalid_authors}",
         )
     session = session_factory(id, pre_determined_authors)
     try:

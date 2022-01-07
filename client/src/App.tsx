@@ -1,25 +1,16 @@
 import "./App.css";
 import AppRouter from "./routers/Router";
-import * as Icon from "react-feather";
+import Navbar from "./components/navbar";
 
 function App() {
   return (
     <>
-      <nav>
-        <div className="logo">
-          <Icon.GitPullRequest />
-          <h1>{"git_game"}</h1>
-        </div>
-
-        <div className="links">
-          <a href="https://github.com/rohanshiva/gitgame">
-            <Icon.GitHub />
-          </a>
-        </div>
-      </nav>
+    <Navbar/>
+    <div className="app">
       <div className="container">
         <AppRouter />
       </div>
+    </div>
     </>
   );
 }

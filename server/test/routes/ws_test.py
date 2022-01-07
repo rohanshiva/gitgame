@@ -13,7 +13,7 @@ def test_make_session_invalid_authors():
     assert response.status_code == 422
     assert (
         response.json()["detail"]
-        == "Failed to make a session due to invalid usernames: ['ramko99', 'ramko989']"
+        == "invalid usernames: ['ramko99', 'ramko989']"
     )
 
 

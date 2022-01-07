@@ -1,30 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
 :root {
-  --color-bg: #151415;
-  --p0: #FAFBFB;
-  --p1: #B3E7EB;
-  --z0:#676767;
-  --z1: rgb(49, 49, 49);
-  --z2: #7C7D83;
-  --r0: #996262;
-  --r1: #B84444;
+  --bg: #0F0E10;
+  --primary: #fafbfb;
+  --accent: #b3e7eb;
+  --secondary: #3a3a3b;
 }
 
 body {
-  max-width: 1024px;
-  margin: 8px auto;
-  font-family: 'IBM Plex Mono', monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-bg);
-  color: var(--p0);
+  background-color: var(--bg);
+  color: var(--primary);
+  font-family: "Inter", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
 }
-
+.app {
+  max-width: 1024px;
+  width: 1024px;
+  display: flex;
+  flex-direction: column;
+}
 a {
   text-decoration: none;
-  color: var(--p0);
+  color: var(--primary);
 }
 
 a:hover {
-  color: var(--p1);
+  color: var(--accent);
+}
+
+::-webkit-scrollbar {
+  height: 0.25rem;
+  width: 0.25rem;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
 }
