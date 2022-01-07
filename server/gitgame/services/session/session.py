@@ -136,7 +136,8 @@ class Session:
                     self.get_chunk(),
                     self.__generate_prompt_choices(file),
                     file.get_user(),
-                    datetime.utcnow() + timedelta(seconds=self.__guessing_time_limit)
+                    datetime.utcnow() + timedelta(seconds=self.__guessing_time_limit),
+                    file.get_repo(),
                 )
             except Exception as e:
                 # keep trying to pick more files to use until we are able to get chunks from a file
@@ -313,10 +314,14 @@ class Session:
         return {
             "players": players_json,
             "correct_choice": self.__prompt.get_correct_choice(),
+            "repo_name": self.__prompt.get_repo_name(),
         }
 
     async def __guessing_timer(self):
-        while not (self.__prompt is None) and self.__prompt.get_guess_expiration() > datetime.utcnow():
+        while (
+            not (self.__prompt is None)
+            and self.__prompt.get_guess_expiration() > datetime.utcnow()
+        ):
             await asyncio.sleep(self.__peek_period)
             peek_directions = []
             if self.can_peek_above():
@@ -331,8 +336,8 @@ class Session:
                 else:
                     self.peek_below()
                 await self.__broadcast_peek(peek_dir)
-                self.__prompt.set_chunk(self.get_chunk())               
-                await self.__broadcast_prompt() 
-            
+                self.__prompt.set_chunk(self.get_chunk())
+                await self.__broadcast_prompt()
+
         if self.__state == SessionState.IN_GUESSING:
             await self.__handle_answer_reveal()
