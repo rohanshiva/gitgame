@@ -90,7 +90,9 @@ class Session:
         else:
             if self.__state == SessionState.DONE_GUESSING:
                 await self.__send(
-                    player, ServerMessageType.ANSWER_REVEAL, self.__get_answer_reveal_json()
+                    player,
+                    ServerMessageType.ANSWER_REVEAL,
+                    self.__get_answer_reveal_json(),
                 )
 
     async def disconnect(self, player: Player):
@@ -106,10 +108,9 @@ class Session:
             await self.__broadcast_lobby()
 
         if self.__state == SessionState.IN_GUESSING:
-             if all(list(map(lambda player: player.has_guessed(), self.__players))):
+            if all(list(map(lambda player: player.has_guessed(), self.__players))):
                 self.__timer_task.cancel()
                 await self.__handle_answer_reveal()
-
 
     def can_pick_file(self) -> bool:
         return self.__file_pool.can_pick()
@@ -118,7 +119,7 @@ class Session:
         return (
             not (self.__chunk_fetcher is None) and self.__chunk_fetcher.can_get_chunk()
         )
-    
+
     def has_player(self, player: Player):
         return player in self.__players
 
@@ -145,7 +146,7 @@ class Session:
 
     def can_peek_above(self) -> bool:
         return self.can_get_chunk() and self.__chunk_fetcher.can_peek_above()
-    
+
     def can_peek_below(self) -> bool:
         return self.can_get_chunk() and self.__chunk_fetcher.can_peek_below()
 
@@ -170,7 +171,7 @@ class Session:
         tasks = []
         for player in self.__players:
             tasks.append(self.__send(player, message_type, message))
-        
+
         await asyncio.gather(*(tasks))
 
     async def __broadcast_lobby(self):
@@ -191,11 +192,13 @@ class Session:
 
     async def __broadcast_prompt(self):
         await self.__broadcast(ServerMessageType.PROMPT, self.__get_prompt_json())
-    
+
     async def __broadcast_answer_reveal(self):
-        await self.__broadcast(ServerMessageType.ANSWER_REVEAL, self.__get_answer_reveal_json())
-    
-    async def __broadcast_peek(self, direction:str):
+        await self.__broadcast(
+            ServerMessageType.ANSWER_REVEAL, self.__get_answer_reveal_json()
+        )
+
+    async def __broadcast_peek(self, direction: str):
         await self.__broadcast(ServerMessageType.PEEK, {"direction": direction})
 
     async def handle_client_event(self, player: Player, data: Dict):
@@ -241,8 +244,10 @@ class Session:
                 self.__state = SessionState.IN_GUESSING
                 for player in self.__players:
                     player.clear_guess()
-                
-                if not (self.__timer_task is None) and (not self.__timer_task.cancelled()):
+
+                if not (self.__timer_task is None) and (
+                    not self.__timer_task.cancelled()
+                ):
                     self.__timer_task.cancel()
 
                 await self.__broadcast_prompt()
@@ -261,9 +266,12 @@ class Session:
 
     async def __handle_answer_reveal(self):
         for player in self.__players:
-            if player.has_guessed() and player.get_guess() == self.__prompt.get_correct_choice():
+            if (
+                player.has_guessed()
+                and player.get_guess() == self.__prompt.get_correct_choice()
+            ):
                 player.increment_score()
-        
+
         self.__state = SessionState.DONE_GUESSING
         await self.__broadcast_answer_reveal()
 
@@ -272,7 +280,9 @@ class Session:
             "id": self.__id,
             "players": list(map(lambda player: player.get_username(), self.__players)),
             "authors": self.__file_pool_authors,
-            "host": self.__host.get_username() if not (self.__host is None) else "No host",
+            "host": self.__host.get_username()
+            if not (self.__host is None)
+            else "No host",
             "state": self.__state,
             "prompt": self.__get_prompt_json() if not (self.__prompt is None) else {},
         }
@@ -293,12 +303,14 @@ class Session:
 
     def __get_prompt_json(self):
         return self.__prompt.serialize()
-    
+
     def __get_answer_reveal_json(self):
-        players_json = list(map(lambda player: player.serialize(with_guess=True), self.__players))
+        players_json = list(
+            map(lambda player: player.serialize(with_guess=True), self.__players)
+        )
         return {
             "players": players_json,
-            "correct_choice": self.__prompt.get_correct_choice()
+            "correct_choice": self.__prompt.get_correct_choice(),
         }
 
     async def __guessing_timer(self):
@@ -311,17 +323,17 @@ class Session:
                 peek_directions.append("above")
             if self.can_peek_below():
                 peek_directions.append("below")
-            
+
             if len(peek_directions) > 0:
                 peek_dir = random.choice(peek_directions)
                 if peek_dir == "above":
                     self.peek_above()
                 else:
-                    self.peek_below() 
+                    self.peek_below()
                 await self.__broadcast_peek(peek_dir)
-                self.__prompt.set_chunk(self.get_chunk())               
-                await self.__broadcast_prompt() 
-            
+                self.__prompt.set_chunk(self.get_chunk())
+                await self.__broadcast_prompt()
+
             elapsed_time += self.__peek_period
 
         if self.__state == SessionState.IN_GUESSING:
