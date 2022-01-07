@@ -95,10 +95,10 @@ class WindowChunkFetcher(ChunkFetcher):
 
     def __can_peek(self) -> bool:
         return self.can_get_chunk() and self.__remaining_peeks > 0
-    
+
     def can_peek_above(self) -> bool:
         return self.__can_peek() and self.get_chunk().get_start_line() > 0
-    
+
     def can_peek_below(self) -> bool:
         return self.__can_peek() and self.get_chunk().get_end_line() < len(self.__lines)
 

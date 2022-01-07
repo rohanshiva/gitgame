@@ -31,5 +31,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str, username: st
                 if session.can_be_removed():
                     del db[session_id]
         else:
-            await websocket.send_json({"error": f"this account {username} is already in the session"})
+            await websocket.send_json(
+                {"error": f"this account {username} is already in the session"}
+            )
             await websocket.close()

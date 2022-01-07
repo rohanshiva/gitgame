@@ -1,124 +1,122 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 
 import { useHistory } from "react-router-dom";
-import "./Game.css";
-import Highlight, { defaultProps, Language } from "prism-react-renderer";
-import { Pre, Line, LineNo, LineContent } from "./styles";
-import theme from "prism-react-renderer/themes/palenight";
-import Session from "../../interfaces/session";
 import routes_ from "../../constants/route";
-import { Chunk } from "../../interfaces/chunk";
-import SessionService from "../../services/session";
-import ChunkService from "../../services/chunk";
+import Notification, {
+  SUCCESS,
+  ERROR,
+  LOADING,
+} from "../notifications/Notification";
 
-function getSessionId(path: string){
+import IGameState, {
+  ServerMessageType,
+  SessionState,
+} from "../../interfaces/GameState";
+import IPlayer from "../../interfaces/Player";
+
+import config from "../../config";
+import gameReducer from "./reducers/GameReducer";
+import toast from "react-hot-toast";
+import "./Game.css";
+
+function getSessionId(path: string) {
   const pathParts = path.split("/");
-  return pathParts[pathParts.length - 1];
+  return pathParts[pathParts.length - 2];
 }
 
-function getPrismExtension(extension: string) : Language{
-  if(extension === "dart" || extension === "java"){
-    return "clike" as Language;
-  }
-  return extension as Language;
+function getUsername(path: string) {
+  const pathParams = path.split("/");
+  return pathParams[pathParams.length - 1];
 }
+
+function getWebSocketAddress(sessionId: string, username: string) {
+  return `${config.wsUri}/${config.socket.uri
+    .replace(":sessionId", sessionId)
+    .replace(":username", username)}`;
+}
+
+const dummyPlayer: IPlayer = { username: "", score: 0, has_guessed: false };
+const initialState: IGameState = {
+  players: [],
+  host: dummyPlayer,
+  state: SessionState.IN_LOBBY,
+};
 
 function Game(props: any) {
-
   const history = useHistory();
   const sessionId = getSessionId(history.location.pathname);
+  const username = getUsername(history.location.pathname);
 
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [chunk, setChunk] = useState<Chunk | null>(null);
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+
+  const copyHandler = async () => {
+    await navigator.clipboard.writeText(sessionId);
+    toast(`Session code copied ${sessionId}!`, SUCCESS as any);
+  };
 
   useEffect(() => {
-    async function loadSession(){
-      try{
-        setSession(await SessionService.getSession(sessionId));
-        await pickChunk();
-        setLoading(false);
-      } catch (error: any){
-        console.error(error.message);
+    const ws = new WebSocket(getWebSocketAddress(sessionId, username));
+
+    const loadingToast = toast.loading(
+      "Connecting to session...",
+      LOADING as any
+    );
+
+    ws.onmessage = ({ data }) => {
+      toast.dismiss(loadingToast);
+      const packet = JSON.parse(data);
+      if (packet.error) {
+        toast(
+          `Failed to join session with error: ${packet.error}`,
+          ERROR as any
+        );
+        history.push(routes_.root());
+      } else {
+        dispatch([packet.message_type, packet.message]);
       }
-    }
-    loadSession();
+    };
+    return () => {
+      try {
+        ws.close();
+      } catch (e) {}
+    };
   }, []);
-
-  const handleOnLeaveGame = () => {
-    // TODO: leave game stuff
-    history.push(routes_.root());
-  };
-
-  const pickChunk = async () => {
-      setChunk(await SessionService.pick(sessionId));
-  };
-
-  const peekAbove = async () => {
-    try{
-      setChunk(await SessionService.peek(sessionId, "above"));
-    } catch(error: any){
-      console.log(`Unable to peek above: ${error.message}`);
-    }
-  }
-
-  const peekBelow = async () => {
-    try{
-      setChunk(await SessionService.peek(sessionId, "below"));
-    } catch(error: any){
-      console.log(`Unable to peek below: ${error.message}`);
-    }
-      
-  }
-
   return (
     <>
-      {loading ? (
-        <>
-          <div className="loading_tag">Loading...</div>
-        </>
-      ) : (
-        <>
-          <div className="code_container">
-            <Highlight
-              {...defaultProps}
-              theme={theme}
-              code={ChunkService.getAsCode(chunk as Chunk)}
-              language={getPrismExtension((chunk as Chunk).extension)}
+      <div className="game-settings">
+        <div className="left-panel">
+          <button>Next</button>
+          <button disabled={!(username === state.host.username)}>Start</button>
+        </div>
+        <div className="right-panel">
+          <button onClick={copyHandler}>Copy</button>
+        </div>
+      </div>
+      <div className="mid">
+        <div className="players-container">
+          {state.players.map((player: IPlayer, i: number) => (
+            <div
+              className={`player ${
+                player.username === state.host.username ? "host" : ""
+              }`}
+              key={i}
             >
-              {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                <Pre className={className} style={style}>
-                  {tokens.map((line, i)=> (
-                    <Line key={i} {...getLineProps({line, key: i})}>
-                      <LineNo> { ChunkService.getStartLine(chunk as Chunk) + (i + 1) } </LineNo>
-                      <LineContent>
-                        {line.map((token, key) => (
-                          <span key={key} {...getTokenProps({ token, key })}/>
-                        ))}
-                      </LineContent>
-                    </Line>
-                  ))}
-                </Pre>
-              )}
-            </Highlight>
-          </div>
-          <div className="player_tags">
-            {(session as Session).players.map((name: string, key:number) => (
-              <div className="player_tag" key={key}>
-                {name}
+              <div className="player-info">
+                <img
+                  className="player-avatar"
+                  src={`${config.githubAvatarUri}${player.username}`}
+                />
+                <div>{player.username}</div>
               </div>
-            ))}
-          </div>
-          <div className="game_options">
-            <button onClick={pickChunk}> Pick Another Chunk </button>
-            <button onClick={peekAbove}>Peak Above</button>
-            <button onClick={peekBelow}>Peak Below</button>
-            <button className="leave_button" onClick={handleOnLeaveGame}>
-              Leave game
-            </button>
-          </div>
-        </>
-      )}
+
+              <div>{player.score}</div>
+            </div>
+          ))}
+        </div>
+        <div>Waiting for players to join</div>
+      </div>
+
+      <Notification />
     </>
   );
 }

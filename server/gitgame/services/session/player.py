@@ -29,22 +29,24 @@ class Player:
 
     def get_guess(self):
         return self.__guess
-    
+
     def increment_score(self):
         self.__score += 1
 
     def __str__(self) -> str:
         return f"{self.username}"
 
-    def serialize(self, with_guess:bool = False) -> Dict:
+    def serialize(self, with_guess: bool = False) -> Dict:
         player_json = {
             "username": self.__username,
             "has_guessed": self.__has_guessed,
-            "score": self.__score
+            "score": self.__score,
         }
 
         if with_guess:
-            player_json["guess"] = self.__guess if not (self.__guess is None) else "No guess"
+            player_json["guess"] = (
+                self.__guess if not (self.__guess is None) else "No guess"
+            )
         return player_json
 
     def __eq__(self, __o: object) -> bool:
