@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from gitgame.services.file.file_source import FileSource
 from gitgame.services.file.file_pool import FilePool
 from gitgame.services.chunk.chunk_fetcher import ChunkFetcher
@@ -134,6 +135,7 @@ class Session:
                     self.get_chunk(),
                     self.__generate_prompt_choices(file),
                     file.get_user(),
+                    datetime.utcnow() + timedelta(seconds=self.__guessing_time_limit)
                 )
             except Exception as e:
                 # keep trying to pick more files to use until we are able to get chunks from a file
@@ -302,10 +304,8 @@ class Session:
         }
 
     async def __guessing_timer(self):
-        elapsed_time = 0
-        while elapsed_time < self.__guessing_time_limit:
+        while not (self.__prompt is None) and self.__prompt.get_guess_expiration() > datetime.utcnow():
             await asyncio.sleep(self.__peek_period)
-
             peek_directions = []
             if self.can_peek_above():
                 peek_directions.append("above")
@@ -322,7 +322,5 @@ class Session:
                 self.__prompt.set_chunk(self.get_chunk())               
                 await self.__broadcast_prompt() 
             
-            elapsed_time += self.__peek_period
-
         if self.__state == SessionState.IN_GUESSING:
             await self.__handle_answer_reveal()
