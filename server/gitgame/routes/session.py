@@ -71,7 +71,9 @@ def peek_on_chunk(session_id: str, direction: str = "above"):
         )
     session = db[session_id]
 
-    can_peek = (session.can_peek_above() and direction == "above") or (session.can_peek_below() and direction == "below")
+    can_peek = (session.can_peek_above() and direction == "above") or (
+        session.can_peek_below() and direction == "below"
+    )
     if can_peek:
         if direction == "above":
             session.peek_above()
