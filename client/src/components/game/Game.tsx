@@ -7,10 +7,11 @@ import Notification, {
   ERROR,
   LOADING,
 } from "../notifications/Notification";
-
+import Editor from "../editor";
 import IGameState, {
   ServerMessageType,
   SessionState,
+  lobbyChunk
 } from "../../interfaces/GameState";
 import IPlayer from "../../interfaces/Player";
 
@@ -18,6 +19,7 @@ import config from "../../config";
 import gameReducer from "./reducers/GameReducer";
 import toast from "react-hot-toast";
 import "./Game.css";
+import Answer from "../answer";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
@@ -39,7 +41,7 @@ const dummyPlayer: IPlayer = { username: "", score: 0, has_guessed: false };
 const initialState: IGameState = {
   players: [],
   host: dummyPlayer,
-  state: SessionState.IN_LOBBY,
+  state: SessionState.NEWLY_CREATED,
 };
 
 function Game(props: any) {
@@ -113,9 +115,9 @@ function Game(props: any) {
             </div>
           ))}
         </div>
-        <div>Waiting for players to join</div>
+        {state.state === SessionState.IN_LOBBY && (<Editor chunk={lobbyChunk}/>)}
+        {state.state === SessionState.NEWLY_CREATED && (<Answer/>)}
       </div>
-
       <Notification />
     </>
   );
