@@ -1,6 +1,7 @@
 import IPlayer from "./Player";
 import {Chunk, ChunkLine} from "./chunk";
-
+import IPrompt from "./Prompt";
+import IAnswer from "./Answer";
 export enum ServerMessageType {
   LOBBY = "lobby",
   HOST_CHANGE = "host_change",
@@ -22,6 +23,8 @@ export default interface IGameState {
   players: IPlayer[];
   host: IPlayer;
   state: SessionState;
+  answer?: IAnswer;
+  prompt?: IPrompt
 }
 
 export const lobbyChunk : Chunk = {

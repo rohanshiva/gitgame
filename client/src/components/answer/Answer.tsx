@@ -1,71 +1,59 @@
 import config from "../../config";
+import IPlayer from "../../interfaces/Player";
 import "./Answer.css";
-function Answer() {
+
+interface IAnswerProps {
+  correctChoice: string;
+  players: IPlayer[];
+  outOfChunks?: boolean;
+}
+function Answer({ correctChoice, players, outOfChunks }: IAnswerProps) {
   return (
     <div className="answer-section">
-      <h3 className="correct-answer">
-        <span className="correct-player">rohanshiva</span> wrote this code{" "}
-      </h3>
-
-      <a className="source-tag" href="https://github.com/rohanshiva/gigame">
-        <img
-          className="repo-card"
-          src={`${config.repoCardUri
-            .replace(":username", "rohanshiva")
-            .replace(":repo", "gitgame")}`}
-        />
-      </a>
       <h2>Leaderboard</h2>
-      <table>
-        <tr>
-          <th>#</th>
-          <th>Username</th>
-          <th>Guess</th>
-          <th>Score</th>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>rohanshiva</td>
-          <td>ramko9999</td>
-          <td>5</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>rohanshiva</td>
-          <td>ramko9999</td>
-          <td>5</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>rohanshiva</td>
-          <td>ramko9999</td>
-          <td>5</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>rohanshiva</td>
-          <td>ramko9999</td>
-          <td>5</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>rohanshiva</td>
-          <td>ramko9999</td>
-          <td>5</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>rohanshiva</td>
-          <td>ramko9999</td>
-          <td>5</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>rohanshiva</td>
-          <td>ramko9999</td>
-          <td>5</td>
-        </tr>
-      </table>
+      {outOfChunks ? (
+        <table>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Score</th>
+          </tr>
+          {players
+            .sort((a, b) => b.score - a.score)
+            .map((player: IPlayer, i: number) => (
+              <tr>
+                <th>{i}</th>
+                <th>{player.username}</th>
+                <th>{player.score}</th>
+              </tr>
+            ))}
+        </table>
+      ) : (
+        <>
+          <h3 className="correct-answer">
+            <span className="correct-player">{correctChoice}</span> wrote this
+            code{" "}
+          </h3>
+          <table>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Guess</th>
+              <th>Score</th>
+            </tr>
+            {players
+              .sort((a, b) => b.score - a.score)
+              .map((player: IPlayer, i: number) => (
+                <tr>
+                  <th>{i + 1}</th>
+                  <th>{player.username}</th>
+                  <th>{player.guess}</th>
+                  <th>{player.score}</th>
+                </tr>
+              ))}
+          </table>
+        </>
+      )}
     </div>
   );
 }

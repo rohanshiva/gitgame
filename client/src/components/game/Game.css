@@ -78,6 +78,15 @@ button:disabled:hover {
   background-color: var(--secondary);
 }
 
+.choices {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  width: 100%;
+  overflow-x: scroll;
+}
+
 ::-webkit-scrollbar {
   width: 0.25rem;
 }
