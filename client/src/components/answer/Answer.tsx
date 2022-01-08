@@ -1,6 +1,7 @@
 import config from "../../config";
 import IPlayer from "../../interfaces/Player";
 import "./Answer.css";
+import SessionService from "../../services/session";
 
 interface IAnswerProps {
   correctChoice: string;
@@ -18,15 +19,13 @@ function Answer({ correctChoice, players, outOfChunks }: IAnswerProps) {
             <th>Username</th>
             <th>Score</th>
           </tr>
-          {players
-            .sort((a, b) => b.score - a.score)
-            .map((player: IPlayer, i: number) => (
-              <tr>
-                <th>{i}</th>
-                <th>{player.username}</th>
-                <th>{player.score}</th>
-              </tr>
-            ))}
+          {players.map((player: IPlayer, i: number) => (
+            <tr>
+              <th>{i}</th>
+              <th>{player.username}</th>
+              <th>{player.score}</th>
+            </tr>
+          ))}
         </table>
       ) : (
         <>
@@ -41,16 +40,14 @@ function Answer({ correctChoice, players, outOfChunks }: IAnswerProps) {
               <th>Guess</th>
               <th>Score</th>
             </tr>
-            {players
-              .sort((a, b) => b.score - a.score)
-              .map((player: IPlayer, i: number) => (
-                <tr>
-                  <th>{i + 1}</th>
-                  <th>{player.username}</th>
-                  <th>{player.guess}</th>
-                  <th>{player.score}</th>
-                </tr>
-              ))}
+            {players.map((player: IPlayer, i: number) => (
+              <tr>
+                <th>{i + 1}</th>
+                <th>{player.username}</th>
+                <th>{player.guess}</th>
+                <th>{player.score}</th>
+              </tr>
+            ))}
           </table>
         </>
       )}

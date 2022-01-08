@@ -22,7 +22,7 @@ function getWebSocketAddress(sessionId: string, username: string) {
 }
 
 function useSocket(sessionId: string, username: string) {
-  // const [ws, setWs] = useState(null as unknown as WebSocket);
+
   const history = useHistory();
   const [ws, setWs] = useState(null as unknown as WebSocket);
   const [state, dispatch] = useReducer(gameReducer, initialState);

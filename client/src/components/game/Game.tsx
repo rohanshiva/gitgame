@@ -6,7 +6,7 @@ import Notification, {
   SUCCESS,
   ERROR,
   LOADING,
-  toastWithId
+  toastWithId,
 } from "../notifications/Notification";
 import Editor from "../editor";
 import IGameState, {
@@ -63,7 +63,10 @@ function Game(props: any) {
   };
 
   const nextHandler = () => {
-    const nextToast = toast("Fetching next chunk", toastWithId(LOADING as any, "nextRound"));
+    const nextToast = toast(
+      "Fetching next chunk",
+      toastWithId(LOADING as any, "nextRound")
+    );
     SessionService.nextChunk(ws);
   };
 
@@ -71,7 +74,7 @@ function Game(props: any) {
     const guess = event.target.innerText;
     console.info("guess:", guess);
     SessionService.makeGuess(ws, guess);
-  }
+  };
   return (
     <>
       <div className="game-settings">
@@ -79,7 +82,7 @@ function Game(props: any) {
           <button
             disabled={
               !(state.state === SessionState.DONE_GUESSING) ||
-              !(username === state.host.username)
+              !SessionService.isHost(username, state.host)
             }
             onClick={nextHandler}
           >
@@ -88,7 +91,7 @@ function Game(props: any) {
           <button
             disabled={
               !(state.state === SessionState.IN_LOBBY) ||
-              !(username === state.host.username)
+              !SessionService.isHost(username, state.host)
             }
             onClick={startHandler}
           >
@@ -104,7 +107,7 @@ function Game(props: any) {
           {state.players.map((player: IPlayer, i: number) => (
             <div
               className={`player ${
-                player.username === state.host.username ? "host" : ""
+                SessionService.isHost(username, state.host) ? "host" : ""
               }`}
               key={i}
             >
@@ -134,7 +137,7 @@ function Game(props: any) {
         {state.state === SessionState.OUT_OF_CHUNKS && (
           <Answer
             correctChoice={state.correctChoice}
-            players={state.players}
+            players={SessionService.getSortedPlayers(state.players)}
             outOfChunks={true}
           />
         )}

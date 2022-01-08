@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import api from "../utils/api";
 import Session from "../interfaces/session";
 import { Chunk, ChunkLine } from "../interfaces/chunk";
+import IPlayer from "../interfaces/Player";
 
 class SessionService {
   private static getExtension(filename: string) {
@@ -91,6 +92,14 @@ class SessionService {
         `Failed to get chunk for session ${sessionId}: ${response.statusText}`
       );
     }
+  }
+
+  static isHost(username: string, host: IPlayer) {
+    return username === host.username
+  }
+
+  static getSortedPlayers(players: IPlayer[]) {
+    return players.sort((a, b) => b.score - a.score)
   }
 
   static startGame(ws: WebSocket) {
