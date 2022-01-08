@@ -1,5 +1,8 @@
 from gitgame.services.chunk.chunk import Chunk
-from typing import List, Dict
+from gitgame.services.file.file import File
+from gitgame.services.file.file_repository import FileRepository
+
+from typing import List
 from datetime import datetime
 
 
@@ -10,23 +13,22 @@ class Prompt:
         choices: List[str],
         correct_choice: str,
         guess_expiration: datetime,
-        repo_name: str,
+        file: File,
     ):
         self.__chunk = chunk
         self.__choices = choices
         self.__correct_choice = correct_choice
         self.__guess_expiration = guess_expiration  # utc time
-        self.__repo_name = repo_name
-
-    def serialize(self) -> Dict:
-        return {
-            "chunk": self.__chunk.get_content(),
-            "choices": self.__choices,
-            "guess_expiration": str(self.__guess_expiration),
-        }
+        self.__file = file
 
     def set_chunk(self, chunk: Chunk):
         self.__chunk = chunk
+
+    def get_chunk(self) -> Chunk:
+        return self.__chunk
+
+    def get_choices(self) -> List[str]:
+        return self.__choices
 
     def get_correct_choice(self) -> str:
         return self.__correct_choice
@@ -34,5 +36,5 @@ class Prompt:
     def get_guess_expiration(self) -> datetime:
         return self.__guess_expiration
 
-    def get_repo_name(self) -> str:
-        return self.__repo_name
+    def get_repo(self) -> FileRepository:
+        return self.__file.get_repo()

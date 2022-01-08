@@ -36,13 +36,13 @@ class ReplenishingFilePool(FilePool):
 
     def pick(self) -> File:
         picked_file = self.__file_picker.pick_file()
-        author = picked_file.get_user()
+        author = picked_file.get_author()
         self.__author_file_counter[author] -= 1
         if self.__author_file_counter[author] == 0:
             logging.info(
                 "author [%s] Repo [%s]; author has exhausted files from pool, trying to fetch some more",
                 author,
-                picked_file.get_repo(),
+                picked_file.get_repo().get_name(),
             )
 
             self.__put_files_in_pool(author)

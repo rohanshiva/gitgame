@@ -56,20 +56,15 @@ class WindowChunkFetcher(ChunkFetcher):
 
     def pick_starting_chunk(self):
         logger.info(
-            "User [%s] Repo [%s]; trying to pick chunk in file %s",
-            self.__file.get_user(),
-            self.__file.get_repo(),
-            self.__file.get_path(),
+            "Author [%s] Repo [%s]; trying to pick chunk in file %s",
+            self.__file.get_author(),
+            self.__file.get_repo().get_name(),
+            self.__file.get_filepath(),
         )
 
         lines = self.__file.readlines()
         best_start_line = 0
         current_size_sum = 0
-
-        """
-        the starting chunk is found by selecting a window of file lines (the window's size is starting_chunk_size) and maximizing 
-        the sum of the trimmed file lines in the window. 
-        """
 
         for i in range(min(len(lines), self.__starting_chunk_size)):
             current_size_sum += self.__get_line_size(lines[i])
@@ -117,10 +112,10 @@ class WindowChunkFetcher(ChunkFetcher):
             )
             self.__remaining_peeks -= 1
             logger.info(
-                "User [%s] Repo [%s] File [%s]; peeked above, remaining %d peeks",
-                self.__file.get_user(),
-                self.__file.get_repo(),
-                self.__file.get_path(),
+                "Author [%s] Repo [%s] File [%s]; peeked above, remaining %d peeks",
+                self.__file.get_author(),
+                self.__file.get_repo().get_name(),
+                self.__file.get_filepath(),
                 self.__remaining_peeks,
             )
 
@@ -139,10 +134,10 @@ class WindowChunkFetcher(ChunkFetcher):
             )
             self.__remaining_peeks -= 1
             logger.info(
-                "User [%s] Repo [%s] File [%s]; peeked below, remaining %d peeks",
-                self.__file.get_user(),
-                self.__file.get_repo(),
-                self.__file.get_path(),
+                "Author [%s] Repo [%s] File [%s]; peeked below, remaining %d peeks",
+                self.__file.get_author(),
+                self.__file.get_repo().get_name(),
+                self.__file.get_filepath(),
                 self.__remaining_peeks,
             )
 

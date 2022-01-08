@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 from gitgame.services.file.file_rule import FileRule
+from gitgame.services.file.file_repository import FileRepository
 from gitgame.services.file.file import File
 from gitgame.services.file.file import File, NetworkFile
 from github import Github, GithubException, Repository
@@ -63,19 +64,29 @@ class LazyGithubFileSource(FileSource):
             self.__paginated_repos = named_user.get_repos()
 
     def get_next_files(self) -> List[File]:
-        repos_picked = 0
+        repos_picked_count = 0
         files = []
-        while self.can_get_files() and repos_picked < self.__max_loadable_repos:
-            repo = self.__paginated_repos[self.__repo_indicies.pop()]
-            if not repo.fork:
+        while self.can_get_files() and repos_picked_count < self.__max_loadable_repos:
+            github_repo = self.__paginated_repos[self.__repo_indicies.pop()]
+            if not github_repo.fork:
+                file_repo = FileRepository(
+                    github_repo.full_name,
+                    github_repo.html_url,
+                    github_repo.stargazers_count,
+                    github_repo.language,
+                    github_repo.description,
+                )
+
                 logging.info(
                     "User [%s]; considering non-forked repo %s",
                     self.__user,
-                    repo.full_name,
+                    github_repo.full_name,
                 )
                 try:
                     file_additions = 0
-                    git_tree = repo.get_git_tree(repo.default_branch, recursive=True)
+                    git_tree = github_repo.get_git_tree(
+                        github_repo.default_branch, recursive=True
+                    )
                     for element in git_tree.tree:
                         path, size = element.path, element.size
 
@@ -83,8 +94,8 @@ class LazyGithubFileSource(FileSource):
                             file = NetworkFile(
                                 self.__user,
                                 path,
-                                repo.full_name,
-                                self.__get_file_download_url(repo, path),
+                                file_repo,
+                                self.__get_file_download_url(github_repo, path),
                                 size,
                             )
 
@@ -93,19 +104,19 @@ class LazyGithubFileSource(FileSource):
                                 file_additions += 1
 
                     if file_additions > 0:
-                        repos_picked += 1
+                        repos_picked_count += 1
                     else:
                         logging.warning(
                             "User [%s]; repo %s didn't add any files, choosing another repo to look in",
                             self.__user,
-                            repo.full_name,
+                            github_repo.full_name,
                         )
 
                 except GithubException as e:
                     logging.error(
                         "User [%s]; unable to get tree for repo %s: %s",
                         self.__user,
-                        repo.full_name,
+                        github_repo.full_name,
                         str(e),
                     )
         return files
@@ -113,5 +124,5 @@ class LazyGithubFileSource(FileSource):
     def can_get_files(self) -> bool:
         return not (self.__paginated_repos is None) and len(self.__repo_indicies) > 0
 
-    def __get_file_download_url(self, repo: Repository, file_path: str):
-        return f"https://raw.githubusercontent.com/{repo.full_name}/{repo.default_branch}/{file_path}"
+    def __get_file_download_url(self, github_repo: Repository, file_path: str):
+        return f"https://raw.githubusercontent.com/{github_repo.full_name}/{github_repo.default_branch}/{file_path}"

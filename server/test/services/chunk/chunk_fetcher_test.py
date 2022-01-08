@@ -1,4 +1,10 @@
-from gitgame.services import WindowChunkFetcher, File, Chunk, ChunkFetcher
+from gitgame.services import (
+    WindowChunkFetcher,
+    File,
+    Chunk,
+    ChunkFetcher,
+    FileRepository,
+)
 from unittest.mock import Mock
 from typing import Callable, List
 import os
@@ -22,14 +28,16 @@ def get_mock_file(
     file_name="sample.py",
     file_path="./sample.py",
     user="User1",
-    repo="Repo1",
+    repo_name="Repo1",
 ) -> Mock:
     mock_file = Mock(spec=File)
     mock_file.readlines = readlines_callback
-    mock_file.get_path.return_value = file_path
+    mock_file.get_filepath.return_value = file_path
     mock_file.get_filename.return_value = file_name
-    mock_file.get_repo.return_value = repo
-    mock_file.get_user.return_value = user
+    mock_file.get_repo.return_value = FileRepository(
+        repo_name, "Repo1 Url", 0, "Repo1 Lang", "Repo1 description"
+    )
+    mock_file.get_author.return_value = user
     mock_file.get_size.return_value = 100  # dummy size
     return mock_file
 
