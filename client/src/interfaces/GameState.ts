@@ -1,7 +1,8 @@
 import IPlayer from "./Player";
-import {Chunk, ChunkLine} from "./chunk";
+import {Chunk, ChunkLine} from "./Chunk";
 import IPrompt from "./Prompt";
 import IAnswer from "./Answer";
+
 export enum ServerMessageType {
   LOBBY = "lobby",
   HOST_CHANGE = "host_change",
@@ -17,6 +18,12 @@ export enum SessionState {
   IN_GUESSING = "in_guessing",
   DONE_GUESSING = "done_guessing",
   OUT_OF_CHUNKS = "out_of_chunks",
+}
+
+export enum ClientEventType {
+    START_GAME = "start_game",
+    NEXT_ROUND = "next_round",
+    GUESS = "guess",
 }
 
 export default interface IGameState {

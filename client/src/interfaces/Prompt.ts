@@ -1,4 +1,5 @@
-import { Chunk } from "./chunk";
+import { Chunk } from "./Chunk";
+
 interface IPrompt {
   choices: string[];
   endTimestamp: string;

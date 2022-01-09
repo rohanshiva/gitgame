@@ -1,5 +1,5 @@
 import IGameState, { SessionState } from "../../../interfaces/GameState";
-import SessionService from "../../../services/session";
+import SessionService from "../../../services/Session";
 
 export const LobbyAction = (state: IGameState, payload: any) => {
   return { ...state, players: payload.players, host: payload.host };

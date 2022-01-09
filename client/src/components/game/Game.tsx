@@ -14,7 +14,7 @@ import IGameState, {
   SessionState,
   lobbyChunk,
 } from "../../interfaces/GameState";
-import SessionService from "../../services/session";
+import SessionService from "../../services/Session";
 import IPlayer from "../../interfaces/Player";
 
 import config from "../../config";
@@ -22,7 +22,7 @@ import gameReducer from "./reducers/GameReducer";
 import toast from "react-hot-toast";
 import "./Game.css";
 import Answer from "../answer";
-import useSocket from "./hooks/socket/SessionHook";
+import useSocket from "./hooks/socket/UseSocket";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
