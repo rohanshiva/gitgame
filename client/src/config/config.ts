@@ -19,7 +19,8 @@ const config = {
     socket: {
         uri: "socket/:sessionId/:username"
     },
-    githubAvatarUri: "https://avatars.githubusercontent.com/"
+    githubAvatarUri: "https://avatars.githubusercontent.com/",
+    repoCardUri: "https://github-readme-stats.vercel.app/api/pin/?username=:username&repo=:repo&theme=tokyonight"
 }
 
 export default config;

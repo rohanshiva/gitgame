@@ -16,7 +16,7 @@ class FileExtensionRule(FileRule):
         self.__supported_extensions = set(supported_extensions)
 
     def is_valid(self, file: File) -> bool:
-        extension = self.__get_extension(file.get_path())
+        extension = self.__get_extension(file.get_filepath())
         return len(extension) > 0 and extension in self.__supported_extensions
 
     def __get_extension(self, path: str) -> str:

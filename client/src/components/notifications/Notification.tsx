@@ -53,6 +53,9 @@ export const ERROR = {
   },
 };
 
+export const toastWithId = (style: any, id: string) => {
+  return {...style, id};
+}
 function Notification() {
   const { toasts } = useToasterStore();
   return <Toaster position="bottom-right" reverseOrder={true} />;

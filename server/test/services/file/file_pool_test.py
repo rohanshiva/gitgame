@@ -40,7 +40,7 @@ def get_mock_file_source(
         sendable_file_count = min(file_count, max_sendable_files)
         while sendable_file_count > 0:
             mock_file = Mock(spec=File)
-            mock_file.get_user.return_value = author
+            mock_file.get_author.return_value = author
             files.append(mock_file)
             sendable_file_count -= 1
             file_count -= 1
@@ -74,4 +74,6 @@ def test_whenFilesRunOut_shouldReplenishFiles():
 
     assert file_pool.can_pick() is False  # completely ran out of files
     assert mock_file_picker.add_files.call_count == 2
-    assert mock_file_source.setup.call_count == 1 # should only setup source only 1 time
+    assert (
+        mock_file_source.setup.call_count == 1
+    )  # should only setup source only 1 time

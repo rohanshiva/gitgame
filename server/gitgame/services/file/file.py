@@ -1,39 +1,25 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 from http import HTTPStatus
 from abc import ABC, abstractmethod
 import requests
 import logging
+from gitgame.services.file.file_repository import FileRepository
 
 logger = logging.getLogger()
 
 
 class File(ABC):
-    def __str__(self) -> str:
-        return f"{self.get_repo()} : {self.get_path()}"
-
-    def serialize(self) -> Dict:
-        return {
-            "user": self.get_user(),
-            "path": self.get_path(),
-            "repo": self.get_repo(),
-            "size": self.get_size(),
-        }
-
     @abstractmethod
-    def get_user(self) -> str:
+    def get_author(self) -> str:
         pass
 
     @abstractmethod
-    def get_path(self) -> str:
+    def get_filepath(self) -> str:
         pass
 
     @abstractmethod
     def get_filename(self) -> str:
-        pass
-
-    @abstractmethod
-    def get_repo(self) -> str:
         pass
 
     @abstractmethod
@@ -44,30 +30,31 @@ class File(ABC):
     def readlines(self) -> List[str]:
         pass
 
+    @abstractmethod
+    def get_repo(self) -> FileRepository:
+        pass
+
 
 class NetworkFile(File):
-    def __init__(self, user: str, path: str, repo: str, download_url: str, size: int):
-        self.__user = user
+    def __init__(
+        self, author: str, path: str, repo: FileRepository, download_url: str, size: int
+    ):
+        self.__author = author
         self.__path = path
         self.__repo = repo
         self.__download_url = download_url
         self.__size = size
 
-    def serialize(self) -> Dict:
-        serial_file = super().serialize()
-        serial_file["download_url"] = self.__download_url
-        return serial_file
+    def get_author(self) -> str:
+        return self.__author
 
-    def get_user(self) -> str:
-        return self.__user
-
-    def get_path(self) -> str:
+    def get_filepath(self) -> str:
         return self.__path
 
     def get_filename(self) -> str:
         return Path(self.__path).name
 
-    def get_repo(self) -> str:
+    def get_repo(self) -> FileRepository:
         return self.__repo
 
     def get_size(self) -> int:
@@ -75,24 +62,22 @@ class NetworkFile(File):
 
     def readlines(self) -> List[str]:
         response = requests.get(self.__download_url)
-        logging.info(
-            "User [%s] Repo [%s] Path [%s]; downloading via url: %s",
-            self.__user,
-            self.__repo,
+        logger.info(
+            "Author [%s] Repo [%s] Path [%s]; downloading via url: %s",
+            self.__author,
+            self.__repo.get_name(),
             self.__path,
             self.__download_url,
         )
         if response.status_code == HTTPStatus.OK:
             return response.text.split("\n")
         else:
-            logging.error(
-                "User [%s] Repo [%s] Path [%s]; failed to download with status: %d and response %s",
-                self.__user,
-                self.__repo,
+            logger.error(
+                "Author [%s] Repo [%s] Path [%s]; failed to download with status: %d and response %s",
+                self.__author,
+                self.__repo.get_name(),
                 self.__path,
                 response.status_code,
                 response.text,
             )
-            raise Exception(
-                f"Unable to download file {self.get_path()}: {response.text}"
-            )
+            raise Exception(f"Unable to download file {self.__path}: {response.text}")

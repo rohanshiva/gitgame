@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from gitgame.services.file.file_source import FileSource
 from gitgame.services.file.file_pool import FilePool
 from gitgame.services.chunk.chunk_fetcher import ChunkFetcher
@@ -45,7 +46,7 @@ class Session:
         file_pool: FilePool,
         chunk_fetcher_factory: Callable[[File], ChunkFetcher],
         state: str = SessionState.NEWLY_CREATED,
-        peek_period: int = 10,  # time in seconds between each code peek
+        peek_period: int = 6,  # time in seconds between each code peek
         guessing_time_limit: int = 30,  # time in seconds to guess
         max_prompt_choices: int = 4,
     ):
@@ -134,11 +135,15 @@ class Session:
                 self.__prompt = Prompt(
                     self.get_chunk(),
                     self.__generate_prompt_choices(file),
-                    file.get_user(),
+                    file.get_author(),
+                    datetime.utcnow() + timedelta(seconds=self.__guessing_time_limit),
+                    file,
                 )
             except Exception as e:
                 # keep trying to pick more files to use until we are able to get chunks from a file
-                logger.error("Session [%s], Failed to pick starting chunk", self.__id)
+                logger.error(
+                    "Session [%s], Failed to pick starting chunk: ", self.__id, str(e)
+                )
 
         if not self.can_get_chunk():
             logger.info("Session [%s]; no more files to pick chunks from", self.__id)
@@ -292,9 +297,9 @@ class Session:
 
     def __generate_prompt_choices(self, file: File):
         potential_choices = self.__file_pool_authors[:]
-        choices = [file.get_user()]
+        choices = [file.get_author()]
 
-        potential_choices.remove(file.get_user())
+        potential_choices.remove(file.get_author())
         for _ in range(min(self.__max_prompt_choices - 1, len(potential_choices))):
             choice = random.choice(potential_choices)
             choices.append(choice)
@@ -302,22 +307,36 @@ class Session:
         return choices
 
     def __get_prompt_json(self):
-        return self.__prompt.serialize()
+        return {
+            "chunk": self.__prompt.get_chunk().get_content(),
+            "choices": self.__prompt.get_choices(),
+            "guess_expiration": str(self.__prompt.get_guess_expiration()),
+        }
 
     def __get_answer_reveal_json(self):
         players_json = list(
             map(lambda player: player.serialize(with_guess=True), self.__players)
         )
+
+        repo = self.__prompt.get_repo()
         return {
             "players": players_json,
             "correct_choice": self.__prompt.get_correct_choice(),
+            "repo": {
+                "name": repo.get_name(),
+                "description": repo.get_description(),
+                "star_count": repo.get_star_count(),
+                "url": repo.get_url(),
+                "language": repo.get_language(),
+            },
         }
 
     async def __guessing_timer(self):
-        elapsed_time = 0
-        while elapsed_time < self.__guessing_time_limit:
+        while (
+            not (self.__prompt is None)
+            and self.__prompt.get_guess_expiration() > datetime.utcnow()
+        ):
             await asyncio.sleep(self.__peek_period)
-
             peek_directions = []
             if self.can_peek_above():
                 peek_directions.append("above")
@@ -333,8 +352,6 @@ class Session:
                 await self.__broadcast_peek(peek_dir)
                 self.__prompt.set_chunk(self.get_chunk())
                 await self.__broadcast_prompt()
-
-            elapsed_time += self.__peek_period
 
         if self.__state == SessionState.IN_GUESSING:
             await self.__handle_answer_reveal()
