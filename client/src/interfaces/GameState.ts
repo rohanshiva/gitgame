@@ -1,5 +1,7 @@
 import IPlayer from "./Player";
-
+import {Chunk, ChunkLine} from "./chunk";
+import IPrompt from "./Prompt";
+import IAnswer from "./Answer";
 export enum ServerMessageType {
   LOBBY = "lobby",
   HOST_CHANGE = "host_change",
@@ -16,8 +18,17 @@ export enum SessionState {
   DONE_GUESSING = "done_guessing",
   OUT_OF_CHUNKS = "out_of_chunks",
 }
+
 export default interface IGameState {
   players: IPlayer[];
   host: IPlayer;
   state: SessionState;
+  answer?: IAnswer;
+  prompt?: IPrompt
+}
+
+export const lobbyChunk : Chunk = {
+  filename: "lobby_waiting_for_players",
+  extension: "markdown",
+  lines: [{line_number: 0, content: "Waiting for players..."} as ChunkLine]
 }

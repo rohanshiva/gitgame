@@ -46,7 +46,7 @@ class Session:
         file_pool: FilePool,
         chunk_fetcher_factory: Callable[[File], ChunkFetcher],
         state: str = SessionState.NEWLY_CREATED,
-        peek_period: int = 10,  # time in seconds between each code peek
+        peek_period: int = 6,  # time in seconds between each code peek
         guessing_time_limit: int = 30,  # time in seconds to guess
         max_prompt_choices: int = 4,
     ):

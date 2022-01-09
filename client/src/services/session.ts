@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import api from "../utils/api";
 import Session from "../interfaces/session";
 import { Chunk, ChunkLine } from "../interfaces/chunk";
+import IPlayer from "../interfaces/Player";
 
 class SessionService {
   private static getExtension(filename: string) {
@@ -10,7 +11,7 @@ class SessionService {
     return filename.includes(".") ? fileParts[fileParts.length - 1] : "";
   }
 
-  private static processChunkFromJson(chunkData: any): Chunk {
+  static processChunkFromJson(chunkData: any): Chunk {
     const {
       filename,
       lines,
@@ -91,6 +92,29 @@ class SessionService {
         `Failed to get chunk for session ${sessionId}: ${response.statusText}`
       );
     }
+  }
+
+  static isHost(username: string, host: IPlayer) {
+    return username === host.username
+  }
+
+  static getSortedPlayers(players: IPlayer[]) {
+    return players.sort((a, b) => b.score - a.score)
+  }
+
+  static startGame(ws: WebSocket) {
+    const data = JSON.stringify({ event_type: "start_game" });
+    ws.send(data);
+  }
+
+  static nextChunk(ws: WebSocket) {
+    const data = JSON.stringify({ event_type: "next_round" });
+    ws.send(data);
+  }
+
+  static makeGuess(ws: WebSocket, guess: string) {
+    const data = JSON.stringify({event_type: "guess", guess})
+    ws.send(data);
   }
 }
 

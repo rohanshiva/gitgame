@@ -2,11 +2,13 @@ import styled from "styled-components";
 
 export const Pre = styled.pre`
   text-align: left;
-  margin: 1em 0;
-  padding: 2em;
+  margin: 0;
+  padding: 1rem;
+  min-height: 512px;
   max-height: 512px;
   overflow-y: scroll;
-
+  border-radius: 3px;
+  
   & .token-line {
     line-height: 1.3em;
     height: 1.3em;

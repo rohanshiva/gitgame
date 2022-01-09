@@ -1,0 +1,42 @@
+.answer-section {
+  background-color: var(--section-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin-left: 1rem;
+  width: 100%;
+  min-height: 512px;
+  max-height: 512px;
+  overflow-y: scroll;
+}
+.repo-card {
+  height: 128px;
+  object-fit: contain;
+  align-self: start;
+}
+.source-tag {
+  text-decoration: none;
+}
+
+.correct-player {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+table {
+
+    font-weight: bold;
+    font-size: 1.25rem;
+    font-family: monospace;
+}
+td {
+    font-weight: normal;
+    padding-top: 0.5rem;
+    padding-bottom: 0.2rem;
+}
+th {
+    text-align: left;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
