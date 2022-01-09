@@ -1,5 +1,5 @@
 import * as Icon from "react-feather";
-import "./Navbar.css"
+import "./Navbar.css";
 function Navbar() {
   return (
     <nav>

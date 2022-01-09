@@ -110,9 +110,13 @@ function Home() {
             <input type="submit" value="Make" />
           </div>
         </form>
-        <div className="tags">
+        <div className="author-tags">
           {makeData.preDeterminedAuthors.map((name: string, key: number) => (
-            <div className="tag" key={key} onClick={() => deleteAuthor(key)}>
+            <div
+              className="author-tag"
+              key={key}
+              onClick={() => deleteAuthor(key)}
+            >
               {name}
             </div>
           ))}
