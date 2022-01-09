@@ -12,5 +12,5 @@ file_extension_rule = FileExtensionRule(supported_extensions)
 )
 def test_fileWithSupportedExtensions_shouldBeValid(input_path, expected):
     mock_file = Mock(spec=File)
-    mock_file.get_path.return_value = input_path
+    mock_file.get_filepath.return_value = input_path
     assert file_extension_rule.is_valid(mock_file) is expected

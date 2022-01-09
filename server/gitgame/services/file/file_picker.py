@@ -13,7 +13,6 @@ class FilePicker(ABC):
     def can_pick_file(self) -> bool:
         pass
 
-    # assumes without replacement picking of file
     @abstractmethod
     def pick_file(self) -> File:
         pass
