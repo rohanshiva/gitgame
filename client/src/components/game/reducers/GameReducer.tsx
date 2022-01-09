@@ -1,7 +1,12 @@
 import toast from "react-hot-toast";
 import { SUCCESS, ERROR, LOADING } from "../../notifications/Notification";
 import { ServerMessageType } from "../../../interfaces/GameState";
-import { AnswerRevealAction, LobbyAction, PromptAction, OutOfChunksAction } from "../actions/GameActions";
+import {
+  AnswerRevealAction,
+  LobbyAction,
+  PromptAction,
+  OutOfChunksAction,
+} from "../actions/GameActions";
 export default function gameReducer(
   state: any,
   [type, payload]: [string, any]
@@ -17,7 +22,7 @@ export default function gameReducer(
     case ServerMessageType.OUT_OF_CHUNKS:
       toast.dismiss("nextRound");
       toast("Out of chunks", ERROR as any);
-      return OutOfChunksAction(state, payload)
+      return OutOfChunksAction(state, payload);
   }
   return state;
 }
