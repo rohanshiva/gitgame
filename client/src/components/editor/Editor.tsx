@@ -23,8 +23,8 @@ function Editor({ chunk }: IEditorProps) {
       <Highlight
         {...defaultProps}
         theme={theme}
-        code={ChunkService.getAsCode(chunk as Chunk)}
-        language={getPrismExtension((chunk as Chunk).extension)}
+        code={ChunkService.getAsCode(chunk)}
+        language={getPrismExtension((chunk).extension)}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <Pre className={className} style={style}>

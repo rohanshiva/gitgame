@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useReducer, useCallback } from "react";
 
 import { useHistory } from "react-router-dom";
 import routes_ from "../../constants/route";
@@ -10,9 +10,9 @@ import Notification, {
 } from "../notifications/Notification";
 import Editor from "../editor";
 import IGameState, {
-  ServerMessageType,
   SessionState,
   lobbyChunk,
+  ClientEventType,
 } from "../../interfaces/GameState";
 import SessionService from "../../services/Session";
 import IPlayer from "../../interfaces/Player";
@@ -23,6 +23,8 @@ import toast from "react-hot-toast";
 import "./Game.css";
 import Answer from "../answer";
 import useSocket from "./hooks/socket/UseSocket";
+import IPrompt from "../../interfaces/Prompt";
+import IAnswer from "../../interfaces/Answer";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
@@ -40,18 +42,52 @@ function getWebSocketAddress(sessionId: string, username: string) {
     .replace(":username", username)}`;
 }
 
-const dummyPlayer: IPlayer = { username: "", score: 0, has_guessed: false };
 const initialState: IGameState = {
   players: [],
-  host: dummyPlayer,
+  host: { username: "", score: 0, has_guessed: false },
   state: SessionState.IN_LOBBY,
 };
 
-function Game(props: any) {
+
+enum ToastDisplay {
+  CONNECTING = "connecting",
+  NEXT_ROUND = "next_round"
+}
+
+function Game() {
   const history = useHistory();
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  
+  const beforeWsOpen = useCallback(() => {
+    toast("Connecting to session...", toastWithId(LOADING, ToastDisplay.CONNECTING));
+  }, []);
+
+  const onWsOpen = useCallback((websocket: WebSocket) => {
+    toast.dismiss(ToastDisplay.CONNECTING);
+  }, []);
+
+  const onWsMessage = useCallback((data: any) => {
+    const packet = JSON.parse(data);
+    if (packet.error) {
+      toast(
+        `Failed to join session with error: ${packet.error}`,
+        ERROR as any
+      );
+      history.push(routes_.root());
+    } else {
+      dispatch([packet.message_type, packet.message]);
+    }
+  }, [dispatch, history]);
+
+  const onWsClose = useCallback(() => {}, []);
+
+  const onWsError = useCallback(() => {}, []);
+
   const sessionId = getSessionId(history.location.pathname);
   const username = getUsername(history.location.pathname);
-  const { ws, state } = useSocket(sessionId, username);
+  const socketUrl = getWebSocketAddress(sessionId, username);
+  const { sendMessage } = useSocket(socketUrl, beforeWsOpen, onWsOpen, onWsMessage, onWsClose, onWsError);
+
 
   const copyHandler = async () => {
     await navigator.clipboard.writeText(sessionId);
@@ -59,102 +95,100 @@ function Game(props: any) {
   };
 
   const startHandler = () => {
-    SessionService.startGame(ws);
+    sendMessage({event_type: ClientEventType.START_GAME});
   };
 
   const nextHandler = () => {
-    const nextToast = toast(
-      "Fetching next chunk",
-      toastWithId(LOADING as any, "nextRound")
-    );
-    SessionService.nextChunk(ws);
+    toast("Fetching next chunk", toastWithId(LOADING, ToastDisplay.NEXT_ROUND));
+    sendMessage({event_type: ClientEventType.NEXT_ROUND});
   };
 
   const guessHandler = (event: any) => {
     const guess = event.target.innerText;
-    console.info("guess:", guess);
-    SessionService.makeGuess(ws, guess);
+    sendMessage({event_type: ClientEventType.GUESS, guess});
   };
-  return (
-    <>
-      <div className="game-settings">
-        <div className="left-panel">
-          <button
-            disabled={
-              !(state.state === SessionState.DONE_GUESSING) ||
-              !SessionService.isHost(username, state.host)
-            }
-            onClick={nextHandler}
-          >
-            Next
-          </button>
-          <button
-            disabled={
-              !(state.state === SessionState.IN_LOBBY) ||
-              !SessionService.isHost(username, state.host)
-            }
-            onClick={startHandler}
-          >
-            Start
-          </button>
-        </div>
-        <div className="right-panel">
-          <button onClick={copyHandler}>Copy</button>
-        </div>
-      </div>
-      <div className="mid">
-        <div className="players-container">
-          {state.players.map((player: IPlayer, i: number) => (
-            <div
-              className={`player ${
-                SessionService.isHost(username, state.host) ? "host" : ""
-              }`}
-              key={i}
+
+  const isHost = username === state.host.username;
+
+    return(
+      <>
+        <div className="game-settings">
+          <div className="left-panel">
+            <button
+              disabled={
+                !(state.state === SessionState.DONE_GUESSING) ||
+                !isHost
+              }
+              onClick={nextHandler}
             >
-              <div className="player-info">
-                <img
-                  className="player-avatar"
-                  src={`${config.githubAvatarUri}${player.username}`}
-                />
-                <div>{player.username}</div>
-              </div>
-
-              <div>{player.score}</div>
-            </div>
-          ))}
-        </div>
-        {state.state === SessionState.IN_LOBBY && <Editor chunk={lobbyChunk} />}
-        {state.state === SessionState.IN_GUESSING && (
-          <Editor chunk={state.prompt.chunk} />
-        )}
-        {state.state === SessionState.DONE_GUESSING && (
-          <Answer
-            correctChoice={state.answer.correctChoice}
-            players={state.answer.players}
-            outOfChunks={false}
-          />
-        )}
-        {state.state === SessionState.OUT_OF_CHUNKS && (
-          <Answer
-            correctChoice={state.correctChoice}
-            players={SessionService.getSortedPlayers(state.players)}
-            outOfChunks={true}
-          />
-        )}
-      </div>
-      {state.state === SessionState.IN_GUESSING && (
-        <div className="choices">
-          {state.prompt.choices.map((choice: string, i: number) => (
-            <button className="choice" onClick={(event) => guessHandler(event)}>
-              {choice}
+              Next
             </button>
-          ))}
+            <button
+              disabled={
+                !(state.state === SessionState.IN_LOBBY) ||
+                !isHost
+              }
+              onClick={startHandler}
+            >
+              Start
+            </button>
+          </div>
+          <div className="right-panel">
+            <button onClick={copyHandler}>Copy</button>
+          </div>
         </div>
-      )}
+        <div className="mid">
+          <div className="players-container">
+            {state.players.map((player: IPlayer, i: number) => (
+              <div
+                className={`player ${isHost ? "host" : ""
+                  }`}
+                key={i}
+              >
+                <div className="player-info">
+                  <img
+                    className="player-avatar"
+                    src={`${config.githubAvatarUri}${player.username}`}
+                  />
+                  <div>{player.username}</div>
+                </div>
 
-      <Notification />
-    </>
-  );
+                <div>{player.score}</div>
+              </div>
+            ))}
+          </div>
+          {state.state === SessionState.IN_LOBBY && <Editor chunk={lobbyChunk} />}
+          {state.state === SessionState.IN_GUESSING && (
+            <Editor chunk={(state.prompt as IPrompt).chunk} />
+          )}
+          {state.state === SessionState.DONE_GUESSING && (
+            <Answer
+              correctChoice={(state.answer as IAnswer).correctChoice}
+              players={(state.answer as IAnswer).players}
+              outOfChunks={false}
+            />
+          )}
+          {state.state === SessionState.OUT_OF_CHUNKS && (
+            <Answer
+              correctChoice={(state.answer as IAnswer).correctChoice}
+              players={SessionService.getSortedPlayers(state.players)}
+              outOfChunks={true}
+            />
+          )}
+        </div>
+        {state.state === SessionState.IN_GUESSING && (
+          <div className="choices">
+            {(state.prompt as IPrompt).choices.map((choice: string, i: number) => (
+              <button className="choice" onClick={(event) => guessHandler(event)}>
+                {choice}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <Notification />
+      </>
+    );
 }
 
 export default Game;

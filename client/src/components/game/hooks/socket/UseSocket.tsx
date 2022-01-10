@@ -1,63 +1,48 @@
-import { useState, useEffect, useReducer } from "react";
-import { useHistory } from "react-router-dom";
-import gameReducer from "../../reducers/GameReducer";
-import toast from "react-hot-toast";
-import { ERROR, LOADING } from "../../../notifications/Notification";
-import IPlayer from "../../../../interfaces/Player";
-import IGameState, { SessionState } from "../../../../interfaces/GameState";
-import config from "../../../../config";
-import routes_ from "../../../../constants/route";
+import { useState, useEffect} from "react";
 
-const dummyPlayer: IPlayer = { username: "", score: 0, has_guessed: false };
-const initialState: IGameState = {
-  players: [],
-  host: dummyPlayer,
-  state: SessionState.IN_LOBBY,
-};
-
-function getWebSocketAddress(sessionId: string, username: string) {
-  return `${config.wsUri}/${config.socket.uri
-    .replace(":sessionId", sessionId)
-    .replace(":username", username)}`;
-}
-
-function useSocket(sessionId: string, username: string) {
-
-  const history = useHistory();
-  const [ws, setWs] = useState(null as unknown as WebSocket);
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+function useSocket(socketUrl: string, beforeOpen: () => void, onOpen: (ws: WebSocket) => void, onMessage: (data: any) => void,
+  onClose: () => void, onError: () => void) {
+  const [ws, setWs] = useState<WebSocket>(null as unknown as WebSocket);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     if (ws) {
-      ws.onmessage = ({ data }) => {
-        const packet = JSON.parse(data);
-        if (packet.error) {
-          toast(
-            `Failed to join session with error: ${packet.error}`,
-            ERROR as any
-          );
-          history.push(routes_.root());
-        } else {
-          dispatch([packet.message_type, packet.message]);
+      if (ws.readyState === ws.CONNECTING){
+        ws.onmessage = ({ data }) => {
+          onMessage(data);
+        };
+  
+        ws.onerror = (ev) => {
+          onError();
         }
-      };
+  
+        ws.onclose = (ev) => {
+          onClose();
+        }
+  
+        ws.onopen = (ev) => {
+          setIsConnected(true);
+          onOpen(ws);
+        }
+      }
     } else {
-      const loadingToast = toast.loading(
-        "Connecting to session...",
-        LOADING as any
-      );
-      setWs(new WebSocket(getWebSocketAddress(sessionId, username)));
-      toast.dismiss(loadingToast);
+      beforeOpen()
+      setWs(new WebSocket(socketUrl))
     }
 
     return () => {
-      try {
-        ws.close();
-      } catch (e) {}
-    };
-  }, [ws]);
+      if (ws && ws.readyState !== ws.CLOSED) {
+        ws.close()
+      }
+    }
 
-  return {ws, state };
+  }, [ws, beforeOpen, onOpen, onMessage, onClose, onError, socketUrl]);
+
+  const sendMessage = (data: any) => {
+    ws.send(JSON.stringify(data));
+  }
+
+  return {sendMessage, isConnected};
 }
 
 export default useSocket;
