@@ -1,7 +1,5 @@
-import config from "../../config";
 import IPlayer from "../../interfaces/Player";
 import "./Answer.css";
-import SessionService from "../../services/session";
 
 interface IAnswerProps {
   correctChoice: string;

@@ -1,8 +1,9 @@
-import { Chunk } from "./chunk";
+import { Chunk } from "./Chunk";
+
 interface IPrompt {
   choices: string[];
-  endTimestamp: string;
-  chunk?: Chunk;
+  guessExpiration: Date;
+  chunk: Chunk;
 }
 
 export default IPrompt;

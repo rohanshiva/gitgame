@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import routes_ from "../../constants/route";
 import "./Home.css";
-import SessionService from "../../services/session";
+import SessionService from "../../services/Session";
 import { IMakeFormData } from "../../interfaces/MakeFormData";
 import { IJoinFormData } from "../../interfaces/JoinFormData";
 
