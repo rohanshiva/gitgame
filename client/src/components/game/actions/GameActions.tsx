@@ -1,5 +1,6 @@
-import IAnswer, { IRepository } from "../../../interfaces/Answer";
+import { IRepository } from "../../../interfaces/Answer";
 import IGameState, { SessionState } from "../../../interfaces/GameState";
+import IPlayer from "../../../interfaces/Player";
 import SessionService from "../../../services/Session";
 
 export const LobbyAction = (state: IGameState, payload: any): IGameState => {
@@ -14,7 +15,7 @@ export const PromptAction = (state: IGameState, payload: any): IGameState => {
     prompt: {
       chunk,
       choices: payload.choices,
-      endTimestamp: payload.guessing_end_timestamp,
+      guessExpiration: new Date(payload.guess_expiration),
     },
   };
 };
@@ -29,6 +30,9 @@ export const AnswerRevealAction = (state: IGameState, payload: any): IGameState 
 
   return {
     ...state,
+    players: (payload.players as IPlayer[]).map(({username, has_guessed, score}) => {  
+      return {username, has_guessed, score}
+    }),
     state: SessionState.DONE_GUESSING,
     answer: { players: payload.players, correctChoice: payload.correct_choice, repository}
   };

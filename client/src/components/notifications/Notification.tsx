@@ -53,6 +53,11 @@ export const ERROR = {
   },
 };
 
+export enum NotificationDisplay {
+  CONNECTING = "connecting",
+  NEXT_ROUND = "next_round"
+}
+
 export const toastWithId = (style: any, id: string) => {
   return { ...style, id };
 };

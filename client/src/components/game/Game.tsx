@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback } from "react";
+import React, { useReducer, useCallback, useEffect } from "react";
 
 import { useHistory } from "react-router-dom";
 import routes_ from "../../constants/route";
@@ -7,6 +7,7 @@ import Notification, {
   ERROR,
   LOADING,
   toastWithId,
+  NotificationDisplay,
 } from "../notifications/Notification";
 import Editor from "../editor";
 import IGameState, {
@@ -25,6 +26,7 @@ import Answer from "../answer";
 import useSocket from "./hooks/socket/UseSocket";
 import IPrompt from "../../interfaces/Prompt";
 import IAnswer from "../../interfaces/Answer";
+import Timer from "../timer/Timer";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
@@ -48,22 +50,16 @@ const initialState: IGameState = {
   state: SessionState.IN_LOBBY,
 };
 
-
-enum ToastDisplay {
-  CONNECTING = "connecting",
-  NEXT_ROUND = "next_round"
-}
-
 function Game() {
   const history = useHistory();
   const [state, dispatch] = useReducer(gameReducer, initialState);
   
   const beforeWsOpen = useCallback(() => {
-    toast("Connecting to session...", toastWithId(LOADING, ToastDisplay.CONNECTING));
+    toast("Connecting to session...", toastWithId(LOADING, NotificationDisplay.CONNECTING));
   }, []);
 
   const onWsOpen = useCallback((websocket: WebSocket) => {
-    toast.dismiss(ToastDisplay.CONNECTING);
+    toast.dismiss(NotificationDisplay.CONNECTING);
   }, []);
 
   const onWsMessage = useCallback((data: any) => {
@@ -80,7 +76,6 @@ function Game() {
   }, [dispatch, history]);
 
   const onWsClose = useCallback(() => {}, []);
-
   const onWsError = useCallback(() => {}, []);
 
   const sessionId = getSessionId(history.location.pathname);
@@ -99,7 +94,7 @@ function Game() {
   };
 
   const nextHandler = () => {
-    toast("Fetching next chunk", toastWithId(LOADING, ToastDisplay.NEXT_ROUND));
+    toast("Fetching next chunk", toastWithId(LOADING, NotificationDisplay.NEXT_ROUND));
     sendMessage({event_type: ClientEventType.NEXT_ROUND});
   };
 
@@ -108,7 +103,8 @@ function Game() {
     sendMessage({event_type: ClientEventType.GUESS, guess});
   };
 
-  const isHost = username === state.host.username;
+  const isHost = (username: string) => username === state.host.username;
+  const isYouHost = isHost(username);
 
     return(
       <>
@@ -117,7 +113,7 @@ function Game() {
             <button
               disabled={
                 !(state.state === SessionState.DONE_GUESSING) ||
-                !isHost
+                !isYouHost
               }
               onClick={nextHandler}
             >
@@ -126,7 +122,7 @@ function Game() {
             <button
               disabled={
                 !(state.state === SessionState.IN_LOBBY) ||
-                !isHost
+                !isYouHost
               }
               onClick={startHandler}
             >
@@ -141,7 +137,7 @@ function Game() {
           <div className="players-container">
             {state.players.map((player: IPlayer, i: number) => (
               <div
-                className={`player ${isHost ? "host" : ""
+                className={`player ${isHost(player.username) ? "host" : ""
                   }`}
                 key={i}
               >
@@ -159,7 +155,10 @@ function Game() {
           </div>
           {state.state === SessionState.IN_LOBBY && <Editor chunk={lobbyChunk} />}
           {state.state === SessionState.IN_GUESSING && (
-            <Editor chunk={(state.prompt as IPrompt).chunk} />
+            <> 
+              <Timer expiration={(state.prompt as IPrompt).guessExpiration}/>
+              <Editor chunk={(state.prompt as IPrompt).chunk} />
+            </>
           )}
           {state.state === SessionState.DONE_GUESSING && (
             <Answer

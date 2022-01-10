@@ -102,21 +102,6 @@ class SessionService {
   static getSortedPlayers(players: IPlayer[]) {
     return players.sort((a, b) => b.score - a.score)
   }
-
-  static startGame(ws: WebSocket) {
-    const data = JSON.stringify({event_type: ClientEventType.START_GAME});
-    ws.send(data);
-  }
-
-  static nextChunk(ws: WebSocket) {
-    const data = JSON.stringify({ event_type: ClientEventType.NEXT_ROUND});
-    ws.send(data);
-  }
-
-  static makeGuess(ws: WebSocket, guess: string) {
-    const data = JSON.stringify({event_type: ClientEventType.GUESS, guess})
-    ws.send(data);
-  }
 }
 
 export default SessionService;

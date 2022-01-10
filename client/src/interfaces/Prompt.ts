@@ -2,7 +2,7 @@ import { Chunk } from "./Chunk";
 
 interface IPrompt {
   choices: string[];
-  endTimestamp: string;
+  guessExpiration: Date;
   chunk: Chunk;
 }
 
