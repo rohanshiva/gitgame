@@ -19,7 +19,7 @@ export default function gameReducer(
     case ServerMessageType.OUT_OF_CHUNKS:
       toast.dismiss("nextRound");
       toast("Out of chunks", ERROR as any);
-      return OutOfChunksAction(state, payload)
+      return OutOfChunksAction(state, payload);
   }
   return state;
 }

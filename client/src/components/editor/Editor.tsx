@@ -5,7 +5,7 @@ import { Pre, Line, LineNo, LineContent } from "./Styles";
 import { Chunk } from "../../interfaces/Chunk";
 import ChunkService from "../../services/Chunk";
 
-import "./Editor.css"
+import "./Editor.css";
 interface IEditorProps {
   chunk: Chunk;
 }

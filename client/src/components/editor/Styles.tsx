@@ -8,7 +8,7 @@ export const Pre = styled.pre`
   max-height: 512px;
   overflow-y: scroll;
   border-radius: 3px;
-  
+
   & .token-line {
     line-height: 1.3em;
     height: 1.3em;
