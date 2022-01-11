@@ -1,7 +1,7 @@
 import React, { useReducer, useCallback, useEffect } from "react";
 
 import { useHistory } from "react-router-dom";
-import routes_ from "../../constants/route";
+import routes_ from "../../constants/Route";
 import Notification, {
   SUCCESS,
   ERROR,
