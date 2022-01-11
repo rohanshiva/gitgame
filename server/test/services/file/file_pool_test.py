@@ -2,6 +2,7 @@ from gitgame.services import File, ReplenishingFilePool, FileSource, FilePicker
 from unittest.mock import Mock
 from collections import deque
 from typing import List
+from ...util import get_mock_file
 
 MAX_SENDABLE_FILES = 5
 TOTAL_FILE_COUNT = 10
@@ -39,9 +40,7 @@ def get_mock_file_source(
         files = []
         sendable_file_count = min(file_count, max_sendable_files)
         while sendable_file_count > 0:
-            mock_file = Mock(spec=File)
-            mock_file.get_author.return_value = author
-            files.append(mock_file)
+            files.append(get_mock_file(author=author))
             sendable_file_count -= 1
             file_count -= 1
         return files
@@ -58,11 +57,13 @@ def get_mock_file_source(
 
 
 def test_whenFilesRunOut_shouldReplenishFiles():
+    author = "Big T"
+
     mock_file_picker = get_mock_file_picker()
-    mock_file_source = get_mock_file_source(author="ramko9999")
+    mock_file_source = get_mock_file_source(author=author)
     file_pool = ReplenishingFilePool(mock_file_picker)
 
-    file_pool.add_author("ramko9999", mock_file_source)
+    file_pool.add_author(author, mock_file_source)
 
     assert file_pool.can_pick() is True
     for _ in range(MAX_SENDABLE_FILES):
@@ -72,8 +73,11 @@ def test_whenFilesRunOut_shouldReplenishFiles():
     for _ in range(MAX_SENDABLE_FILES):
         file_pool.pick()
 
-    assert file_pool.can_pick() is False  # completely ran out of files
+    # after sending TOTAL_FILE_COUNT # of files, should not be able to pick more files
+    assert file_pool.can_pick() is False
+
+    # file pool should refreshed files
     assert mock_file_picker.add_files.call_count == 2
     assert (
         mock_file_source.setup.call_count == 1
-    )  # should only setup source only 1 time
+    )  # should only setup file source only 1 time

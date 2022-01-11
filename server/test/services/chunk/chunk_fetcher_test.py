@@ -3,10 +3,9 @@ from gitgame.services import (
     File,
     Chunk,
     ChunkFetcher,
-    FileRepository,
 )
-from unittest.mock import Mock
-from typing import Callable, List
+from ...util import get_mock_file
+from typing import List
 import os
 
 STARTING_CHUNK_SIZE = 10
@@ -23,31 +22,12 @@ def chunk_fetcher_factory(file: File) -> ChunkFetcher:
     )
 
 
-def get_mock_file(
-    readlines_callback: Callable[[], List[str]],
-    file_name="sample.py",
-    file_path="./sample.py",
-    user="User1",
-    repo_name="Repo1",
-) -> Mock:
-    mock_file = Mock(spec=File)
-    mock_file.readlines = readlines_callback
-    mock_file.get_filepath.return_value = file_path
-    mock_file.get_filename.return_value = file_name
-    mock_file.get_repo.return_value = FileRepository(
-        repo_name, "Repo1 Url", 0, "Repo1 Lang", "Repo1 description"
-    )
-    mock_file.get_author.return_value = user
-    mock_file.get_size.return_value = 100  # dummy size
-    return mock_file
-
-
 def get_chunk_lines(chunk: Chunk) -> List[str]:
     content = chunk.get_content()
     return list(map(lambda code_line: code_line["content"], content["lines"]))
 
 
-# file path should be based from ./server/test
+# file path will be based from ./server/test
 def get_disk_file_lines(file_path: str) -> List[str]:
     file_path_from_server = os.path.realpath(
         os.path.join(os.path.dirname(__file__), "..", "..", file_path)
@@ -58,21 +38,30 @@ def get_disk_file_lines(file_path: str) -> List[str]:
     return file_lines
 
 
-def test_fileLinesLessThanStartingChunkSize_entireFileShouldBeChunk():
-    def readlines_callback() -> List[str]:
-        return ["import os", "\tdir_entries = os.listdir()"]
+def assert_chunk_position(chunk: Chunk, expected_start: int, expected_end: int):
+    assert chunk.get_start_line() == expected_start
+    assert chunk.get_end_line() == expected_end
 
-    mock_file = get_mock_file(readlines_callback)
+
+def assert_chunk_lines(chunk: Chunk, expected_lines: List[str]):
+    actual_lines = get_chunk_lines(chunk)
+    assert actual_lines == expected_lines
+
+
+def test_fileLinesLessThanStartingChunkSize_entireFileShouldBeChunk():
+
+    test_file_lines = ["import os", "\tdir_entries = os.listdir()"]
+
+    def readlines_callback() -> List[str]:
+        return test_file_lines
+
+    mock_file = get_mock_file(readlines_callback=readlines_callback)
     chunk_fetcher = chunk_fetcher_factory(mock_file)
     chunk_fetcher.pick_starting_chunk()
 
     # ensure the whole file is used as the starting chunk
     assert chunk_fetcher.can_get_chunk() is True
-    chunk = chunk_fetcher.get_chunk()
-
-    expected_chunk_lines = ["import os", "\tdir_entries = os.listdir()"]
-    actual_chunk_lines = get_chunk_lines(chunk)
-    assert actual_chunk_lines == expected_chunk_lines
+    assert_chunk_lines(chunk_fetcher.get_chunk(), test_file_lines[:])
 
 
 def test_fileLinesLargerThanStartingChunkSize_shouldPickMostSignificantChunk():
@@ -83,18 +72,21 @@ def test_fileLinesLargerThanStartingChunkSize_shouldPickMostSignificantChunk():
         return test_file_lines
 
     mock_file = get_mock_file(
-        readlines_callback, file_name="index.js", file_path=test_file_path
+        readlines_callback=readlines_callback,
+        file_name="index.js",
+        file_path=test_file_path,
     )
     chunk_fetcher = chunk_fetcher_factory(mock_file)
     chunk_fetcher.pick_starting_chunk()
 
     # ensure the whole file is used as the starting chunk
     assert chunk_fetcher.can_get_chunk() is True
-    chunk = chunk_fetcher.get_chunk()
 
-    actual_chunk_lines = get_chunk_lines(chunk)
-    expected_chunk_lines = test_file_lines[4 : 4 + STARTING_CHUNK_SIZE]
-    assert actual_chunk_lines == expected_chunk_lines
+    chunk_start, chunk_end = 4, 4 + STARTING_CHUNK_SIZE
+    assert_chunk_position(chunk_fetcher.get_chunk(), chunk_start, chunk_end)
+    assert_chunk_lines(
+        chunk_fetcher.get_chunk(), test_file_lines[chunk_start:chunk_end]
+    )
 
 
 def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
@@ -105,45 +97,50 @@ def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
         return test_file_lines
 
     mock_file = get_mock_file(
-        readlines_callback, file_name="main.py", file_path=test_file_path
+        readlines_callback=readlines_callback,
+        file_name="main.py",
+        file_path=test_file_path,
     )
     chunk_fetcher = chunk_fetcher_factory(mock_file)
     chunk_fetcher.pick_starting_chunk()
 
     assert chunk_fetcher.can_get_chunk() is True
 
-    actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
-    expected_chunk_lines = test_file_lines[7 : 7 + STARTING_CHUNK_SIZE]
+    chunk_start, chunk_end = 7, 7 + STARTING_CHUNK_SIZE
+    assert_chunk_position(chunk_fetcher.get_chunk(), chunk_start, chunk_end)
+    assert_chunk_lines(
+        chunk_fetcher.get_chunk(), test_file_lines[chunk_start:chunk_end]
+    )
 
-    assert actual_chunk_lines == expected_chunk_lines
-
+    # peek above
     assert chunk_fetcher.can_peek_above() is True
     chunk_fetcher.peek_above()
-    actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
+    chunk_start -= PEEK_SIZE
 
-    # the chunk should now include the above lines of the starting chunk after calling chunk_fetcher.peek_above()
-    expected_chunk_lines = test_file_lines[7 - PEEK_SIZE : 7 + STARTING_CHUNK_SIZE]
-    assert actual_chunk_lines == expected_chunk_lines
+    assert_chunk_position(chunk_fetcher.get_chunk(), chunk_start, chunk_end)
+    assert_chunk_lines(
+        chunk_fetcher.get_chunk(), test_file_lines[chunk_start:chunk_end]
+    )
+
+    # peek below
+    assert chunk_fetcher.can_peek_below() is True
+    chunk_fetcher.peek_below()
+    chunk_end += PEEK_SIZE
+
+    assert_chunk_position(chunk_fetcher.get_chunk(), chunk_start, chunk_end)
+    assert_chunk_lines(
+        chunk_fetcher.get_chunk(), test_file_lines[chunk_start:chunk_end]
+    )
+
+    # no more peekable lines after a peek_above and peek_below
+    assert chunk_fetcher.can_peek_above() is True
+    chunk_fetcher.peek_above()
 
     assert chunk_fetcher.can_peek_below() is True
     chunk_fetcher.peek_below()
-    actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
 
-    # the chunk should now include the below lines of the starting chunk after calling chunk_fetcher.peek_below()
-    expected_chunk_lines = test_file_lines[
-        7 - PEEK_SIZE : 7 + STARTING_CHUNK_SIZE + PEEK_SIZE
-    ]
-    assert actual_chunk_lines == expected_chunk_lines
-
-    assert chunk_fetcher.can_peek_above() is True
-    chunk_fetcher.peek_above()
-
-    assert chunk_fetcher.can_peek_below() is True
-    chunk_fetcher.peek_below()
-
-    actual_chunk_lines = get_chunk_lines(chunk_fetcher.get_chunk())
-    expected_chunk_lines = test_file_lines
-    assert actual_chunk_lines == expected_chunk_lines
+    assert_chunk_position(chunk_fetcher.get_chunk(), 0, len(test_file_lines))
+    assert_chunk_lines(chunk_fetcher.get_chunk(), test_file_lines[:])
 
     assert chunk_fetcher.can_peek_above() is False
     assert chunk_fetcher.can_peek_below() is False
