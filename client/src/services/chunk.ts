@@ -1,4 +1,4 @@
-import { Chunk } from "../interfaces/chunk";
+import { Chunk } from "../interfaces/Chunk";
 
 
 class ChunkService {

@@ -1,9 +1,10 @@
 import config from "../config/config";
 import { StatusCodes } from "http-status-codes";
 import api from "../utils/api";
-import Session from "../interfaces/session";
-import { Chunk, ChunkLine } from "../interfaces/chunk";
+import Session from "../interfaces/Session";
+import { Chunk, ChunkLine } from "../interfaces/Chunk";
 import IPlayer from "../interfaces/Player";
+import { ClientEventType } from "../interfaces/GameState";
 
 class SessionService {
   private static getExtension(filename: string) {
@@ -100,21 +101,6 @@ class SessionService {
 
   static getSortedPlayers(players: IPlayer[]) {
     return players.sort((a, b) => b.score - a.score)
-  }
-
-  static startGame(ws: WebSocket) {
-    const data = JSON.stringify({ event_type: "start_game" });
-    ws.send(data);
-  }
-
-  static nextChunk(ws: WebSocket) {
-    const data = JSON.stringify({ event_type: "next_round" });
-    ws.send(data);
-  }
-
-  static makeGuess(ws: WebSocket, guess: string) {
-    const data = JSON.stringify({event_type: "guess", guess})
-    ws.send(data);
   }
 }
 

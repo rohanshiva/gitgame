@@ -2,8 +2,8 @@ import Highlight, { defaultProps, Language } from "prism-react-renderer";
 import theme from "prism-react-renderer/themes/palenight";
 import { Pre, Line, LineNo, LineContent } from "./Styles";
 
-import { Chunk } from "../../interfaces/chunk";
-import ChunkService from "../../services/chunk";
+import { Chunk } from "../../interfaces/Chunk";
+import ChunkService from "../../services/Chunk";
 
 import "./Editor.css";
 interface IEditorProps {
@@ -23,8 +23,8 @@ function Editor({ chunk }: IEditorProps) {
       <Highlight
         {...defaultProps}
         theme={theme}
-        code={ChunkService.getAsCode(chunk as Chunk)}
-        language={getPrismExtension((chunk as Chunk).extension)}
+        code={ChunkService.getAsCode(chunk)}
+        language={getPrismExtension((chunk).extension)}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <Pre className={className} style={style}>
