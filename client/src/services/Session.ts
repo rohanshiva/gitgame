@@ -1,6 +1,6 @@
 import config from "../config/config";
 import { StatusCodes } from "http-status-codes";
-import api from "../utils/api";
+import api from "../utils/Api";
 import Session from "../interfaces/Session";
 import { Chunk, ChunkLine } from "../interfaces/Chunk";
 import IPlayer from "../interfaces/Player";
