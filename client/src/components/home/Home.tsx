@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
-import routes_ from "../../constants/route";
+import routes_ from "../../constants/Route";
 import "./Home.css";
 import SessionService from "../../services/Session";
 import { IMakeFormData } from "../../interfaces/MakeFormData";
