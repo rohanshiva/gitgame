@@ -80,6 +80,8 @@ class WindowChunkFetcher(ChunkFetcher):
                 best_start_line = (i - self.__starting_chunk_size) + 1
 
         best_end_line = best_start_line + min(len(lines), self.__starting_chunk_size)
+
+        # 0-indexed
         self.__chunk = Chunk(
             self.__file.get_filename(),
             best_start_line,
