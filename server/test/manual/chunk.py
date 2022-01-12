@@ -14,7 +14,9 @@ def dump_chunk(session_id):
             f.write(f"{line['line_number']} {line['content']}\n")
 
 
-resp = requests.post("http://localhost:8000/session/make", json=["TanushN", "ramko9999"]).json()
+resp = requests.post(
+    "http://localhost:8000/session/make", json=["TanushN", "ramko9999"]
+).json()
 session_id = resp["id"]
 print(session_id)
 

@@ -11,10 +11,7 @@ def test_make_session_invalid_authors():
         json=["rohanshiva", "ramko9999", "ramko99", "ramko989"],
     )
     assert response.status_code == 422
-    assert (
-        response.json()["detail"]
-        == "invalid usernames: ['ramko99', 'ramko989']"
-    )
+    assert response.json()["detail"] == "invalid usernames: ['ramko99', 'ramko989']"
 
 
 def test_join_session_invalid_session_id():
@@ -53,8 +50,7 @@ def test_join_session():
     socket_url = f"/socket/{session_id}/{username}"
 
     with client.websocket_connect(socket_url) as websocket:
-        data = websocket.receive_json()
-
+        websocket.receive_json()
         response = client.get(
             f"/session/{session_id}", headers={"accept": "application/json"}
         )

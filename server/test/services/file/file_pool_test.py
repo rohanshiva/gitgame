@@ -8,16 +8,15 @@ MAX_SENDABLE_FILES = 5
 TOTAL_FILE_COUNT = 10
 
 
-def get_mock_file_picker():
+def get_mock_file_picker() -> Mock:
     file_queue = deque([])
     mock_file_picker = Mock(spec=FilePicker)
 
-    def add_files_side_effect(*args, **kwargs):
-        files = args[0]
+    def add_files(files):
         for file in files:
             file_queue.append(file)
 
-    mock_file_picker.add_files = Mock(side_effect=add_files_side_effect)
+    mock_file_picker.add_files = Mock(side_effect=add_files)
     mock_file_picker.can_pick_file = lambda: len(file_queue) > 0
     mock_file_picker.pick_file = lambda: file_queue.pop()
     return mock_file_picker
@@ -31,7 +30,7 @@ def get_mock_file_source(
     def is_setup() -> bool:
         return has_setup
 
-    def setup(*args, **kwargs):
+    def setup():
         nonlocal has_setup
         has_setup = True
 

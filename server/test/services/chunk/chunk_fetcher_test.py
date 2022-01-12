@@ -52,10 +52,10 @@ def test_fileLinesLessThanStartingChunkSize_entireFileShouldBeChunk():
 
     test_file_lines = ["import os", "\tdir_entries = os.listdir()"]
 
-    def readlines_callback() -> List[str]:
+    def readlines() -> List[str]:
         return test_file_lines
 
-    mock_file = get_mock_file(readlines_callback=readlines_callback)
+    mock_file = get_mock_file(readlines=readlines)
     chunk_fetcher = chunk_fetcher_factory(mock_file)
     chunk_fetcher.pick_starting_chunk()
 
@@ -68,11 +68,11 @@ def test_fileLinesLargerThanStartingChunkSize_shouldPickMostSignificantChunk():
     test_file_path = "./test-data/index.js"
     test_file_lines = get_disk_file_lines(test_file_path)
 
-    def readlines_callback() -> List[str]:
+    def readlines() -> List[str]:
         return test_file_lines
 
     mock_file = get_mock_file(
-        readlines_callback=readlines_callback,
+        readlines=readlines,
         file_name="index.js",
         file_path=test_file_path,
     )
@@ -93,11 +93,11 @@ def test_peekOnFile_peekShouldEnlargeChunkBasedOnDirection():
     test_file_path = "./test-data/main.py"
     test_file_lines = get_disk_file_lines(test_file_path)
 
-    def readlines_callback() -> List[str]:
+    def readlines() -> List[str]:
         return test_file_lines
 
     mock_file = get_mock_file(
-        readlines_callback=readlines_callback,
+        readlines=readlines,
         file_name="main.py",
         file_path=test_file_path,
     )
