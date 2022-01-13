@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { ERROR } from "../notifications/Notification";
 import "./Choices.css";
 
 interface IChoices {
@@ -11,8 +13,12 @@ function Choices({ choices, guessHandler = (guess: string) => {} }: IChoices) {
   const [hasGuessed, setHasGuessed] = useState<boolean>(false);
 
   const confirmGuessHandler = (event: any) => {
-    guessHandler(selected);
-    setHasGuessed(true);
+    if (!selected || selected.length === 0) {
+      toast("Please select an option before confirming.", ERROR as any);
+    } else {
+      guessHandler(selected);
+      setHasGuessed(true);
+    }
   };
 
   const isSelected = (choice: string) => {

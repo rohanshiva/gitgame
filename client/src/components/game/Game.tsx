@@ -28,7 +28,6 @@ import IPrompt from "../../interfaces/Prompt";
 import IAnswer from "../../interfaces/Answer";
 import Timer from "../timer/Timer";
 import Choices from "../choices/Choices";
-import { stat } from "fs";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
