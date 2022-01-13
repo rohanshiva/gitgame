@@ -1,4 +1,4 @@
-import config from "../config/config";
+import config from "../config/Config";
 import { StatusCodes } from "http-status-codes";
 import api from "../utils/Api";
 import Session from "../interfaces/Session";
@@ -95,11 +95,11 @@ class SessionService {
   }
 
   static isHost(username: string, host: IPlayer) {
-    return username === host.username
+    return username === host.username;
   }
 
   static getSortedPlayers(players: IPlayer[]) {
-    return players.sort((a, b) => b.score - a.score)
+    return players.sort((a, b) => b.score - a.score);
   }
 }
 

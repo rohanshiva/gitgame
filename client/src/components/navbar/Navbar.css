@@ -1,24 +1,22 @@
-nav {
-  max-width: 1280px;
-  width: 1280px;
-  margin-top: 3rem;
-  margin-bottom: 3rem;
+.navbar {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   font-family: "Inter", sans-serif;
   color: var(--accent);
+  max-height: 15vh;
+  min-height: 15vh;
 }
+
 .logo {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 0.5rem;
 }
+
 .links {
-  font-weight: 600;
-  font-size: 24px;
   display: flex;
   column-gap: 1rem;
   justify-content: space-around;

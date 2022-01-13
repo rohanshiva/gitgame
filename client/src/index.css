@@ -1,5 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
+html {
+  font-size: 16px;
+}
 :root {
   --bg: #0f0e10;
   --primary: #fafbfb;
@@ -12,17 +15,10 @@ body {
   background-color: var(--bg);
   color: var(--primary);
   font-family: "Inter", sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   margin: 0;
+  padding: 0;
 }
-.app {
-  max-width: 1024px;
-  width: 1024px;
-  display: flex;
-  flex-direction: column;
-}
+
 a {
   text-decoration: none;
   color: var(--primary);
