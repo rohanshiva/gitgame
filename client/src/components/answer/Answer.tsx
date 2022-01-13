@@ -1,12 +1,21 @@
+import { IRepository } from "../../interfaces/Answer";
 import IPlayer from "../../interfaces/Player";
+import RepoCard from "../repoCard";
 import "./Answer.css";
 
 interface IAnswerProps {
   correctChoice: string;
   players: IPlayer[];
   outOfChunks?: boolean;
+  repository: IRepository;
 }
-function Answer({ correctChoice, players, outOfChunks }: IAnswerProps) {
+
+function Answer({
+  correctChoice,
+  players,
+  outOfChunks,
+  repository,
+}: IAnswerProps) {
   return (
     <div className="answer-section">
       <h2>Leaderboard</h2>
@@ -27,6 +36,7 @@ function Answer({ correctChoice, players, outOfChunks }: IAnswerProps) {
         </table>
       ) : (
         <>
+          <RepoCard repository={repository} />
           <h3 className="correct-answer">
             <span className="correct-player">{correctChoice}</span> wrote this
             code{" "}

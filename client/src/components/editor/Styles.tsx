@@ -4,11 +4,11 @@ export const Pre = styled.pre`
   text-align: left;
   margin: 0;
   padding: 1rem;
-  min-height: 512px;
-  max-height: 512px;
+  min-height: calc(60vh - 1rem);
+  max-height: calc(60vh - 1rem);
+  overflow-x: scroll;
   overflow-y: scroll;
   border-radius: 3px;
-
   & .token-line {
     line-height: 1.3em;
     height: 1.3em;

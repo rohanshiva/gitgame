@@ -1,0 +1,31 @@
+.choices {
+  padding-top: 1rem;
+  height: calc(10vh - 1rem);
+  max-height: calc(10vh - 1rem);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  overflow-x: scroll;
+}
+
+.selected-choice {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+.selected-choice:hover {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+.selected-choice:disabled {
+  opacity: 75%;
+  background-color: var(--accent);
+}
+
+.confirm:hover {
+  cursor: pointer;
+  background-color: var(--primary);
+}

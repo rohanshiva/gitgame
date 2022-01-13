@@ -5,12 +5,13 @@ import Navbar from "./components/navbar";
 function App() {
   return (
     <>
-    <Navbar/>
-    <div className="app">
-      <div className="container">
-        <AppRouter />
+      <div className="app">
+        <Navbar />
+        <div className="main-section">
+          <AppRouter />
+        </div>
+        <div className="footer-section"></div>
       </div>
-    </div>
     </>
   );
 }
