@@ -1,0 +1,7 @@
+.guess-timer {
+  margin-right: 1rem;
+  color: var(--accent);
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 24px;
+}

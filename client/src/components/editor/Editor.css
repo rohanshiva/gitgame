@@ -1,5 +1,7 @@
 .code-container {
   border-radius: 3px;
-  width: 100%;
-  margin: 0rem 0rem 0rem 1rem;
+  max-width: 75vw;
+  min-width: 75vw;
+  font-size: 12px;
+  margin-left: 1rem;
 }
