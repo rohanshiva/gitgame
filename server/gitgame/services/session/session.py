@@ -64,6 +64,7 @@ class Session:
         self.__chunk_fetcher = None
         self.__prompt = None
         self.__timer_task = None
+        self.__last_round_results = None
 
     def setup(self):
         # add any of the predetermined authors' file sources
@@ -109,7 +110,7 @@ class Session:
             await self.__broadcast_lobby()
 
         if self.__state == SessionState.IN_GUESSING:
-            if all(list(map(lambda player: player.has_guessed(), self.__players))):
+            if self.__have_all_players_guessed():
                 self.__timer_task.cancel()
                 await self.__handle_answer_reveal()
 
@@ -123,6 +124,9 @@ class Session:
 
     def has_player(self, player: Player):
         return player in self.__players
+    
+    def __have_all_players_guessed(self):
+        return all(list(map(lambda player: player.has_guessed(), self.__players)))
 
     def pick_file(self):
         self.__prompt = None
@@ -263,7 +267,7 @@ class Session:
             guess = data["guess"]
             player.set_guess(guess)
 
-            if all(list(map(lambda player: player.has_guessed(), self.__players))):
+            if self.__have_all_players_guessed():
                 self.__timer_task.cancel()
                 await self.__handle_answer_reveal()
             else:
@@ -278,6 +282,7 @@ class Session:
                 player.increment_score()
 
         self.__state = SessionState.DONE_GUESSING
+        self.__last_round_results = list(map(lambda player: player.serialize(with_guess=True), self.__players))
         await self.__broadcast_answer_reveal()
 
     def serialize(self):
@@ -314,13 +319,9 @@ class Session:
         }
 
     def __get_answer_reveal_json(self):
-        players_json = list(
-            map(lambda player: player.serialize(with_guess=True), self.__players)
-        )
-
         repo = self.__prompt.get_repo()
         return {
-            "players": players_json,
+            "players": self.__last_round_results,
             "correct_choice": self.__prompt.get_correct_choice(),
             "repo": {
                 "name": repo.get_name(),
