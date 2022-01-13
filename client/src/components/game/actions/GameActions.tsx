@@ -28,11 +28,27 @@ export const AnswerRevealAction = (state: IGameState, payload: any): IGameState 
     name, url, description, language, starCount: star_count
   };
 
+
+  // update the scores of the players in the lobby based on the results from the answer reveal action
+  const playerMap = new Map<string, IPlayer>();
+  for(const player of state.players){
+    playerMap.set(player.username, player);
+  }
+
+  for(const player of payload.players){
+    if(playerMap.has(player.username)){
+      (playerMap.get(player.username) as IPlayer).score = player.score;
+    }
+  }
+
+  const mergedPlayers: IPlayer[] = [];
+  playerMap.forEach((value) => {
+    mergedPlayers.push(value);
+  })
+
   return {
     ...state,
-    players: (payload.players as IPlayer[]).map(({username, has_guessed, score}) => {  
-      return {username, has_guessed, score}
-    }),
+    players: mergedPlayers,
     state: SessionState.DONE_GUESSING,
     answer: { players: payload.players, correctChoice: payload.correct_choice, repository}
   };
