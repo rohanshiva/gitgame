@@ -17,6 +17,7 @@
 .right-panel {
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 .mid {

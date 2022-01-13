@@ -10,11 +10,7 @@
   max-height: calc(60vh - 1rem);
   overflow-y: scroll;
 }
-.repo-card {
-  height: 128px;
-  object-fit: contain;
-  align-self: start;
-}
+
 .source-tag {
   text-decoration: none;
 }

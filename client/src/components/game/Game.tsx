@@ -195,6 +195,7 @@ function Game() {
             correctChoice={(state.answer as IAnswer).correctChoice}
             players={(state.answer as IAnswer).players}
             outOfChunks={false}
+            repository={(state.answer as IAnswer).repository}
           />
         )}
         {inOutOfChunks() && (
@@ -202,6 +203,7 @@ function Game() {
             correctChoice={(state.answer as IAnswer).correctChoice}
             players={SessionService.getSortedPlayers(state.players)}
             outOfChunks={true}
+            repository={(state.answer as IAnswer).repository}
           />
         )}
       </div>
