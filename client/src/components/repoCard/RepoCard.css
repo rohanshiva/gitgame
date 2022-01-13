@@ -1,9 +1,10 @@
 .repo-card {
   height: max-content;
-  width: max-content;
+  max-width: 25rem;
+  min-width: 25rem;
   display: flex;
   flex-direction: column;
-  padding: 1rem 6rem 1rem 2rem;
+  padding: 1rem 2rem 1rem 2rem;
   background-color: #1b1a27;
   border-radius: 5px;
   color: #6b9cf1;
@@ -30,6 +31,10 @@
   display: flex;
   flex-direction: row;
   padding: 0.2rem 0rem;
+  font-size: 0.9rem;
+  font-weight: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .repo-stats {
   padding: 0.2rem 0rem;
