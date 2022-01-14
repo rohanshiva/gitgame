@@ -13,7 +13,7 @@ export function GameResults({ players, endGameMessage }: GameResultsProps) {
         <h3>
             {endGameMessage}
         </h3>
-        <Leaderboard players={players}/>
+        <Leaderboard players={players} />
     </div>);
 }
 

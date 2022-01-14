@@ -13,7 +13,7 @@ interface RoundResultsProps {
 export function RoundResults({ players, repository, correctChoice }: RoundResultsProps) {
 
     return (<div className="results">
-        <h2>Round Results</h2> 
+        <h2>Round Results</h2>
         <RepoCard repository={repository} />
         <h3>
             <span className="correct-player">{correctChoice}</span> wrote this

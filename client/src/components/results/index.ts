@@ -1,2 +1,2 @@
-export {GameResults} from "./GameResults";
-export {RoundResults} from "./RoundResults";
+export { GameResults } from "./GameResults";
+export { RoundResults } from "./RoundResults";
