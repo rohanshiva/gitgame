@@ -20,14 +20,19 @@ export const PromptAction = (state: IGameState, payload: any): IGameState => {
   };
 };
 
-export const AnswerRevealAction = (state: IGameState, payload: any): IGameState => {
-
+export const AnswerRevealAction = (
+  state: IGameState,
+  payload: any
+): IGameState => {
   const { name, url, description, star_count, language } = payload.repo;
 
   const repository: IRepository = {
-    name, url, description, language, starCount: star_count
+    name,
+    url,
+    description,
+    language,
+    starCount: star_count,
   };
-
 
   // update the scores of the players in the lobby based on the results from the answer reveal action
   const playerMap = new Map<string, IPlayer>();
@@ -44,13 +49,17 @@ export const AnswerRevealAction = (state: IGameState, payload: any): IGameState 
   const mergedPlayers: IPlayer[] = [];
   playerMap.forEach((value) => {
     mergedPlayers.push(value);
-  })
+  });
 
   return {
     ...state,
     players: mergedPlayers,
     state: SessionState.DONE_GUESSING,
-    answer: { players: payload.players, correctChoice: payload.correct_choice, repository }
+    answer: {
+      players: payload.players,
+      correctChoice: payload.correct_choice,
+      repository,
+    }
   };
 };
 

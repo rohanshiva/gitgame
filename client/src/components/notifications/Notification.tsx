@@ -1,4 +1,4 @@
-import { useToasterStore, Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 
 export const SUCCESS = {
   duration: 4000,
@@ -55,14 +55,13 @@ export const ERROR = {
 
 export enum NotificationDisplay {
   CONNECTING = "connecting",
-  NEXT_ROUND = "next_round"
+  NEXT_ROUND = "next_round",
 }
 
 export const toastWithId = (style: any, id: string) => {
   return { ...style, id };
 };
 function Notification() {
-  const { toasts } = useToasterStore();
   return <Toaster position="bottom-right" reverseOrder={true} />;
 }
 
