@@ -59,7 +59,7 @@ export const AnswerRevealAction = (
       players: payload.players,
       correctChoice: payload.correct_choice,
       repository,
-    },
+    }
   };
 };
 

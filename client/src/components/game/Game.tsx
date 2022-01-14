@@ -15,14 +15,13 @@ import IGameState, {
   lobbyChunk,
   ClientEventType,
 } from "../../interfaces/GameState";
-import SessionService from "../../services/Session";
 import IPlayer from "../../interfaces/Player";
 
 import config from "../../config";
 import gameReducer from "./reducers/GameReducer";
 import toast from "react-hot-toast";
 import "./Game.css";
-import Answer from "../answer";
+import { GameResults, RoundResults } from "../results";
 import useSocket from "./hooks/socket/UseSocket";
 import IPrompt from "../../interfaces/Prompt";
 import IAnswer from "../../interfaces/Answer";
@@ -85,8 +84,8 @@ function Game({ initialState }: IGame) {
     [dispatch, history]
   );
 
-  const onWsClose = useCallback(() => {}, []);
-  const onWsError = useCallback(() => {}, []);
+  const onWsClose = useCallback(() => { }, []);
+  const onWsError = useCallback(() => { }, []);
 
   const sessionId = getSessionId(history.location.pathname);
   const username = getUsername(history.location.pathname);
@@ -197,20 +196,13 @@ function Game({ initialState }: IGame) {
           </>
         )}
         {inDoneGuessing() && (
-          <Answer
-            correctChoice={(state.answer as IAnswer).correctChoice}
+          <RoundResults correctChoice={(state.answer as IAnswer).correctChoice}
             players={(state.answer as IAnswer).players}
-            outOfChunks={false}
-            repository={(state.answer as IAnswer).repository}
-          />
+            repository={(state.answer as IAnswer).repository} />
         )}
         {inOutOfChunks() && (
-          <Answer
-            correctChoice={(state.answer as IAnswer).correctChoice}
-            players={SessionService.getSortedPlayers(state.players)}
-            outOfChunks={true}
-            repository={(state.answer as IAnswer).repository}
-          />
+          <GameResults players={(state.answer as IAnswer).players}
+            endGameMessage="Out of chunks for you to guess on. Thanks for playing!" />
         )}
       </div>
 

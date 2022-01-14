@@ -54,6 +54,7 @@
   display: flex;
   gap: 1rem;
 }
+
 .player-avatar {
   width: 24px;
   object-fit: contain;
