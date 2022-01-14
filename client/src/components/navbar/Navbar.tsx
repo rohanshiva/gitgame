@@ -23,8 +23,8 @@ function Navbar() {
       </div>
 
       <div className="links">
-        {isDark(theme) && <Icon.Moon onClick={() => switchTheme(setTheme)} />}
-        {isLight(theme) && <Icon.Sun onClick={() => switchTheme(setTheme)} />}
+        {isDark(theme) && <Icon.Sun onClick={() => switchTheme(setTheme)}  className="icon"/>}
+        {isLight(theme) && <Icon.Moon onClick={() => switchTheme(setTheme)} className="icon"/>}
 
         <a href="https://github.com/rohanshiva/gitgame">
           <Icon.GitHub />
