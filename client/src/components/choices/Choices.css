@@ -19,11 +19,11 @@
 .selected-choice:hover {
   background-color: var(--accent);
   color: var(--secondary);
+  border: none;
 }
 
 .selected-choice:disabled {
   opacity: 60%;
-  background-color: var(--accent);
 }
 
 .confirm:hover {

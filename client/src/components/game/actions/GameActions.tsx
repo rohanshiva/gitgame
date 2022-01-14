@@ -55,11 +55,7 @@ export const AnswerRevealAction = (
     ...state,
     players: mergedPlayers,
     state: SessionState.DONE_GUESSING,
-    answer: {
-      players: payload.players,
-      correctChoice: payload.correct_choice,
-      repository,
-    },
+    answer: { players: payload.players, correctChoice: payload.correct_choice, repository }
   };
 };
 
