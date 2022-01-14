@@ -1,6 +1,20 @@
+import React, { useContext } from "react";
 import * as Icon from "react-feather";
+import ThemeContext, { isDark, isLight } from "../../context/ThemeContext";
 import "./Navbar.css";
+
+const switchTheme = (setTheme: any) => {
+  if (document.documentElement.getAttribute("data-theme") === "dark") {
+    document.documentElement.setAttribute("data-theme", "light");
+    setTheme("light");
+  } else {
+    setTheme("dark");
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+};
 function Navbar() {
+  const { theme, setTheme } = useContext(ThemeContext);
+
   return (
     <nav className="navbar">
       <div className="logo">
@@ -9,6 +23,9 @@ function Navbar() {
       </div>
 
       <div className="links">
+        {isDark(theme) && <Icon.Moon onClick={() => switchTheme(setTheme)} />}
+        {isLight(theme) && <Icon.Sun onClick={() => switchTheme(setTheme)} />}
+
         <a href="https://github.com/rohanshiva/gitgame">
           <Icon.GitHub />
         </a>

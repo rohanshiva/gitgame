@@ -2,26 +2,27 @@ input {
   border: none;
   outline: none;
   width: max-content;
-  padding: 1rem;
-  border-radius: 0.3rem;
+  padding: 0.5rem 0.8rem 0.5rem 0rem;
   color: var(--primary);
   background-color: var(--secondary);
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1rem;
+  font-weight: 600;
   margin-top: 1rem;
   margin-bottom: 1rem;
   margin-right: 0.75rem;
+  border-bottom: 0.2rem solid var(--primary);
 }
 
 input[type="submit"] {
-  width: 10rem;
-  max-width: 20rem;
-  color: var(--bg);
-  background-color: var(--primary);
+  font-family: monospace;
+  padding: 0.5rem 0.75rem;
+  color: var(--primary);
+  background-color: var(--bg);
+  border: 0.3rem solid var(--primary);
 }
 
 input[type="submit"]:hover {
-  background-color: var(--accent);
+  color: var(--secondary-accent);
   transition: background 0.5s ease;
   cursor: pointer;
 }
@@ -41,6 +42,6 @@ input[type="submit"]:hover {
   color: var(--bg);
   background-color: var(--accent);
   padding: 0.5rem;
-  border-radius: 5px;
+  cursor: pointer;
   width: fit-content;
 }

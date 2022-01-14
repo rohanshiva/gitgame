@@ -32,7 +32,6 @@
   max-width: 15vw;
   height: calc(60vh - 1rem);
   font-size: 1rem;
-  border-radius: 3px;
   padding: 1rem;
   overflow-x: scroll;
 }
@@ -40,7 +39,7 @@
 .player {
   font-weight: bold;
   font-size: 1.125rem;
-  font-family: monospace;
+  font-family: "Inter", sans-serif;
   padding: 0.5rem;
   display: flex;
   justify-content: space-between;
@@ -60,30 +59,29 @@
 }
 
 .game-buttons {
-  padding: 0.5rem 1rem 0.5rem 1rem;
-  font-family: "Inter", "sans-serif";
-  border-radius: 3px;
+  padding: 0.5rem 0.75rem;
+  font-family: monospace;
   font-size: 1.125rem;
   font-weight: 600;
-  background-color: var(--primary);
-  color: var(--bg);
+  background-color: var(--bg);
+  color: var(--primary);
   outline: none;
-  border: none;
+  border: 0.3rem solid var(--primary);
   height: min-content;
 }
 
 .game-buttons:hover {
   cursor: pointer;
-  background-color: var(--accent);
+  color: var(--accent);
   transition: background 0.5s ease;
 }
 
 .game-buttons:disabled {
-  background-color: var(--secondary);
+  opacity: 60%;
 }
 
 .game-buttons:disabled:hover {
-  background-color: var(--secondary);
+  color: var(--primary);
 }
 
 ::-webkit-scrollbar {
