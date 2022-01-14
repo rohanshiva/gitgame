@@ -1,11 +1,14 @@
 import Highlight, { defaultProps, Language } from "prism-react-renderer";
-import theme from "prism-react-renderer/themes/palenight";
+import darkTheme from "prism-react-renderer/themes/palenight";
+import lightTheme from "prism-react-renderer/themes/github";
 import { Pre, Line, LineNo, LineContent } from "./Styles";
 
 import { Chunk } from "../../interfaces/Chunk";
 import ChunkService from "../../services/Chunk";
-
+import ThemeContext, { isDark, isLight } from "../../context/ThemeContext";
 import "./Editor.css";
+import { useContext } from "react";
+
 interface IEditorProps {
   chunk: Chunk;
 }
@@ -18,13 +21,15 @@ function getPrismExtension(extension: string): Language {
 }
 
 function Editor({ chunk }: IEditorProps) {
+  const { theme, setTheme } = useContext(ThemeContext);
+
   return (
     <div className="code-container">
       <Highlight
         {...defaultProps}
-        theme={theme}
+        theme={isDark(theme) ? darkTheme : lightTheme}
         code={ChunkService.getAsCode(chunk)}
-        language={getPrismExtension((chunk).extension)}
+        language={getPrismExtension(chunk.extension)}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <Pre className={className} style={style}>
