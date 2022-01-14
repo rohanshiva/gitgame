@@ -12,20 +12,21 @@
 
 .selected-choice {
   background-color: var(--accent);
-  color: var(--bg);
+  color: var(--secondary);
+  border: none;
 }
 
 .selected-choice:hover {
   background-color: var(--accent);
-  color: var(--bg);
+  color: var(--secondary);
+  border: none;
 }
 
 .selected-choice:disabled {
-  opacity: 75%;
-  background-color: var(--accent);
+  opacity: 60%;
 }
 
 .confirm:hover {
   cursor: pointer;
-  background-color: var(--primary);
+  color: var(--accent);
 }

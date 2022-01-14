@@ -3,12 +3,23 @@
 html {
   font-size: 16px;
 }
+
 :root {
-  --bg: #0f0e10;
-  --primary: #fafbfb;
-  --accent: #b3e7eb;
-  --secondary: #3a3a3b;
-  --section-bg: #19181a;
+  --bg: white;
+  --primary: black;
+  --accent: #0068ff;
+  --secondary: white;
+  --section-bg: #f6f8fa;
+  --secondary-accent: #999;
+}
+
+[data-theme="dark"] {
+  --bg: #131415;
+  --primary: #fbfbfd;
+  --accent: #ff7c7c;
+  --secondary: #131415;
+  --section-bg: #292d3e;
+  --secondary-accent: #f6f8fa;
 }
 
 body {

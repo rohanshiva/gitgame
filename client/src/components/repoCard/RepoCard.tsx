@@ -10,7 +10,7 @@ function RepoCard({ repository }: IRepoCard) {
   return (
     <div className="repo-card" onClick={() => window.open(repository.url)}>
       <div className="repo-name">
-        <Icon.Book className="icon" />
+        <Icon.Book className="repo-card-icon" />
         {repository.name}
       </div>
       <div className="repo-desc">
@@ -21,7 +21,7 @@ function RepoCard({ repository }: IRepoCard) {
       <div className="repo-stats">
         <div className="repo-language">{repository.language}</div>
         <div className="repo-stars">
-          <Icon.Star className="icon" />
+          <Icon.Star className="repo-card-icon" />
           {repository.starCount}
         </div>
       </div>

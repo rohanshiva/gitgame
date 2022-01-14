@@ -1,17 +1,23 @@
 import "./App.css";
+import React, { useState } from "react";
 import AppRouter from "./routers/Router";
 import Navbar from "./components/navbar";
+import ThemeContext, { Theme } from "./context/ThemeContext";
 
 function App() {
+  const [theme, setTheme] = useState("light");
+  const value = { theme, setTheme };
   return (
     <>
-      <div className="app">
-        <Navbar />
-        <div className="main-section">
-          <AppRouter />
+      <ThemeContext.Provider value={value as Theme}>
+        <div className="app">
+          <Navbar />
+          <div className="main-section">
+            <AppRouter />
+          </div>
+          <div className="footer-section"></div>
         </div>
-        <div className="footer-section"></div>
-      </div>
+      </ThemeContext.Provider>
     </>
   );
 }
