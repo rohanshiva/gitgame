@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback, useEffect } from "react";
+import { useReducer, useCallback } from "react";
 
 import { useHistory } from "react-router-dom";
 import routes_ from "../../constants/Route";
@@ -29,6 +29,9 @@ import IAnswer from "../../interfaces/Answer";
 import Timer from "../timer/Timer";
 import Choices from "../choices/Choices";
 
+interface IGame {
+  initialState: IGameState;
+}
 function getSessionId(path: string) {
   const pathParts = path.split("/");
   return pathParts[pathParts.length - 2];
@@ -45,13 +48,13 @@ function getWebSocketAddress(sessionId: string, username: string) {
     .replace(":username", username)}`;
 }
 
-const initialState: IGameState = {
+const defaultState: IGameState = {
   players: [],
   host: { username: "", score: 0, has_guessed: false },
   state: SessionState.IN_LOBBY,
 };
 
-function Game() {
+function Game({ initialState }: IGame) {
   const history = useHistory();
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
@@ -173,10 +176,13 @@ function Game() {
             >
               <div className="player-info">
                 <img
+                  alt={`https://github.com/${player.username}`}
                   className="player-avatar"
                   src={`${config.githubAvatarUri}${player.username}`}
                 />
-                <div>{player.username}</div>
+                <div data-testid={isHost(player.username) ? "host" : ""}>
+                  {player.username}
+                </div>
               </div>
 
               <div>{player.score}</div>
@@ -219,5 +225,9 @@ function Game() {
     </>
   );
 }
+
+Game.defaultProps = {
+  initialState: defaultState,
+};
 
 export default Game;
