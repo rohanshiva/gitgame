@@ -1,0 +1,21 @@
+.results {
+    background-color: var(--section-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    margin-left: 1rem;
+    width: 100%;
+    min-height: calc(60vh - 1rem);
+    max-height: calc(60vh - 1rem);
+    overflow-y: scroll;
+}
+
+.source-tag {
+    text-decoration: none;
+}
+
+.correct-player {
+    color: var(--accent);
+    font-weight: bold;
+}

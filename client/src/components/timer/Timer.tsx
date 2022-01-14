@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Timer.css";
+
 interface TimerProps {
   expiration: Date;
 }
