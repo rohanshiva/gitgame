@@ -1,14 +1,14 @@
 import React, { useContext } from "react";
 import * as Icon from "react-feather";
-import ThemeContext, { isDark, isLight } from "../../context/ThemeContext";
+import ThemeContext, { isDark, isLight, ThemeType } from "../../context/ThemeContext";
 import "./Navbar.css";
 
 const switchTheme = (setTheme: any) => {
   if (document.documentElement.getAttribute("data-theme") === "dark") {
     document.documentElement.setAttribute("data-theme", "light");
-    setTheme("light");
+    setTheme(ThemeType.LIGHT);
   } else {
-    setTheme("dark");
+    setTheme(ThemeType.DARK);
     document.documentElement.setAttribute("data-theme", "dark");
   }
 };

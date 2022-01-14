@@ -1,21 +1,26 @@
 import React from "react";
 
+export enum ThemeType {
+  DARK = "dark",
+  LIGHT = "light",
+}
+
 export interface Theme {
-  theme: string;
+  theme: ThemeType;
   setTheme: () => void;
 }
 
 const ThemeContext = React.createContext({
-  theme: "light",
+  theme: ThemeType.LIGHT,
   setTheme: () => {},
 });
 
 export const isDark = (theme: string) => {
-  return theme === "dark";
+  return theme === ThemeType.DARK;
 };
 
 export const isLight = (theme: string) => {
-  return theme === "light";
+  return theme === ThemeType.LIGHT;
 };
 
 export default ThemeContext;
