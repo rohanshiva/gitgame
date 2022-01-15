@@ -65,6 +65,7 @@ class Session:
         self.__prompt = None
         self.__timer_task = None
         self.__last_round_results = None
+        self.__player_score_cache: Dict[str, int] = {}
 
     def setup(self):
         # add any of the predetermined authors' file sources
@@ -78,6 +79,9 @@ class Session:
             self.__state = SessionState.IN_LOBBY
 
         self.__players.append(player)
+        if player.get_username() in self.__player_score_cache:
+            player.set_score(self.__player_score_cache[player.get_username()])
+
         if player.get_username() not in self.__file_pool_authors:
             self.__file_pool_authors.append(player.get_username())
             self.__file_pool.add_author(
@@ -99,6 +103,8 @@ class Session:
 
     async def disconnect(self, player: Player):
         self.__players.remove(player)
+        self.__player_score_cache[player.get_username()] = player.get_score()
+
         # randomly assign another player to be the host
         if player == self.__host:
             self.__host = None
@@ -124,7 +130,7 @@ class Session:
 
     def has_player(self, player: Player):
         return player in self.__players
-    
+
     def __have_all_players_guessed(self):
         return all(list(map(lambda player: player.has_guessed(), self.__players)))
 
@@ -282,7 +288,9 @@ class Session:
                 player.increment_score()
 
         self.__state = SessionState.DONE_GUESSING
-        self.__last_round_results = list(map(lambda player: player.serialize(with_guess=True), self.__players))
+        self.__last_round_results = list(
+            map(lambda player: player.serialize(with_guess=True), self.__players)
+        )
         await self.__broadcast_answer_reveal()
 
     def serialize(self):
@@ -356,3 +364,6 @@ class Session:
 
         if self.__state == SessionState.IN_GUESSING:
             await self.__handle_answer_reveal()
+
+    def get_state(self) -> str:
+        return self.__state
