@@ -1,8 +1,25 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
+/* Define minimum font size */
 html {
   font-size: 16px;
 }
+
+
+/* Fluid typography formula */
+@media (min-width: 640px) and (max-width: 1439px) {
+  html {
+    font-size: calc(16px + (20 - 16) * (100vw - 640px) / (1439 - 640));
+  }
+}
+
+/* Define max font size */
+@media (min-width: 1440px) {
+  html {
+    font-size: 20px;
+  }
+}
+
 
 :root {
   --bg: white;

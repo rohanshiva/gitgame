@@ -22,14 +22,15 @@
 
 .mid {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
 }
 
 .players-container {
   background-color: var(--section-bg);
   color: var(--primary);
-  min-width: 15vw;
-  max-width: 15vw;
+  min-width: calc(18% - 2rem);
+  max-width: calc(18% - 2rem);
   height: calc(60vh - 1rem);
   font-size: 1rem;
   padding: 1rem;
@@ -38,9 +39,10 @@
 
 .player {
   font-weight: bold;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-family: "Inter", sans-serif;
   padding: 0.5rem;
+  gap: 1rem;
   display: flex;
   justify-content: space-between;
 }
@@ -95,4 +97,14 @@
 
 ::-webkit-scrollbar-thumb {
   background: var(--accent);
+}
+
+@media only screen and (max-width: 500px) {
+  .mid {
+    flex-direction: column;
+  }
+  .players-container {
+    max-width: calc(100% - 2rem);
+    min-width: calc(100% - 2rem);
+  }
 }
