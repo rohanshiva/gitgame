@@ -5,6 +5,7 @@ html {
   font-size: 16px;
 }
 
+
 /* Fluid typography formula */
 @media (min-width: 640px) and (max-width: 1439px) {
   html {
@@ -18,6 +19,7 @@ html {
     font-size: 20px;
   }
 }
+
 
 :root {
   --bg: white;
