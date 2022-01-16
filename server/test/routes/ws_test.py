@@ -20,7 +20,7 @@ def test_join_session_invalid_session_id():
     socket_url = f"/socket/{session_id}/{username}"
     with client.websocket_connect(socket_url) as websocket:
         data = websocket.receive_json()
-        assert data == {"error": f"invalid session_id: {session_id}"}
+        assert data == {"error": f"The session with code {session_id} does not exist"}
 
 
 def test_join_session_invalid_username():
@@ -35,7 +35,7 @@ def test_join_session_invalid_username():
     socket_url = f"/socket/{session_id}/{invalid_username}"
     with client.websocket_connect(socket_url) as websocket:
         data = websocket.receive_json()
-        assert data == {"error": f"invalid username: {invalid_username}"}
+        assert data == {"error": f"The username {invalid_username} is an invalid Github username"}
 
 
 def test_join_session():
