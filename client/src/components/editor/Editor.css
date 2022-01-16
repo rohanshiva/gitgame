@@ -1,7 +1,16 @@
 .code-container {
   border-radius: 3px;
-  max-width: calc(75vw - 1rem);
-  min-width: calc(75vw - 1rem);
+  max-width: calc(82% - 1rem);
+  min-width: calc(82% - 1rem);
   font-size: 12px;
   margin-left: 1rem;
+}
+
+@media only screen and (max-width: 500px) {
+  .code-container {
+    margin-top: 1rem;
+    margin-left: 0rem;
+    max-width: 100%;
+    min-width: 100%;
+  }
 }

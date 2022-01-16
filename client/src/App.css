@@ -19,6 +19,24 @@
 @media only screen and (min-width: 1200px) {
   .app {
     min-width: 90vw;
-    margin: 0rem 5vh;
+    max-width: 90vw;
+    margin: 0rem 5vw;
+  }
+}
+
+@media only screen and (max-width: 1199px) {
+  .app {
+    min-width: 95vw;
+    max-width: 95vw;
+    margin: 0rem 2.5vw;
+  }
+  .app::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .app {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
