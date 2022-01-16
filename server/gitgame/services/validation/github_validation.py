@@ -2,7 +2,7 @@ from github import Github
 from typing import List
 
 
-def validate_authors(github_instance: Github, authors: List[str]) -> List[str]:
+def get_invalid_authors(github_instance: Github, authors: List[str]) -> List[str]:
     invalid_authors = []
     for author in authors:
         try:

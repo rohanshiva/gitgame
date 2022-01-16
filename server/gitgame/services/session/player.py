@@ -30,6 +30,12 @@ class Player:
     def get_guess(self):
         return self.__guess
 
+    def get_score(self):
+        return self.__score
+
+    def set_score(self, score: int):
+        self.__score = score
+
     def increment_score(self):
         self.__score += 1
 
