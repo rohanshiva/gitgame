@@ -1,0 +1,7 @@
+input[type="submit"]:disabled {
+  opacity: 60%;
+}
+
+input[type="submit"]:disabled:hover {
+  color: var(--primary);
+}

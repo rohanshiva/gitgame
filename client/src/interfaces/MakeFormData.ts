@@ -1,4 +1,4 @@
-export interface IMakeFormData {
-    username: string
-    preDeterminedAuthors: string[]
+export interface MakeFormData {
+  username: string;
+  preDeterminedAuthors: string[];
 }
