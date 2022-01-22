@@ -4,7 +4,7 @@ from gitgame.services import FileRepository, File, FileRule
 
 
 # mock file
-default_repo = FileRepository("Repo", "Repo Url", 0, "Lang", "Description")
+default_repo = FileRepository("Repo", "Repo Url", 0, "Lang", "Description", "main")
 
 
 def default_readlines():

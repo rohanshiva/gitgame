@@ -24,7 +24,7 @@ import "./Game.css";
 import { GameResults, RoundResults } from "../results";
 import useSocket from "./hooks/socket/UseSocket";
 import IPrompt from "../../interfaces/Prompt";
-import IAnswer from "../../interfaces/Answer";
+import Answer from "../../interfaces/Answer";
 import Timer from "../timer/Timer";
 import Choices from "../choices/Choices";
 
@@ -196,12 +196,10 @@ function Game({ initialState }: IGame) {
           </>
         )}
         {inDoneGuessing() && (
-          <RoundResults correctChoice={(state.answer as IAnswer).correctChoice}
-            players={(state.answer as IAnswer).players}
-            repository={(state.answer as IAnswer).repository} />
+          <RoundResults {...state.answer as Answer}/>
         )}
         {inOutOfChunks() && (
-          <GameResults players={(state.answer as IAnswer).players}
+          <GameResults players={(state.answer as Answer).players}
             endGameMessage="Out of chunks for you to guess on. Thanks for playing!" />
         )}
       </div>

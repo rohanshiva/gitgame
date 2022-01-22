@@ -338,6 +338,7 @@ class Session:
                 "url": repo.get_url(),
                 "language": repo.get_language(),
             },
+            "chunk_url": self.__prompt.get_file_chunk_url(),
         }
 
     async def __guessing_timer(self):

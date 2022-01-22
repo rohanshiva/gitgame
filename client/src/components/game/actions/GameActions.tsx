@@ -1,4 +1,4 @@
-import { IRepository } from "../../../interfaces/Answer";
+import { Repository } from "../../../interfaces/Answer";
 import IGameState, { SessionState } from "../../../interfaces/GameState";
 import IPlayer from "../../../interfaces/Player";
 import SessionService from "../../../services/Session";
@@ -24,9 +24,10 @@ export const AnswerRevealAction = (
   state: IGameState,
   payload: any
 ): IGameState => {
+
   const { name, url, description, star_count, language } = payload.repo;
 
-  const repository: IRepository = {
+  const repository: Repository = {
     name,
     url,
     description,
@@ -59,6 +60,7 @@ export const AnswerRevealAction = (
       players: payload.players,
       correctChoice: payload.correct_choice,
       repository,
+      chunkUrl: payload.chunk_url,
     }
   };
 };

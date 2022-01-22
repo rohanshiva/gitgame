@@ -5,6 +5,7 @@ from gitgame.services import Player, SessionState, get_invalid_authors
 
 socket_app = FastAPI()
 
+
 async def error_and_close(websocket: WebSocket, error_msg: str):
     await websocket.send_json({"error": error_msg})
     await websocket.close()
