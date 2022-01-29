@@ -1,7 +1,7 @@
 import IPlayer from "./Player"
 
 
-export interface IRepository{
+export interface Repository{
     name: string;
     starCount: number;
     url: string;
@@ -9,10 +9,11 @@ export interface IRepository{
     description: string;
 }
 
-interface IAnswer {
+interface Answer {
     players: IPlayer[];
     correctChoice: string;
-    repository: IRepository
+    repository: Repository
+    chunkUrl: string;
 }
 
-export default IAnswer;
+export default Answer;

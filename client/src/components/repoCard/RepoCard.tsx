@@ -1,12 +1,12 @@
 import * as Icon from "react-feather";
-import { IRepository } from "../../interfaces/Answer";
+import { Repository } from "../../interfaces/Answer";
 import "./RepoCard.css";
 
-interface IRepoCard {
-  repository: IRepository;
+interface RepoCardProps {
+  repository: Repository;
 }
 
-function RepoCard({ repository }: IRepoCard) {
+function RepoCard({ repository }: RepoCardProps) {
   return (
     <div className="repo-card" onClick={() => window.open(repository.url)}>
       <div className="repo-name">

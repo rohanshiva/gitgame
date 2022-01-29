@@ -38,3 +38,9 @@ class Prompt:
 
     def get_repo(self) -> FileRepository:
         return self.__file.get_repo()
+
+    def get_file_chunk_url(self) -> str:
+        chunk_start = self.__chunk.get_start_line() + 1
+        chunk_end = self.__chunk.get_end_line()
+        repo = self.get_repo()
+        return f"https://github.com/{repo.get_name()}/blob/{repo.get_default_branch()}/{self.__file.get_filepath()}#L{chunk_start}#L{chunk_end}"

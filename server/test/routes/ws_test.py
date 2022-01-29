@@ -35,7 +35,9 @@ def test_join_session_invalid_username():
     socket_url = f"/socket/{session_id}/{invalid_username}"
     with client.websocket_connect(socket_url) as websocket:
         data = websocket.receive_json()
-        assert data == {"error": f"The username {invalid_username} is an invalid Github username"}
+        assert data == {
+            "error": f"The username {invalid_username} is an invalid Github username"
+        }
 
 
 def test_join_session():

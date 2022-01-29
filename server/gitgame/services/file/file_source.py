@@ -73,6 +73,7 @@ class LazyGithubFileSource(FileSource):
                     github_repo.stargazers_count,
                     github_repo.language,
                     github_repo.description,
+                    github_repo.default_branch,
                 )
 
                 logging.info(

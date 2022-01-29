@@ -15,9 +15,13 @@
   text-decoration: none;
 }
 
-.correct-player {
+.result-highlight {
   color: var(--accent);
   font-weight: bold;
+}
+
+.result-highlight:hover {
+  cursor: pointer;
 }
 
 @media only screen and (max-width: 500px) {
