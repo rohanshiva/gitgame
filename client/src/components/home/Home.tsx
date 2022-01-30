@@ -1,16 +1,16 @@
 import Notification from "../notifications/Notification";
-import JoinModal from "../joinModal/";
-import MakeModal from "../makeModal/";
+import JoinForm from "../joinForm/";
+import MakeForm from "../makeForm/";
 import "./Home.css";
 
 function Home() {
   return (
     <>
       <div className="make-session">
-        <MakeModal />
+        <MakeForm />
       </div>
       <div className="join-session">
-        <JoinModal sessionId="" />
+        <JoinForm />
       </div>
       <Notification />
     </>

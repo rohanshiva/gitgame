@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { JoinFormData } from "../../interfaces/JoinFormData";
 import { useHistory } from "react-router-dom";
-import "./JoinModal.css";
+import "./JoinForm.css";
 import routes_ from "../../constants/Route";
 interface InitialJoinState {
   sessionId: string;
 }
 
-function JoinModal({ sessionId }: InitialJoinState) {
+function JoinForm({ sessionId }: InitialJoinState) {
   const history = useHistory();
 
   const [joinData, setJoinData] = useState<JoinFormData>({
@@ -61,4 +61,8 @@ function JoinModal({ sessionId }: InitialJoinState) {
   );
 }
 
-export default JoinModal;
+JoinForm.defaultProps = {
+  sessionId: "",
+};
+
+export default JoinForm;

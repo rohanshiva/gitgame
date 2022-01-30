@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+
 import * as Icon from "react-feather";
 import ThemeContext, { isDark, isLight, ThemeType } from "../../context/ThemeContext";
 import "./Navbar.css";
@@ -13,11 +14,12 @@ const switchTheme = (setTheme: any) => {
   }
 };
 function Navbar() {
+
   const { theme, setTheme } = useContext(ThemeContext);
 
   return (
     <nav className="navbar">
-      <div className="logo">
+      <div className="logo" onClick={() => {window.open(window.location.origin)}}>
         <Icon.GitPullRequest />
         <h1 className="title-header">{"git_game"}</h1>
       </div>

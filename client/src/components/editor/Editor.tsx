@@ -5,7 +5,7 @@ import { Pre, Line, LineNo, LineContent } from "./Styles";
 
 import { Chunk } from "../../interfaces/Chunk";
 import ChunkService from "../../services/Chunk";
-import ThemeContext, { isDark, isLight } from "../../context/ThemeContext";
+import ThemeContext, { isDark } from "../../context/ThemeContext";
 import "./Editor.css";
 import { useContext } from "react";
 
@@ -21,7 +21,7 @@ function getPrismExtension(extension: string): Language {
 }
 
 function Editor({ chunk }: IEditorProps) {
-  const { theme, setTheme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
 
   return (
     <div className="code-container">

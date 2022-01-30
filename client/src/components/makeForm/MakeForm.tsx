@@ -6,7 +6,7 @@ import { MakeFormData } from "../../interfaces/MakeFormData";
 import SessionService from "../../services/Session";
 import { SUCCESS, LOADING, ERROR } from "../notifications/Notification";
 
-function MakeModal() {
+function MakeForm() {
   const history = useHistory();
   const [makeData, setMakeData] = useState<MakeFormData>({
     username: "",
@@ -105,4 +105,4 @@ function MakeModal() {
   );
 }
 
-export default MakeModal;
+export default MakeForm;
