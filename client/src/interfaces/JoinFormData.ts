@@ -1,4 +1,4 @@
-export interface IJoinFormData {
-    username: string
-    sessionId: string
+export interface JoinFormData {
+  username: string;
+  sessionId: string;
 }
