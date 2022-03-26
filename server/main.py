@@ -19,6 +19,10 @@ app.add_middleware(
 
 app.mount("/socket", socket_app)
 
+@app.get("/hello")
+def greet():
+    return {"msg": "Gitgame server"}
+
 HOST = "0.0.0.0"
 PORT = 8000
 
