@@ -27,7 +27,3 @@ COPY ./log.ini /code/log.ini
 COPY ./setup.py /code/setup.py
 
 RUN pip install -e /code
-
-# 
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
-EXPOSE 8001
