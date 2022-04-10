@@ -2,3 +2,5 @@
 gitgame.egg-info
 venv/
 .pytest_cache
+*.log
+__pycache__/

@@ -19,15 +19,19 @@ services:
   ws-server:
     build: ./ws-server/
     image: ws-server
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config ./log.ini
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-config ./log.ini
     ports:
       - 8000:8000
+    volumes:
+      - ./ws-server:/code
   api-server:
     build: ./api-server/
     image: api-server
-    command: uvicorn main:app --host 0.0.0.0 --port 8001 --log-config ./log.ini
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload --log-config ./log.ini
     ports:
       - 8001:8001
+    volumes:
+      - ./api-server:/code
 volumes:
   postgres_data:
   redis_data:
