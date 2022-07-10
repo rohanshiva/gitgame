@@ -32,6 +32,8 @@ services:
       - 8001:8001
     volumes:
       - ./api-server:/code
+    depends_on:
+      - postgres
 volumes:
   postgres_data:
   redis_data:

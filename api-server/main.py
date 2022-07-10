@@ -1,8 +1,10 @@
 import redis
 from typing import List
+from nanoid import generate
 from fastapi import FastAPI, status
-
+from tortoise.contrib.fastapi import register_tortoise
 app = FastAPI()
+
 
 REDIS_PORT = 6379
 
@@ -19,22 +21,21 @@ def greeting():
 
 @app.post("/make", status_code=status.HTTP_201_CREATED)
 def make_session(pre_determined_authors: List[str]):
-    r.set("foo", "bar")
-    value = r.get("foo")
-    return value
     id = generate(size=10)
-    invalid_authors = get_invalid_authors(get_github_instance(), pre_determined_authors)
-    if invalid_authors:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            f"invalid usernames: {invalid_authors}",
-        )
-    session = session_factory(id, pre_determined_authors)
-    try:
-        session.setup()
-        db[id] = session
-    except Exception as e:
-        logging.error("Failed to setup, reason %s", str(e))
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
     return {"id": id}
+
+
+@app.post("/join/{session_id}", status_code=status.HTTP_202_ACCEPTED)
+def join_session(session_id: str):
+    return {"session_id": session_id}
+
+
+register_tortoise(
+    app,
+    db_url="postgres://postgres:gitgame_password@host.docker.internal:5433/gitgame_db",
+    modules={"models": ["models.player"]},
+    generate_schemas=True,
+)
+
+print("logging")
