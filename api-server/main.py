@@ -1,41 +1,23 @@
-import redis
-from typing import List
-from nanoid import generate
-from fastapi import FastAPI, status
-from tortoise.contrib.fastapi import register_tortoise
+import logging
+from fastapi import FastAPI
+from tortoise import Tortoise
+from config import DB_URI
+from api.routes import session
+
+logger = logging.getLogger()
+
 app = FastAPI()
+app.include_router(session.router)
 
 
-REDIS_PORT = 6379
+@app.on_event("startup")
+async def init_db_tables():
+    await Tortoise.init(db_url=DB_URI, modules={"models": ["api.models"]})
 
-r = redis.Redis(
-    host="host.docker.internal",
-    port=REDIS_PORT,
-)
+    await Tortoise.generate_schemas(safe=True)
+    logger.info("DB tables are ready to go!")
 
 
 @app.get("/hello")
 def greeting():
     return {"msg": "api server"}
-
-
-@app.post("/make", status_code=status.HTTP_201_CREATED)
-def make_session(pre_determined_authors: List[str]):
-    id = generate(size=10)
-
-    return {"id": id}
-
-
-@app.post("/join/{session_id}", status_code=status.HTTP_202_ACCEPTED)
-def join_session(session_id: str):
-    return {"session_id": session_id}
-
-
-register_tortoise(
-    app,
-    db_url="postgres://postgres:gitgame_password@host.docker.internal:5433/gitgame_db",
-    modules={"models": ["models.player"]},
-    generate_schemas=True,
-)
-
-print("logging")
