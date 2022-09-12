@@ -2,13 +2,13 @@ version: "3.9"
 services:
   postgres:
     ports: 
-      - 5432:5432
+      - 5433:5432
     image: postgres:latest
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD="postgres"
-      - POSTGRES_USER=postgres
+      POSTGRES_DB: "gitgame_db"
+      POSTGRES_PASSWORD: "gitgame_password"
   redis:
     image: redis:latest
     ports:
@@ -27,11 +27,19 @@ services:
   api-server:
     build: ./api-server/
     image: api-server
-    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload --log-config ./log.ini
+    command: 
+      - sh 
+      - -c 
+      - | 
+        pip install --no-cache-dir --upgrade -r requirements.txt
+        pip install -e .
+        uvicorn main:app --host 0.0.0.0 --port 8001 --log-config ./log.ini
     ports:
       - 8001:8001
     volumes:
       - ./api-server:/code
+    depends_on:
+      - postgres
 volumes:
   postgres_data:
   redis_data:
