@@ -61,7 +61,7 @@ async def join(session_id: str, join_body: JoinRequestBody):
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"Session {session_id} not found"
         )
-    player_id = f"{session_id}-{join_body.username}"
+    player_id = session_id + "-" + join_body.username
     async with in_transaction():
         player = await Player.get_or_none(id=player_id)
         if player and player.connection_state == Player.ConnectionState.CONNECTED:
@@ -101,7 +101,7 @@ async def leave(session_id: str, leave_body: LeaveRequestBody):
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"Session {session_id} not found"
         )
-    player_id = f"{session_id}-{leave_body.username}"
+    player_id = session_id + "-" + leave_body.username
     async with in_transaction():
         player = await Player.get_or_none(id=player_id)
         if not player or player.connection_state == Player.ConnectionState.DISCONNECTED:

@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from tortoise import Tortoise
 from config import TEST_DB_URI
-from api.app import app
+from main import app
 from api.models import Session, Player
 
 MODELS = [Session, Player]
