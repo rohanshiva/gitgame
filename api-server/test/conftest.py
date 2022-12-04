@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from tortoise import Tortoise
 from config import TEST_DB_URI
 from main import app
-from api.models import Session, Player
+from models import Session, Player
 
 MODELS = [Session, Player]
 
@@ -16,7 +16,7 @@ def anyio_backend():
 @pytest.fixture(scope="session", autouse=True)
 async def init_test_db():
     await Tortoise.init(
-        db_url=TEST_DB_URI, modules={"models": ["api.models"]}, _create_db=True
+        db_url=TEST_DB_URI, modules={"models": ["models"]}, _create_db=True
     )
     await Tortoise.generate_schemas()
     yield
