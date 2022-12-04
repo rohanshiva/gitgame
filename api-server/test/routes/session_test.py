@@ -1,7 +1,7 @@
 import pytest
 import json
 from httpx import AsyncClient
-from api.models import Session, Player
+from models import Session, Player
 from typing import TypedDict
 
 

@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 from nanoid import generate
 from pydantic import BaseModel
 from tortoise.transactions import in_transaction
-from api.models import Session, Player
+from models import Session, Player
 
 router = APIRouter(prefix="/session", tags=["Session"])
 logger = logging.getLogger()
