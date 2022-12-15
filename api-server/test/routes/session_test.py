@@ -2,7 +2,9 @@ import pytest
 import json
 from httpx import AsyncClient
 from models import Session, Player
-from typing import TypedDict
+from typing import TypedDict, Callable
+from unittest.mock import Mock
+from services.github_client import GithubUserNotFound
 
 
 class LobbyPlayerDict(TypedDict):
@@ -35,9 +37,9 @@ async def leave_session(api_client: AsyncClient, session_id: str, username: str)
     )
 
 
+@pytest.mark.usefixtures("clear_db")
 class TestMakeSession:
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
     async def test_make_session(self, api_client: AsyncClient):
         response = await api_client.post("/session/make")
         assert response.status_code == 201
@@ -48,9 +50,10 @@ class TestMakeSession:
         assert session.host is None
 
 
+@pytest.mark.usefixtures("clear_db")
 class TestJoinSession:
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
+    @pytest.mark.usefixtures("empty_gh_client")
     async def test_multiple_players_joining(self, api_client: AsyncClient):
         response = await api_client.post("/session/make")
         session_id = response.json()["id"]
@@ -85,7 +88,7 @@ class TestJoinSession:
         assert_lobby(response.json()["players"], expected_lobby)
 
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
+    @pytest.mark.usefixtures("empty_gh_client")
     async def test_same_player_joining_multiple_times(self, api_client: AsyncClient):
         response = await api_client.post("/session/make")
         session_id = response.json()["id"]
@@ -98,7 +101,7 @@ class TestJoinSession:
         )
 
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
+    @pytest.mark.usefixtures("empty_gh_client")
     async def test_joining_non_existant_session(self, api_client: AsyncClient):
         session_id = "Non Existant Id"
         response = await join_session(api_client, session_id, "Ramko9999")
@@ -107,10 +110,32 @@ class TestJoinSession:
         assert response.json()["detail"] == f"Session {session_id} not found"
         assert await Player.all().count() == 0
 
+    @pytest.mark.anyio
+    async def test_player_with_invalid_gh_username_joining(
+        self, api_client: AsyncClient, mock_gh_client_factory: Callable[..., Mock]
+    ):
+        def user_to_repos(*args, **kwargs):
+            raise GithubUserNotFound()
 
+        def repo_to_files(*args, **kwargs):
+            return []
+
+        mock_gh_client_factory(user_to_repos, repo_to_files)
+        response = await api_client.post("/session/make")
+        session_id = response.json()["id"]
+
+        response = await join_session(api_client, session_id, "Ramko999")
+        assert response.status_code == 404
+        assert (
+            response.json()["detail"]
+            == f"Player's username Ramko999 is not a valid Github username"
+        )
+
+
+@pytest.mark.usefixtures("clear_db")
 class TestLeaveSession:
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
+    @pytest.mark.usefixtures("empty_gh_client")
     async def test_non_host_player_reconnecting(self, api_client: AsyncClient):
         response = await api_client.post("/session/make")
         session_id = response.json()["id"]
@@ -154,7 +179,7 @@ class TestLeaveSession:
         assert_lobby(response.json()["players"], expected_lobby)
 
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
+    @pytest.mark.usefixtures("empty_gh_client")
     async def test_host_player_reconnecting(self, api_client: AsyncClient):
         response = await api_client.post("/session/make")
         session_id = response.json()["id"]
@@ -197,7 +222,7 @@ class TestLeaveSession:
         assert_lobby(response.json()["players"], expected_lobby)
 
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
+    @pytest.mark.usefixtures("empty_gh_client")
     async def test_leave_when_player_not_in_session(self, api_client: AsyncClient):
         response = await api_client.post("/session/make")
         session_id = response.json()["id"]
@@ -228,7 +253,7 @@ class TestLeaveSession:
         )
 
     @pytest.mark.anyio
-    @pytest.mark.usefixtures("clear_db")
+    @pytest.mark.usefixtures("empty_gh_client")
     async def test_leave_when_session_is_non_existant(self, api_client: AsyncClient):
         session_id = "Non Existant Id"
         response = await leave_session(api_client, session_id, "Ramko9999")
