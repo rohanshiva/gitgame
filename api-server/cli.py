@@ -2,7 +2,8 @@ import argparse
 import sys
 import anyio
 import asyncpg
-from config import DB_URI
+from services.github_client import GithubClient
+from config import DB_URI, GITHUB_ACCESS_TOKEN
 
 
 def drop_tables(args: argparse.Namespace):
@@ -39,6 +40,20 @@ def delete_rows(args: argparse.Namespace):
     print("Successfully deleted all rows!")
 
 
+def display_gh_rate_limit(args: argparse.Namespace):
+    async def display_rate_limit():
+        gh_client = GithubClient(GITHUB_ACCESS_TOKEN)
+        rate_limit_result = await gh_client.get_rate_limit()
+        print(
+            f"{rate_limit_result['used']} requests used out of {rate_limit_result['limit']}."
+        )
+        print(
+            f"Refresh will occur at {rate_limit_result['reset'].strftime('%b %e %Y, %I:%M %p')}."
+        )
+
+    anyio.run(display_rate_limit)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="A CLI to manage the DB and other tools when developing the Gitgame API",
@@ -47,12 +62,21 @@ def main():
     subparsers = parser.add_subparsers(
         title="Sub-commands", help="The list of sub-commands to possibly run"
     )
-    subparsers.add_parser(
-        "drop_tables", help="Drops all the database tables"
-    ).set_defaults(func=drop_tables)
-    subparsers.add_parser(
-        "delete_rows", help="Deletes all database table rows"
-    ).set_defaults(func=delete_rows)
+
+    command_map = {
+        "drop_tables": {"help": "Drops all the database tables", "func": drop_tables},
+        "delete_rows": {"help": "Deletes all database table rows", "func": delete_rows},
+        "show_rate_limit": {
+            "help": "Displays the Github rate limit",
+            "func": display_gh_rate_limit,
+        },
+    }
+
+    for name in command_map:
+        subparsers.add_parser(
+            name,
+            help=command_map[name]["help"],
+        ).set_defaults(func=command_map[name]["func"])
 
     args = parser.parse_args(sys.argv[1:])
     args.func(args)
