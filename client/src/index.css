@@ -2,21 +2,21 @@
 
 /* Define minimum font size */
 html {
-  font-size: 16px;
+  font-size: 12px;
 }
 
 
 /* Fluid typography formula */
 @media (min-width: 640px) and (max-width: 1439px) {
   html {
-    font-size: calc(16px + (20 - 16) * (100vw - 640px) / (1439 - 640));
+    font-size: calc(12px + (16 - 12) * (100vw - 640px) / (1439 - 640));
   }
 }
 
 /* Define max font size */
 @media (min-width: 1440px) {
   html {
-    font-size: 20px;
+    font-size: 16px;
   }
 }
 
@@ -28,6 +28,11 @@ html {
   --secondary: white;
   --section-bg: #f6f8fa;
   --secondary-accent: #999;
+  --line-selection-highlight: #fff8c5;
+  --line-selection-border-color: #eed888;
+  --border-dark-shade: rgb(101 119 134 / 20%);
+  --border-light-shade: rgb(101 119 134 / 15%);
+
 }
 
 [data-theme="dark"] {
@@ -37,6 +42,10 @@ html {
   --secondary: #131415;
   --section-bg: #292d3e;
   --secondary-accent: #f6f8fa;
+  --line-selection-highlight: #bb800926;
+  --line-selection-border-color: #624616;
+  --border-dark-shade: rgb(255 255 255 / 20%);
+  --border-light-shade: rgb(255 255 255 / 15%);
 }
 
 body {

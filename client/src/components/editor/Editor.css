@@ -1,9 +1,8 @@
 .code-container {
   border-radius: 3px;
-  max-width: calc(82% - 1rem);
-  min-width: calc(82% - 1rem);
+  max-width: 75%;
+  min-width: 75%;
   font-size: 12px;
-  margin-left: 1rem;
 }
 
 @media only screen and (max-width: 500px) {
@@ -13,4 +12,18 @@
     max-width: 100%;
     min-width: 100%;
   }
+}
+
+.selected-line {
+  background-color: var(--line-selection-highlight);
+  border-left: solid var(--line-selection-border-color);
+}
+
+.line-comment-emoji {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.line-comment-emoji:hover {
+  opacity: 1.0;
 }

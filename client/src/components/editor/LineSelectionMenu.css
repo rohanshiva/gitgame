@@ -1,0 +1,67 @@
+.popover {
+    width: max-content;
+    background-color: var(--bg);
+    box-shadow: var(--border-dark-shade) 0px 0px 15px, var(--border-light-shade) 0px 0px 3px 1px;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+}
+
+.popover-trigger {
+    color: var(--primary);
+    border: none;
+    outline: none;
+    line-height: 0;
+    padding: 0;
+    margin: 0;
+    height: fit-content;
+    width: fit-content;
+    cursor: pointer;
+    background-color: var(--bg);
+    vertical-align: sub;
+}
+
+.add-comment-container {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.6rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+textarea {
+    border: none;
+    border-radius: 0.3rem;
+    outline: none;
+    width: max-content;
+    padding: 0.5rem;
+    color: var(--primary);
+    background-color: var(--section-bg);
+    font-family: "Inter", sans-serif;
+    font-weight: bold;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.add-comments-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 0.4rem;
+}
+
+.add-comment-button {
+    font-family: monospace;
+    border: none;
+    background-color: var(--bg);
+    color: var(--primary);
+    outline: none;
+    height: min-content;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.popover-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+}
