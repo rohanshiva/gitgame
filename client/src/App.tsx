@@ -15,7 +15,6 @@ function App() {
           <div className="main-section">
             <AppRouter />
           </div>
-          <div className="footer-section"></div>
         </div>
       </ThemeContext.Provider>
     </>

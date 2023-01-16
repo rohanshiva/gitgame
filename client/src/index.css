@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 /* Define minimum font size */
 html {
@@ -23,7 +24,7 @@ html {
 
 :root {
   --bg: white;
-  --primary: black;
+  --primary: #4f566b;
   --accent: #0068ff;
   --secondary: white;
   --section-bg: #f6f8fa;
@@ -40,12 +41,12 @@ html {
   --primary: #fbfbfd;
   --accent: #ff7c7c;
   --secondary: #131415;
-  --section-bg: #292d3e;
-  --secondary-accent: #f6f8fa;
-  --line-selection-highlight: #bb800926;
-  --line-selection-border-color: #624616;
-  --border-dark-shade: rgb(255 255 255 / 20%);
-  --border-light-shade: rgb(255 255 255 / 15%);
+  --section-bg: #222223;
+  --secondary-accent: #eeeeee;
+  --line-selection-highlight: #202128;
+  --line-selection-border-color: #8f8f8f;
+  --border-dark-shade: rgba(255, 255, 255, 0);
+  --border-light-shade: rgba(255, 255, 255, 0.075);
 }
 
 body {
@@ -75,5 +76,5 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent);
+  background: var(--primary);
 }

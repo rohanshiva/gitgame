@@ -1,29 +1,19 @@
 .code-container {
-  border-radius: 3px;
   max-width: 75%;
   min-width: 75%;
   font-size: 12px;
+  border: 0.2rem solid var(--secondary-accent);
 }
 
-@media only screen and (max-width: 500px) {
+@media only screen and (max-width: 992px) {
   .code-container {
     margin-top: 1rem;
     margin-left: 0rem;
     max-width: 100%;
-    min-width: 100%;
   }
 }
 
 .selected-line {
   background-color: var(--line-selection-highlight);
   border-left: solid var(--line-selection-border-color);
-}
-
-.line-comment-emoji {
-  font-size: 1rem;
-  opacity: 0.8;
-}
-
-.line-comment-emoji:hover {
-  opacity: 1.0;
 }

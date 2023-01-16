@@ -96,7 +96,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent);
+  background: var(--primary);
 }
 
 @media only screen and (max-width: 500px) {

@@ -21,7 +21,7 @@ function Navbar() {
     <nav className="navbar">
       <div className="logo" onClick={() => {window.open(window.location.origin)}}>
         <Icon.GitPullRequest />
-        <h1 className="title-header">{"git_game"}</h1>
+        <div className="title-header">{"git_game"}</div>
       </div>
 
       <div className="links">

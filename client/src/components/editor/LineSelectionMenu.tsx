@@ -41,7 +41,7 @@ function LineSelectionMenu({ open, setOpen, cancel, addComment, lines }: ILineSe
                     <span className="popover-header">
                         Let them know!
                     </span>
-                    <textarea placeholder="say something here...(optional)" onChange={(e) => setCommentMessage(e.target.value)} value={commentMessage} maxLength={250} spellCheck={false} />
+                    <textarea placeholder="say something here..." onChange={(e) => setCommentMessage(e.target.value)} value={commentMessage} maxLength={250} spellCheck={false} />
                     <div className="add-comments-buttons">
                         <span className="add-comment-button" onClick={onCancel}>
                             ❌

@@ -37,8 +37,7 @@ textarea {
     padding: 0.5rem;
     color: var(--primary);
     background-color: var(--section-bg);
-    font-family: "Inter", sans-serif;
-    font-weight: bold;
+    font-weight: 400;
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
 }
@@ -51,17 +50,16 @@ textarea {
 }
 
 .add-comment-button {
-    font-family: monospace;
     border: none;
     background-color: var(--bg);
     color: var(--primary);
     outline: none;
     height: min-content;
-    font-size: 0.9rem;
+    font-size: 1.5rem;
     cursor: pointer;
 }
 
 .popover-header {
-    font-size: 0.8rem;
-    font-weight: bold;
+    font-size: 1rem;
+    font-weight: 500;
 }
