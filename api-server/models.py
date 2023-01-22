@@ -1,26 +1,147 @@
+import logging
+import random
 from tortoise import fields, models
 from tortoise.transactions import in_transaction
+from collections import defaultdict
 from enum import Enum
 from datetime import datetime
 from uuid import uuid4
-from services.github_client import GithubClient, GithubRepositoryFileLoadingError
-import logging
+from services.github_client import (
+    GithubClient,
+    GithubUserNotFound,
+    GithubRepositoryFileLoadingError,
+)
+from pathlib import Path
 
-logger = logging.getLogger()
+LOGGER = logging.getLogger()
+
+
+class AlreadyConnectedPlayerError(Exception):
+    pass
+
+
+class PlayerNotInGithubError(Exception):
+    pass
+
+
+class OutOfFilesError(Exception):
+    pass
 
 
 class Session(models.Model):
-    class State(str, Enum):
-        CREATED = "created"
-        LOBBY = "lobby"
-
     id = fields.CharField(max_length=20, pk=True)
-    state = fields.CharEnumField(State, max_length=20)
     created_at = fields.DatetimeField(auto_now_add=True)
 
     # nullable, stores the host player's id. Attempting to make this a type of a ForeignKey relation will result in an 'cylical fk reference' error by Tortoise
     host = fields.CharField(null=True, max_length=40)
     players: fields.ReverseRelation["Player"]
+
+    def get_player_id(self, username: str):
+        return f"{self.id}-{username}"
+
+    async def join(self, username: str, gh_client: GithubClient):
+        player_id = self.get_player_id(username)
+        async with in_transaction():
+            await self.select_for_update()
+            player = await Player.get_or_none(id=player_id)
+            if player and player.connection_state == Player.ConnectionState.CONNECTED:
+                raise AlreadyConnectedPlayerError()
+
+            if player:
+                player.connection_state = Player.ConnectionState.CONNECTED
+                await player.save(update_fields=["connection_state"])
+            else:
+                player = Player(
+                    id=player_id,
+                    session_id=self.id,
+                    username=username,
+                    connection_state=Player.ConnectionState.CONNECTED,
+                )
+                await player.save()
+
+                try:
+                    await player.load_repos(gh_client)
+                except GithubUserNotFound:
+                    raise PlayerNotInGithubError()
+                await player.load_files(gh_client)
+
+            if self.host is None:
+                self.host = player.id
+                await self.save(update_fields=["host"])
+
+    async def leave(self, username: str):
+        player_id = self.get_player_id(username)
+        async with in_transaction():
+            await self.select_for_update()
+            player = await Player.get(id=player_id)
+            player.connection_state = Player.ConnectionState.DISCONNECTED
+            await player.save(update_fields=["connection_state"])
+            if self.host == player_id:
+                connected_players = await self.players.filter(
+                    connection_state=Player.ConnectionState.CONNECTED
+                )
+                # todo(ramko9999): How should we handle the clean up of a session and other rows referencing it in the DB if all players leave
+                if len(connected_players) > 0:
+                    new_host = random.choice(connected_players)
+                    self.host = new_host.id
+                    LOGGER.info(f"Host changing to {new_host.id} for {self.id}")
+                else:
+                    self.host = None
+                await self.save(update_fields=["host"])
+        LOGGER.info(f"{username} leaving update has been applied to {self.id}")
+
+    async def pick_source_code(self, gh_client: GithubClient):
+        async with in_transaction():
+            previous_source_code = await SourceCode.filter(session_id=self.id).first()
+            if previous_source_code is not None:
+                await previous_source_code.file.delete()  # deletes file then cascades down to delete the previous source code
+
+            files = await File.filter(session_id=self.id)
+            if len(files) == 0:
+                raise OutOfFilesError()
+
+            files_by_author_repo: dict[tuple, list[File]] = defaultdict(list)
+            for file in files:
+                author_repo = (file.author_id, file.repo_id)
+                files_by_author_repo[author_repo].append(file)
+
+            authors_in_pool = set([])
+            for (author, _) in files_by_author_repo:
+                authors_in_pool.add(author)
+
+            picked_author = random.choice(list(authors_in_pool))
+            repos_in_pool_for_picked_author = set([])
+            for (author, repo) in files_by_author_repo:
+                if author == picked_author:
+                    repos_in_pool_for_picked_author.add(repo)
+
+            picked_repo = random.choice(list(repos_in_pool_for_picked_author))
+            picked_author_repo = (picked_author, picked_repo)
+            picked_file = random.choice(files_by_author_repo[picked_author_repo])
+            # todo: catch error when file download is not possible
+            file_content = await gh_client.download_file_from_url(
+                picked_file.download_url
+            )
+            next_source_code = SourceCode(
+                content=file_content, session=self, file=picked_file
+            )
+
+            total_files_for_picked_author = 0
+            for (author, repo) in files_by_author_repo:
+                if author == picked_author:
+                    total_files_for_picked_author += len(
+                        files_by_author_repo[(author, repo)]
+                    )
+
+            if total_files_for_picked_author == 1:
+                # the last file in the DB for the author was picked, so replenish files for this author
+                author = await Player.filter(id=picked_author).first()
+                await author.load_files(gh_client)
+
+            await next_source_code.save()
+            LOGGER.info(
+                f"Selected file {picked_file.path} authored by {picked_file.author_id}"
+            )
 
 
 class Player(models.Model):
@@ -77,7 +198,7 @@ class Player(models.Model):
             )
 
         await Repository.bulk_create(repo_models)
-        logger.info(
+        LOGGER.info(
             f"Found {len(repo_models)} available repos for author {self.username}"
         )
 
@@ -108,7 +229,10 @@ class Player(models.Model):
                                 name=file["name"],
                                 path=file["path"],
                                 download_url=file["download_url"],
+                                visit_url=file["visit_url"],
                                 repo=repo,
+                                author=self,
+                                session_id=self.session_id,
                             )
                         )
                     loaded_repo_ids.append(repo.id)
@@ -122,9 +246,13 @@ class Player(models.Model):
                 await Repository.filter(id__in=loaded_repo_ids).update(load_status=True)
             if len(file_models) > 0:
                 await File.bulk_create(file_models)
-            logger.info(
+            LOGGER.info(
                 f"Extracted {len(file_models)} files from {len(loaded_repo_ids)} repos for author {self.username}"
             )
+
+    @property
+    def profile_url(self):
+        return f"https://github.com/{self.username}"
 
 
 class Repository(models.Model):
@@ -150,7 +278,33 @@ class File(models.Model):
     name = fields.CharField(max_length=100)
     path = fields.CharField(max_length=200)
     download_url = fields.CharField(max_length=200)
+    visit_url = fields.CharField(max_length=200)
 
     repo: fields.ForeignKeyRelation[Repository] = fields.ForeignKeyField(
         "models.Repository", "files"
+    )
+
+    author: fields.ForeignKeyRelation[Repository] = fields.ForeignKeyField(
+        "models.Player", "files"
+    )
+
+    session: fields.ForeignKeyRelation[Session] = fields.ForeignKeyField(
+        "models.Session", "files"
+    )
+
+    @property
+    def extension(self):
+        return Path(self.path).suffix[1:]
+
+
+class SourceCode(models.Model):
+    id = fields.UUIDField(pk=True)
+    content = fields.TextField()
+
+    file: fields.ForeignKeyRelation[File] = fields.ForeignKeyField(
+        "models.File", "source_code"
+    )
+
+    session: fields.ForeignKeyRelation[Session] = fields.ForeignKeyField(
+        "models.Session", "source_code"
     )

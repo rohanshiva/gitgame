@@ -22,6 +22,7 @@ class FileDict(TypedDict):
     name: str
     path: str
     download_url: str
+    visit_url: str
 
 
 class RateLimitResult(TypedDict):
@@ -35,6 +36,10 @@ class GithubUserNotFound(Exception):
 
 
 class GithubRepositoryFileLoadingError(Exception):
+    pass
+
+
+class GithubFileDownloadError(Exception):
     pass
 
 
@@ -111,6 +116,11 @@ class GithubClient:
         def get_download_url(file_path: str):
             return f"https://raw.githubusercontent.com/{full_repo_name}/{default_branch}/{file_path}"
 
+        def get_visit_url(file_path: str):
+            return (
+                f"https://github.com/{full_repo_name}/blob/{default_branch}/{file_path}"
+            )
+
         endpoint = (
             f"https://api.github.com/repos/{full_repo_name}/git/trees/{default_branch}"
         )
@@ -134,6 +144,14 @@ class GithubClient:
                                 name=Path(entity["path"]).name,
                                 path=entity["path"],
                                 download_url=get_download_url(entity["path"]),
+                                visit_url=get_visit_url(entity["path"]),
                             )
                         )
         return file_dicts
+
+    async def download_file_from_url(self, gh_download_url: str):
+        async with AsyncClient() as client:
+            response = await client.get(gh_download_url)
+            if response.status_code != status.HTTP_200_OK:
+                raise GithubFileDownloadError()
+            return str(response.content, encoding="utf-8")
