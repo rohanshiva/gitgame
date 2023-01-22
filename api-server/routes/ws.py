@@ -65,21 +65,16 @@ async def broadcast_source_code(session: Session, manager: ConnectionManager):
     if source_code is not None:
         file = await File.get(id=source_code.file_id)
         player = await Player.get(id=file.author_id)
-        code_lines = []
-        for line_no, line in enumerate(source_code.content.split("\n")):
-            code_lines.append({"line_number": line_no + 1, "content": line})
-
         await manager.broadcast(
             session.id,
             {
                 "message_type": WSResponseType.SOURCE_CODE,
-                "lines": code_lines,
-                "author": player.username,
-                "file": {
-                    "name": file.name,
-                    "path": file.path,
-                    "extension": file.extension,
-                    "visit_url": file.visit_url,
+                "code": {
+                    "content": source_code.content,
+                    "author": player.username,
+                    "file_name": file.name,
+                    "file_extension": file.extension,
+                    "file_visit_url": file.visit_url,
                 },
             },
         )
