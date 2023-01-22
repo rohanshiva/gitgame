@@ -2,25 +2,30 @@ import Highlight, { defaultProps, Language } from "prism-react-renderer";
 import darkTheme from "prism-react-renderer/themes/palenight";
 import lightTheme from "prism-react-renderer/themes/github";
 import { Pre, Line, LineNo, LineContent } from "./Styles";
-
-import { Chunk } from "../../interfaces/Chunk";
-import ChunkService from "../../services/Chunk";
 import ThemeContext, { isDark } from "../../context/ThemeContext";
 import "./Editor.css";
 import { useContext } from "react";
+import { Code } from "../../Interface";
 
-interface IEditorProps {
-  chunk: Chunk;
+interface EditorProps {
+  code: Code;
 }
 
+// todo: fill this out for supported languages
+const prismExtensionMapping: { [index: string]: string } = {
+  dart: "clike",
+  java: "clike",
+  py: "python",
+};
+
 function getPrismExtension(extension: string): Language {
-  if (extension === "dart" || extension === "java") {
-    return "clike" as Language;
+  if (extension in prismExtensionMapping) {
+    return prismExtensionMapping[extension] as Language;
   }
   return extension as Language;
 }
 
-function Editor({ chunk }: IEditorProps) {
+function Editor({ code }: EditorProps) {
   const { theme } = useContext(ThemeContext);
 
   return (
@@ -28,17 +33,14 @@ function Editor({ chunk }: IEditorProps) {
       <Highlight
         {...defaultProps}
         theme={isDark(theme) ? darkTheme : lightTheme}
-        code={ChunkService.getAsCode(chunk)}
-        language={getPrismExtension(chunk.extension)}
+        code={code.content}
+        language={getPrismExtension(code.file_extension)}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <Pre className={className} style={style}>
             {tokens.map((line, i) => (
               <Line key={i} {...getLineProps({ line, key: i })}>
-                <LineNo>
-                  {" "}
-                  {ChunkService.getStartLine(chunk as Chunk) + (i + 1)}{" "}
-                </LineNo>
+                <LineNo> {i + 1} </LineNo>
                 <LineContent>
                   {line.map((token, key) => (
                     <span key={key} {...getTokenProps({ token, key })} />
