@@ -1,9 +1,19 @@
 import { useState, useEffect } from "react";
 
-function useSocket(socketUrl: string, beforeOpen: () => void, onOpen: (ws: WebSocket) => void, onMessage: (data: any) => void,
-  onClose: () => void, onError: () => void) {
+function useSocket(
+  socketUrl: string,
+  beforeOpen: () => void,
+  onOpen: () => void,
+  onMessage: (data: any) => void,
+  onClose: () => void,
+  onError: () => void
+) {
   const [ws, setWs] = useState<WebSocket>(null as unknown as WebSocket);
   const [isConnected, setIsConnected] = useState(false);
+
+  const sendMessage = (data: any) => {
+    ws.send(JSON.stringify(data));
+  };
 
   useEffect(() => {
     beforeOpen();
@@ -14,28 +24,24 @@ function useSocket(socketUrl: string, beforeOpen: () => void, onOpen: (ws: WebSo
 
     socket.onerror = (ev) => {
       onError();
-    }
+    };
 
     socket.onclose = (ev) => {
       onClose();
-    }
+    };
 
     socket.onopen = (ev) => {
       setIsConnected(true);
-      onOpen(ws);
-    }
+      onOpen();
+    };
     setWs(socket);
 
     return () => {
       if (ws && ws.readyState !== ws.CLOSED) {
-        ws.close()
+        ws.close();
       }
-    }
-  }, [])
-
-  const sendMessage = (data: any) => {
-    ws.send(JSON.stringify(data));
-  }
+    };
+  }, []);
 
   return { sendMessage, isConnected };
 }

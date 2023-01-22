@@ -1,25 +1,28 @@
+import { LobbyAction, SourceCodeAction } from "../actions/GameActions";
 import toast from "react-hot-toast";
-import { ERROR, NotificationDisplay } from "../../notifications/Notification";
-import IGameState, { ServerMessageType } from "../../../interfaces/GameState";
-import { AnswerRevealAction, LobbyAction, PromptAction, OutOfChunksAction } from "../actions/GameActions";
-
+import { SUCCESS } from "../../notifications/Notification";
+import {
+  AlertPayload,
+  GameState,
+  LobbyPayload,
+  ResponsePayload,
+  ResponseType,
+  SourceCodePayload,
+} from "../../../Interface";
 
 export default function gameReducer(
-  state: IGameState,
-  [type, payload]: [string, any]
+  state: GameState,
+  [type, payload]: [ResponseType, ResponsePayload]
 ) {
   switch (type) {
-    case ServerMessageType.LOBBY:
-      return LobbyAction(state, payload);
-    case ServerMessageType.PROMPT:
-      toast.dismiss(NotificationDisplay.NEXT_ROUND);
-      return PromptAction(state, payload);
-    case ServerMessageType.ANSWER_REVEAL:
-      return AnswerRevealAction(state, payload);
-    case ServerMessageType.OUT_OF_CHUNKS:
-      toast.dismiss(NotificationDisplay.NEXT_ROUND);
-      toast("Out of chunks", ERROR as any);
-      return OutOfChunksAction(state, payload);
+    case ResponseType.LOBBY:
+      return LobbyAction(state, payload as LobbyPayload);
+    case ResponseType.SOURCE_CODE:
+      return SourceCodeAction(state, payload as SourceCodePayload);
+    case ResponseType.ALERT:
+      //todo: 2 toasts get rendered, investigate and ensure only 1 toast gets rendered
+      toast((payload as AlertPayload).alert, SUCCESS as any);
+      return state;
   }
   return state;
 }

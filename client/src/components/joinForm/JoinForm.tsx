@@ -1,16 +1,21 @@
 import { useState } from "react";
-import { JoinFormData } from "../../interfaces/JoinFormData";
 import { useHistory } from "react-router-dom";
 import "./JoinForm.css";
 import routes_ from "../../constants/Route";
-interface InitialJoinState {
+
+interface JoinFormProps {
   sessionId: string;
 }
 
-function JoinForm({ sessionId }: InitialJoinState) {
+interface JoinFormState {
+  username: string;
+  sessionId: string;
+}
+
+function JoinForm({ sessionId }: JoinFormProps) {
   const history = useHistory();
 
-  const [joinData, setJoinData] = useState<JoinFormData>({
+  const [joinData, setJoinData] = useState<JoinFormState>({
     username: "",
     sessionId: sessionId,
   });

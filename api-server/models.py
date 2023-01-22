@@ -252,7 +252,7 @@ class Player(models.Model):
 
     @property
     def profile_url(self):
-        return f"https://github.com/{self.username}"
+        return f"https://avatars.githubusercontent.com/{self.username}"
 
 
 class Repository(models.Model):

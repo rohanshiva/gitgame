@@ -10,27 +10,13 @@ import Notification, {
   NotificationDisplay,
 } from "../notifications/Notification";
 import Editor from "../editor";
-import IGameState, {
-  SessionState,
-  lobbyChunk,
-  ClientEventType,
-} from "../../interfaces/GameState";
-import IPlayer from "../../interfaces/Player";
-
 import config from "../../config";
 import gameReducer from "./reducers/GameReducer";
 import toast from "react-hot-toast";
 import "./Game.css";
-import { GameResults, RoundResults } from "../results";
 import useSocket from "./hooks/socket/UseSocket";
-import IPrompt from "../../interfaces/Prompt";
-import Answer from "../../interfaces/Answer";
-import Timer from "../timer/Timer";
-import Choices from "../choices/Choices";
+import { GameState, lobbyCode, Player, RequestType } from "../../Interface";
 
-interface IGame {
-  initialState: IGameState;
-}
 function getSessionId(path: string) {
   const pathParts = path.split("/");
   return pathParts[pathParts.length - 2];
@@ -47,13 +33,17 @@ function getWebSocketAddress(sessionId: string, username: string) {
     .replace(":username", username)}`;
 }
 
-const defaultState: IGameState = {
+interface GameProps {
+  initialState: GameState;
+}
+
+const defaultState: GameState = {
   players: [],
-  host: { username: "", score: 0, has_guessed: false },
-  state: SessionState.IN_LOBBY,
+  host: "",
+  source_code: lobbyCode,
 };
 
-function Game({ initialState }: IGame) {
+function Game({ initialState }: GameProps) {
   const history = useHistory();
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
@@ -64,7 +54,7 @@ function Game({ initialState }: IGame) {
     );
   }, []);
 
-  const onWsOpen = useCallback((websocket: WebSocket) => {
+  const onWsOpen = useCallback(() => {
     toast.dismiss(NotificationDisplay.CONNECTING);
   }, []);
 
@@ -78,14 +68,16 @@ function Game({ initialState }: IGame) {
         );
         history.push(routes_.root());
       } else {
-        dispatch([packet.message_type, packet.message]);
+        dispatch([packet.message_type, packet]);
       }
     },
     [dispatch, history]
   );
 
-  const onWsClose = useCallback(() => { }, []);
-  const onWsError = useCallback(() => { }, []);
+  const onWsClose = useCallback(() => {}, []);
+
+  // implement this, right now the app just breaks when trying to connect to a ws url which doesn't exist.
+  const onWsError = useCallback(() => {}, []);
 
   const sessionId = getSessionId(history.location.pathname);
   const username = getUsername(history.location.pathname);
@@ -104,63 +96,30 @@ function Game({ initialState }: IGame) {
     toast(`Session code copied ${sessionId}!`, SUCCESS as any);
   };
 
-  const startHandler = () => {
-    sendMessage({ event_type: ClientEventType.START_GAME });
-  };
-
   const nextHandler = () => {
     toast(
       "Fetching next chunk",
       toastWithId(LOADING, NotificationDisplay.NEXT_ROUND)
     );
-    sendMessage({ event_type: ClientEventType.NEXT_ROUND });
+    sendMessage({ message_type: RequestType.PICK_SOURCE_CODE });
   };
 
-  const guessHandler = (guess: string) => {
-    sendMessage({ event_type: ClientEventType.GUESS, guess });
-  };
-
-  const isHost = (username: string) => username === state.host.username;
+  const isHost = (username: string) => username === state.host;
   const isYouHost = isHost(username);
-
-  const inGuessing = () => {
-    return state.state === SessionState.IN_GUESSING;
-  };
-  const inDoneGuessing = () => {
-    return state.state === SessionState.DONE_GUESSING;
-  };
-  const inOutOfChunks = () => {
-    return state.state === SessionState.OUT_OF_CHUNKS;
-  };
-  const inLobby = () => {
-    return state.state === SessionState.IN_LOBBY;
-  };
 
   return (
     <>
       <div className="game-settings">
         <div className="left-panel">
           <button
-            disabled={!inDoneGuessing() || !isYouHost}
+            disabled={!isYouHost}
             onClick={nextHandler}
             className="game-buttons"
           >
             Next
           </button>
-          <button
-            disabled={!inLobby() || !isYouHost}
-            onClick={startHandler}
-            className="game-buttons"
-          >
-            Start
-          </button>
         </div>
         <div className="right-panel">
-          {inGuessing() && (
-            <>
-              <Timer expiration={(state.prompt as IPrompt).guessExpiration} />
-            </>
-          )}
           <button onClick={copyHandler} className="game-buttons">
             Copy
           </button>
@@ -168,7 +127,7 @@ function Game({ initialState }: IGame) {
       </div>
       <div className="mid">
         <div className="players-container">
-          {state.players.map((player: IPlayer, i: number) => (
+          {state.players.map((player: Player, i: number) => (
             <div
               className={`player ${isHost(player.username) ? "host" : ""}`}
               key={i}
@@ -177,40 +136,17 @@ function Game({ initialState }: IGame) {
                 <img
                   alt={`https://github.com/${player.username}`}
                   className="player-avatar"
-                  src={`${config.githubAvatarUri}${player.username}`}
+                  src={player.profile_url}
                 />
                 <div data-testid={isHost(player.username) ? "host" : ""}>
                   {player.username}
                 </div>
               </div>
-
-              <div>{player.score}</div>
             </div>
           ))}
         </div>
-
-        {inLobby() && <Editor chunk={lobbyChunk} />}
-        {inGuessing() && (
-          <>
-            <Editor chunk={(state.prompt as IPrompt).chunk} />
-          </>
-        )}
-        {inDoneGuessing() && (
-          <RoundResults {...state.answer as Answer}/>
-        )}
-        {inOutOfChunks() && (
-          <GameResults players={(state.answer as Answer).players}
-            endGameMessage="Out of chunks for you to guess on. Thanks for playing!" />
-        )}
+        <Editor code={state.source_code} />
       </div>
-
-      {inGuessing() && (
-        <Choices
-          choices={(state.prompt as IPrompt).choices}
-          guessHandler={guessHandler}
-        />
-      )}
-
       <Notification />
     </>
   );
