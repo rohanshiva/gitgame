@@ -74,10 +74,11 @@ abbr {
 .player-comment {
     border: 0.1rem solid var(--secondary-accent);
     border-radius: 0.4rem;
-    padding: 0.2rem 0.4rem;
+    padding: 0.4rem;
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    cursor: pointer;
 }
 
 .player-comment-header {
@@ -92,9 +93,11 @@ abbr {
 .player-comment-avatar {
     width: 2rem;
     object-fit: contain;
+    border: 2px solid;
+    border-radius: 50%;
 }
 
 .player-comment-content {
-    white-space: nowrap;
     text-overflow: ellipsis;
+    font-size: 0.9rem;
 }

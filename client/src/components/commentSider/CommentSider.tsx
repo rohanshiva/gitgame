@@ -6,10 +6,11 @@ import {
   Lines,
   Author,
 } from "../../Interface";
-import "./Comments.css";
+import "./CommentSider.css";
 import "./help/Help.css";
 import Help from "./help/Help";
 import { HelpComment } from "./help/Help";
+import { getColor } from "../../utils";
 
 interface CommentProps {
   id: string;
@@ -18,12 +19,15 @@ interface CommentProps {
 }
 
 function Comment({ id, author, content }: CommentProps) {
+  const profileBorderColor = getColor(author.username);
+
   return (
     <div className="player-comment" key={id}>
       <div className="player-comment-header">
         <img
           alt={`https://github.com/${author.username}`}
           className="player-comment-avatar"
+          style={{borderColor: profileBorderColor}}
           src={author.profile_url}
         />
         <div>{author.username}</div>
