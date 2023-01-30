@@ -1,4 +1,5 @@
 from fastapi.websockets import WebSocket
+from starlette.websockets import WebSocketState
 import anyio
 
 
@@ -9,7 +10,8 @@ class Connection:
         self.__websocket = websocket
 
     async def send(self, data: dict):
-        await self.__websocket.send_json(data)
+        if self.__websocket.client_state == WebSocketState.CONNECTED:
+            await self.__websocket.send_json(data)
 
     def get_group(self):
         return self.__group

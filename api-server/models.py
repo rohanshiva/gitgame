@@ -5,13 +5,14 @@ from tortoise.transactions import in_transaction
 from collections import defaultdict
 from enum import Enum
 from datetime import datetime
-from uuid import uuid4
+from uuid import uuid4, UUID
 from services.github_client import (
     GithubClient,
     GithubUserNotFound,
     GithubRepositoryFileLoadingError,
 )
 from pathlib import Path
+from typing import TypedDict
 
 LOGGER = logging.getLogger()
 
@@ -25,6 +26,10 @@ class PlayerNotInGithubError(Exception):
 
 
 class OutOfFilesError(Exception):
+    pass
+
+
+class NoSelectedSourceCodeError(Exception):
     pass
 
 
@@ -92,7 +97,7 @@ class Session(models.Model):
 
     async def pick_source_code(self, gh_client: GithubClient):
         async with in_transaction():
-            previous_source_code = await SourceCode.filter(session_id=self.id).first()
+            previous_source_code = await self.get_source_code()
             if previous_source_code is not None:
                 await previous_source_code.file.delete()  # deletes file then cascades down to delete the previous source code
 
@@ -142,6 +147,35 @@ class Session(models.Model):
             LOGGER.info(
                 f"Selected file {picked_file.path} authored by {picked_file.author_id}"
             )
+
+    async def get_source_code(self):
+        return await SourceCode.filter(session_id=self.id).first()
+
+    async def add_comment(
+        self,
+        content: str,
+        line_start: int,
+        line_end: int,
+        type: "Comment.Type",
+        username: str,
+    ):
+        player_id = self.get_player_id(username)
+        async with in_transaction():
+            source_code = await self.get_source_code()
+            if source_code is None:
+                raise NoSelectedSourceCodeError()
+            db_comment = Comment(
+                content=content,
+                line_start=line_start,
+                line_end=line_end,
+                type=type,
+                author_id=player_id,
+                source_code_id=source_code.id,
+            )
+            await db_comment.save()
+
+    async def delete_comment(self, comment_id: UUID):
+        await Comment.filter(id=comment_id).delete()
 
 
 class Player(models.Model):
@@ -307,4 +341,26 @@ class SourceCode(models.Model):
 
     session: fields.ForeignKeyRelation[Session] = fields.ForeignKeyField(
         "models.Session", "source_code"
+    )
+
+    comments: fields.ReverseRelation["Comment"]
+
+
+class Comment(models.Model):
+    class Type(str, Enum):
+        POOP = "poop"
+        DIAMOND = "diamond"
+
+    id = fields.UUIDField(pk=True)
+    content = fields.TextField()
+    type = fields.CharEnumField(Type, max_length=20)
+    line_start = fields.IntField()
+    line_end = fields.IntField()
+
+    author: fields.ForeignKeyRelation[Player] = fields.ForeignKeyField(
+        "models.Player", "comments"
+    )
+
+    source_code: fields.ForeignKeyRelation[SourceCode] = fields.ForeignKeyField(
+        "models.SourceCode", "comments"
     )

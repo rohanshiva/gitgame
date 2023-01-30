@@ -1,12 +1,19 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
-from models import Session, SourceCode, File, Player
+from models import Session, File, Player, Comment as DBComment
 from services.github_client import GithubClient
-from models import AlreadyConnectedPlayerError, PlayerNotInGithubError, OutOfFilesError
+from models import (
+    AlreadyConnectedPlayerError,
+    PlayerNotInGithubError,
+    OutOfFilesError,
+    NoSelectedSourceCodeError,
+)
 from ws.connection_manager import Connection, ConnectionManager
 from config import GITHUB_ACCESS_TOKEN
 from enum import IntEnum
-from uuid import uuid4
+from uuid import uuid4, UUID
+from pydantic import BaseModel
 import logging
+import json
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,6 +22,8 @@ socket_app = FastAPI()
 
 class WSRequestType(IntEnum):
     PICK_SOURCE_CODE = 1
+    ADD_COMMENT = 2
+    DELETE_COMMENT = 3
 
 
 class WSResponseType(IntEnum):
@@ -23,6 +32,7 @@ class WSResponseType(IntEnum):
     OUT_OF_FILES_TO_PICK = 2
     LOBBY = 3
     SOURCE_CODE = 4
+    COMMENTS = 5
 
 
 class WSErrorType(IntEnum):
@@ -30,6 +40,38 @@ class WSErrorType(IntEnum):
     PLAYER_NOT_IN_GITHUB = 1
     SESSION_NOT_FOUND = 2
     NOT_ALLOWED = 3
+
+
+class AddCommentBody(BaseModel):
+    content: str
+    line_start: int
+    line_end: int
+    type: DBComment.Type
+
+
+class DeleteCommentBody(BaseModel):
+    comment_id: UUID
+
+class CommentAuthor(BaseModel):
+    username: str
+    profile_url: str
+
+class Comment(BaseModel):
+    id: str
+    content: str
+    line_start: int
+    line_end: int
+    type: DBComment.Type
+    author: CommentAuthor
+
+class Code(BaseModel):
+    id: str
+    content: str
+    author: str # username
+    file_name: str
+    file_visit_url: str
+    file_extension: str
+
 
 
 def get_gh_client():
@@ -61,22 +103,52 @@ async def broadcast_alert(session: Session, manager: ConnectionManager, alert: s
 
 
 async def broadcast_source_code(session: Session, manager: ConnectionManager):
-    source_code = await SourceCode.filter(session_id=session.id).first()
+    source_code = await session.get_source_code()
     if source_code is not None:
         file = await File.get(id=source_code.file_id)
         player = await Player.get(id=file.author_id)
+        code = Code(
+            id=str(source_code.id),
+            content=source_code.content,
+            author=player.username,
+            file_name=file.name,
+            file_extension=file.extension,
+            file_visit_url=file.visit_url
+        )
         await manager.broadcast(
             session.id,
             {
                 "message_type": WSResponseType.SOURCE_CODE,
-                "code": {
-                    "content": source_code.content,
-                    "author": player.username,
-                    "file_name": file.name,
-                    "file_extension": file.extension,
-                    "file_visit_url": file.visit_url,
-                },
+                "code": code.dict()
             },
+        )
+
+
+async def broadcast_comments(session: Session, manager: ConnectionManager):
+    source_code = await session.get_source_code()
+    if source_code is not None:
+        # not efficient from DB perspective, but when the time comes to optimize, that is when we will optimize
+        db_comments = await source_code.comments.all()
+        players = await session.players.all()
+        id_to_player: dict[str, CommentAuthor] = {}
+        for player in players:
+            id_to_player[player.id] = CommentAuthor(username=player.username, profile_url=player.profile_url)
+        comments = []
+        for db_comment in db_comments:
+            author = id_to_player[db_comment.author_id]
+            comments.append(
+                Comment(
+                    id=str(db_comment.id),
+                    content=db_comment.content,
+                    line_start=db_comment.line_start,
+                    line_end=db_comment.line_end,
+                    type=db_comment.type,
+                    author=author
+                ).dict()
+            )
+        await manager.broadcast(
+            session.id,
+            {"message_type": WSResponseType.COMMENTS, "comments": comments},
         )
 
 
@@ -118,9 +190,11 @@ async def on_websocket_event(
             LOGGER.info(f"{username} attempting to join {session.id}")
             await session.join(username, gh_client)
             # todo: look into batching the below different ws responses into 1 response
+            # todo: don't broadcast source code and comments to everyone
             await broadcast_lobby(session, manager)
             await broadcast_alert(session, manager, f"{username} has joined")
             await broadcast_source_code(session, manager)
+            await broadcast_comments(session, manager)
             LOGGER.info(f"{username} joined {session.id}")
         except AlreadyConnectedPlayerError as e:
             await connection.close_with_error(
@@ -170,9 +244,54 @@ async def on_websocket_event(
                     }
                 )
 
+    async def on_add_comment(add_comment_body: AddCommentBody):
+        try:
+            await session.add_comment(
+                add_comment_body.content,
+                add_comment_body.line_start,
+                add_comment_body.line_end,
+                add_comment_body.type,
+                username,
+            )
+            await broadcast_comments(session, manager)
+        except NoSelectedSourceCodeError:
+            await connection.send(
+                {
+                    "message_type": WSResponseType.ERROR,
+                    "error_type": WSErrorType.NOT_ALLOWED,
+                    "error": f"{username} tried to make a comment when there doesn't exist any active source code",
+                }
+            )
+
+    async def on_delete_comment(delete_comment_body: DeleteCommentBody):
+        comment_id = delete_comment_body.comment_id
+        comment = await DBComment.filter(id=comment_id).first()
+        deletion_error = None
+        if comment is None:
+            deletion_error = (
+                f"{username} attempted to delete non-existant comment {comment_id}"
+            )
+
+        if comment.author_id != session.get_player_id(username):
+            deletion_error = f"{username} attempted to delete a comment authored by a different author {comment.author_id}"
+
+        if deletion_error is None:
+            await session.delete_comment(comment_id)
+            await broadcast_comments(session, manager)
+        else:
+            LOGGER.info(deletion_error)
+            await connection.send(
+                {
+                    "message_type": WSResponseType.ERROR,
+                    "error_type": WSErrorType.NOT_ALLOWED,
+                    "error": deletion_error,
+                }
+            )
+
     try:
         await on_join()
-    except:
+    except Exception as e:
+        LOGGER.error(e)
         return
 
     try:
@@ -182,8 +301,14 @@ async def on_websocket_event(
                 request_message_type = WSRequestType(int(data["message_type"]))
                 if request_message_type == WSRequestType.PICK_SOURCE_CODE:
                     await on_pick()
+                elif request_message_type == WSRequestType.ADD_COMMENT:
+                    add_comment_body = AddCommentBody(**data)
+                    await on_add_comment(add_comment_body)
+                else:
+                    delete_comment_body = DeleteCommentBody(**data)
+                    await on_delete_comment(delete_comment_body)
             except ValueError as e:
-                LOGGER.warn(f"Invalid request body: {str(e)}")
+                LOGGER.warn(f"Invalid request body: {json.dumps(data, indent=2)}, exception: {str(e)}")
             except KeyError as e:
                 LOGGER.warn(
                     f"Invalid request body: 'message_type' key missing from request"
