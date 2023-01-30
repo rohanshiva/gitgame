@@ -5,7 +5,7 @@ export const Pre = styled.pre`
   margin: 0;
   padding: 0.5rem;
   margin: 0rem;
-  max-height: calc(60vh - 1.4rem);
+  max-height: calc(75vh - 1.4rem);
   overflow-y: scroll;
   // border: solid var(--secondary-accent) 0.1rem;
   border-radius: 3px;
