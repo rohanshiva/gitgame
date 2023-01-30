@@ -1,7 +1,8 @@
 export const baseRoutes_ = {
     root: "/",
     game: "/game/:sessionId/:username",
-    join: "/game/:sessionId"
+    join: "/game/:sessionId",
+    playground: "/playground"
 };
 
 const routes_ = {

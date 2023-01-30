@@ -1,90 +1,7 @@
-.game-settings {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  height: calc(10vh - 1rem);
-  max-height: calc(10vh - 1rem);
-  padding-bottom: 1rem;
-}
-
-.left-panel {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-}
-
-.right-panel {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
 .mid {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-}
-
-.players-container {
-  background-color: var(--section-bg);
-  color: var(--primary);
-  min-width: calc(18% - 2rem);
-  max-width: calc(18% - 2rem);
-  height: calc(60vh - 1rem);
-  font-size: 1rem;
-  padding: 1rem;
-  overflow-x: scroll;
-}
-
-.player {
-  font-weight: bold;
-  font-size: 1rem;
-  font-family: "Inter", sans-serif;
-  padding: 0.5rem;
-  gap: 1rem;
-  display: flex;
-  justify-content: space-between;
-}
-
-.host {
-  border-left: 3px solid var(--accent);
-}
-
-.player-info {
-  display: flex;
-  gap: 1rem;
-}
-
-.player-avatar {
-  width: 24px;
-  object-fit: contain;
-}
-
-.game-buttons {
-  padding: 0.5rem 0.75rem;
-  font-family: monospace;
-  font-size: 1.125rem;
-  font-weight: 600;
-  background-color: var(--bg);
-  color: var(--primary);
-  outline: none;
-  border: 0.3rem solid var(--primary);
-  height: min-content;
-}
-
-.game-buttons:hover {
-  cursor: pointer;
-  color: var(--accent);
-  transition: background 0.5s ease;
-}
-
-.game-buttons:disabled {
-  opacity: 60%;
-}
-
-.game-buttons:disabled:hover {
-  color: var(--primary);
 }
 
 ::-webkit-scrollbar {
@@ -96,7 +13,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--accent);
+  background: var(--primary);
 }
 
 @media only screen and (max-width: 500px) {
@@ -107,4 +24,105 @@
     max-width: calc(100% - 2rem);
     min-width: calc(100% - 2rem);
   }
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+}
+
+@media only screen and (max-width: 992px) {
+  .container {
+      flex-direction: column;
+      gap: 2rem;
+  }
+}
+
+.top {
+  padding: 0.2rem 0rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top>a {
+  font-family: monospace;
+  color: var(--accent);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  direction: rtl;
+  text-overflow: ellipsis;
+  max-width: 20ch;
+}
+
+.top>a:hover {
+  text-decoration: underline;
+}
+
+.top-btns {
+  display: flex;
+  flex: row;
+  gap: 1rem;
+}
+
+/* .top-btns > button {
+
+  color: var(--primary);
+  cursor: pointer;
+  outline: none;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 0.8rem;
+  background-color: var(--bg);
+  border-radius: 0.5rem;
+  border: 0.1rem solid var(--secondary-accent);
+}
+
+.top-btns > button:hover {
+  color: var(--bg);
+  background-color: var(--primary);
+} */
+
+.top-btns>button {
+  padding: 0.5rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--bg);
+  color: var(--primary);
+  outline: none;
+  border: 0.2rem solid var(--secondary-accent);
+  height: min-content;
+}
+
+.top-btns>button:hover {
+  cursor: pointer;
+  color: var(--accent);
+  transition: background 0.5s ease;
+}
+
+.top-btns>button:disabled {
+  opacity: 60%;
+}
+
+.top-btns>button:disabled:hover {
+  color: var(--primary);
+}
+
+.help {
+  display: flex;
+  gap: 1rem;
+  padding-left: 0.5rem;
+  flex-direction: column;
+  max-height: 60vh;
+  overflow-y: scroll;
+}
+
+.step {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.step-header {
+  font-weight: 500;
 }
