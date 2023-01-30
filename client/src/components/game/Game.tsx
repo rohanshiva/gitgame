@@ -22,7 +22,7 @@ import {
   RequestType,
   Lines,
 } from "../../Interface";
-import Comments from "../comments";
+import CommentSider from "../commentSider";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
@@ -40,49 +40,6 @@ function getWebSocketAddress(sessionId: string, username: string) {
     .replace(":username", username)}`;
 }
 
-function Help() {
-  return (
-    <div className="help">
-      <div className="step">
-        <div className="step-header">Step 1️</div>
-        <div>Click on any line number</div>
-      </div>
-      <div className="step">
-        <div className="step-header">Step 2</div>
-        <div>
-          Hold <kbd>shift</kbd> and click on any line number below or above the
-          previously clicked line, to select a group of lines
-        </div>
-      </div>
-      <div className="step">
-        <div className="step-header">Step 3️</div>
-        <div>
-          Click on the <kbd>...</kbd> next to the selected line number. (popover
-          should appear)
-        </div>
-      </div>
-      <div className="step">
-        <div className="step-header">Step 4️</div>
-        <div>Type your comment in the popover texarea</div>
-      </div>
-      <div className="step">
-        <div className="step-header">Step 5️</div>
-        <div>
-          If you don't like something, submit a 💩 comment by clicking on 💩
-        </div>
-      </div>
-      <div className="step">
-        <div className="step-header">Step 6️</div>
-        <div>If you like something, submit a 💎 by clicking on 💎</div>
-      </div>
-      <div className="step">
-        <div className="step-header">Step 7️</div>
-        <div>Cancel line selection by clicking on ❌</div>
-      </div>
-    </div>
-  );
-}
-
 interface GameProps {
   initialState: GameState;
 }
@@ -96,7 +53,6 @@ const defaultState: GameState = {
 
 function Game({ initialState }: GameProps) {
   const history = useHistory();
-  const [showHelp, setShowHelp] = useState<boolean>(true);
   const [focusLines, setFocusLines] = useState<Lines | undefined>(undefined);
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
@@ -168,7 +124,6 @@ function Game({ initialState }: GameProps) {
   const isHost = (username: string) => username === state.host;
   const isYouHost = isHost(username);
 
-  console.log(state.comments);
   return (
     <>
       <div className="top">
@@ -179,26 +134,17 @@ function Game({ initialState }: GameProps) {
           <button onClick={nextHandler} disabled={!isYouHost}>
             Next
           </button>
-          <button onClick={copyHandler}>
-            Copy
-          </button>
-          <button onClick={() => setShowHelp((v) => !v)}>
-            {showHelp ? "Comments" : "Help"}
-          </button>
+          <button onClick={copyHandler}>Copy</button>
         </div>
       </div>
       <div className="mid">
-          <Editor
-            code={state.source_code}
-            addComment={addCommentHandler}
-            focusLines={focusLines}
-          />
-          {showHelp ? (
-            <Help />
-          ) : (
-            <Comments comments={state.comments} setFocusLines={setFocusLines} />
-          )}
-        </div>
+        <Editor
+          code={state.source_code}
+          addComment={addCommentHandler}
+          focusLines={focusLines}
+        />
+        <CommentSider comments={state.comments} setFocusLines={setFocusLines} />
+      </div>
       <Notification />
     </>
   );

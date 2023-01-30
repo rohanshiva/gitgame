@@ -33,8 +33,8 @@
 
 @media only screen and (max-width: 992px) {
   .container {
-      flex-direction: column;
-      gap: 2rem;
+    flex-direction: column;
+    gap: 2rem;
   }
 }
 
@@ -46,7 +46,7 @@
   align-items: center;
 }
 
-.top>a {
+.top > a {
   font-family: monospace;
   color: var(--accent);
   font-weight: bold;
@@ -57,7 +57,7 @@
   max-width: 20ch;
 }
 
-.top>a:hover {
+.top > a:hover {
   text-decoration: underline;
 }
 
@@ -85,7 +85,7 @@
   background-color: var(--primary);
 } */
 
-.top-btns>button {
+.top-btns > button {
   padding: 0.5rem 0.8rem;
   font-size: 1rem;
   font-weight: 600;
@@ -96,27 +96,18 @@
   height: min-content;
 }
 
-.top-btns>button:hover {
+.top-btns > button:hover {
   cursor: pointer;
   color: var(--accent);
   transition: background 0.5s ease;
 }
 
-.top-btns>button:disabled {
+.top-btns > button:disabled {
   opacity: 60%;
 }
 
-.top-btns>button:disabled:hover {
+.top-btns > button:disabled:hover {
   color: var(--primary);
-}
-
-.help {
-  display: flex;
-  gap: 1rem;
-  padding-left: 0.5rem;
-  flex-direction: column;
-  max-height: 60vh;
-  overflow-y: scroll;
 }
 
 .step {

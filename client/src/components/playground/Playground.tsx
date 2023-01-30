@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Code, AddComment, Comment, Lines } from "../../Interface";
-import Comments from "../comments";
+import CommentSider from "../commentSider";
 import Editor from "../editor";
 import "./Playground.css";
 const code = {
@@ -56,7 +56,7 @@ const code = {
 
 const Help = () => {
   return (
-    <div className="help">
+    <div className="playground-help">
       <div className="step">
         <div className="step-header">Step 1️</div>
         <div>Click on any line number</div>
@@ -134,7 +134,7 @@ export const Playground = () => {
         {showHelp ? (
           <Help />
         ) : (
-          <Comments comments={comments} setFocusLines={setFocusLines} />
+          <CommentSider comments={comments} setFocusLines={setFocusLines} />
         )}
       </div>
     </>

@@ -1,42 +1,42 @@
 .container {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
 @media only screen and (max-width: 992px) {
-    .container {
-        flex-direction: column;
-        gap: 2rem;
-    }
+  .container {
+    flex-direction: column;
+    gap: 2rem;
+  }
 }
 
 .top {
-    padding: 0.2rem 0rem;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+  padding: 0.2rem 0rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.top>a {
-    font-family: monospace;
-    color: var(--accent);
-    font-weight: bold;
-    white-space: nowrap;
-    overflow: hidden;
-    direction: rtl;
-    text-overflow: ellipsis;
-    max-width: 20ch;
+.top > a {
+  font-family: monospace;
+  color: var(--accent);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  direction: rtl;
+  text-overflow: ellipsis;
+  max-width: 20ch;
 }
 
-.top>a:hover {
-    text-decoration: underline;
+.top > a:hover {
+  text-decoration: underline;
 }
 
 .top-btns {
-    display: flex;
-    flex: row;
-    gap: 1rem;
+  display: flex;
+  flex: row;
+  gap: 1rem;
 }
 
 /* .top-btns > button {
@@ -57,44 +57,44 @@
     background-color: var(--primary);
 } */
 
-.top-btns>button {
-    padding: 0.5rem 0.8rem;
-    font-size: 1rem;
-    font-weight: 600;
-    background-color: var(--bg);
-    color: var(--primary);
-    outline: none;
-    border: 0.2rem solid var(--secondary-accent);
-    height: min-content;
+.top-btns > button {
+  padding: 0.5rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--bg);
+  color: var(--primary);
+  outline: none;
+  border: 0.2rem solid var(--secondary-accent);
+  height: min-content;
 }
 
-.top-btns>button:hover {
-    cursor: pointer;
-    color: var(--accent);
-    transition: background 0.5s ease;
+.top-btns > button:hover {
+  cursor: pointer;
+  color: var(--accent);
+  transition: background 0.5s ease;
 }
 
-.top-btns>button:disabled {
-    opacity: 60%;
+.top-btns > button:disabled {
+  opacity: 60%;
 }
 
-.top-btns>button:disabled:hover {
-    color: var(--primary);
+.top-btns > button:disabled:hover {
+  color: var(--primary);
 }
 
-.help {
-    display: flex;
-    gap: 1rem;
-    padding-left: 0.5rem;
-    flex-direction: column;
-    max-height: 60vh;
-    overflow-y: scroll;
+.playground-help {
+  display: flex;
+  gap: 1rem;
+  padding-left: 0.5rem;
+  flex-direction: column;
+  max-height: 60vh;
+  overflow-y: scroll;
 }
 
 .step {
-    font-family: "Space Grotesk", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
 }
 
 .step-header {
-    font-weight: 500;
+  font-weight: 500;
 }
