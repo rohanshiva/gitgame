@@ -1,5 +1,6 @@
 .env
 venv/
 .pytest_cache
+package-lock.json
 *.log
 __pycache__/

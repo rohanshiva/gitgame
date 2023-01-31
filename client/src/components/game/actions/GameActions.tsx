@@ -3,6 +3,7 @@ import {
   LobbyPayload,
   Player,
   SourceCodePayload,
+  CommentsPayload
 } from "../../../Interface";
 
 export const LobbyAction = (
@@ -20,9 +21,24 @@ export const LobbyAction = (
 export const SourceCodeAction = (
   state: GameState,
   payload: SourceCodePayload
+):  GameState => {
+
+  let updates = {source_code: payload.code, comments: state.comments};
+  if(state.source_code.id !== payload.code.id){
+    updates.comments = [];
+  }
+
+  return {
+    ...state,
+    ...updates
+  };
+};
+
+export const CommentsAction = (
+  state: GameState, payload: CommentsPayload
 ): GameState => {
   return {
     ...state,
-    source_code: payload.code,
-  };
-};
+    comments: payload.comments
+  }
+}

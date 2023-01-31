@@ -1,4 +1,4 @@
-import { LobbyAction, SourceCodeAction } from "../actions/GameActions";
+import { CommentsAction, LobbyAction, SourceCodeAction } from "../actions/GameActions";
 import toast from "react-hot-toast";
 import { SUCCESS } from "../../notifications/Notification";
 import {
@@ -8,6 +8,7 @@ import {
   ResponsePayload,
   ResponseType,
   SourceCodePayload,
+  CommentsPayload
 } from "../../../Interface";
 
 export default function gameReducer(
@@ -19,6 +20,8 @@ export default function gameReducer(
       return LobbyAction(state, payload as LobbyPayload);
     case ResponseType.SOURCE_CODE:
       return SourceCodeAction(state, payload as SourceCodePayload);
+    case ResponseType.COMMENTS:
+      return CommentsAction(state, payload as CommentsPayload)
     case ResponseType.ALERT:
       //todo: 2 toasts get rendered, investigate and ensure only 1 toast gets rendered
       toast((payload as AlertPayload).alert, SUCCESS as any);

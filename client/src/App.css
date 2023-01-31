@@ -1,20 +1,13 @@
 .app {
-  max-height: 100vh;
-  overflow-y: scroll;
+
   display: flex;
   flex-direction: column;
 }
 
 .main-section {
-  height: 80vh;
-  max-height: 80vh;
+  padding-top: 2vh;
 }
 
-.footer-section {
-  height: 15vh;
-  max-height: 15vh;
-  display: flex;
-}
 
 @media only screen and (min-width: 1200px) {
   .app {

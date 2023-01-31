@@ -3,10 +3,11 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  font-family: "Inter", sans-serif;
-  color: var(--accent);
-  max-height: 15vh;
-  min-height: 15vh;
+  color: var(--primary);
+  max-height: 10vh;
+  min-height: 10vh;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .logo {
