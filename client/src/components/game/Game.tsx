@@ -1,7 +1,6 @@
 import { useReducer, useCallback, useState } from "react";
 
 import { useHistory } from "react-router-dom";
-import routes_ from "../../constants/Route";
 import Notification, {
   SUCCESS,
   ERROR,
@@ -23,6 +22,7 @@ import {
   Lines,
 } from "../../Interface";
 import CommentSider from "../commentSider";
+import DisconnectionModal from "./disconnection/DisconnectionModal";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
@@ -54,6 +54,7 @@ const defaultState: GameState = {
 function Game({ initialState }: GameProps) {
   const history = useHistory();
   const [focusLines, setFocusLines] = useState<Lines | undefined>(undefined);
+  const [disconnectionMessage, setDisconnectionMessage] = useState<string>("");
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
   const beforeWsOpen = useCallback(() => {
@@ -76,7 +77,7 @@ function Game({ initialState }: GameProps) {
           `Failed to join session with error: ${packet.error}`,
           ERROR as any
         );
-        history.push(routes_.root());
+        //history.push(routes_.root());
       } else {
         dispatch([packet.message_type, packet]);
       }
@@ -84,10 +85,17 @@ function Game({ initialState }: GameProps) {
     [dispatch, history]
   );
 
-  const onWsClose = useCallback(() => {}, []);
+  const onWsClose = useCallback((code: number, reason: string) => {
+    if (reason === "") {
+      reason = "Not sure what happened. Please refresh to re-connect!";
+    }
+    setDisconnectionMessage(reason);
+  }, []);
 
   // implement this, right now the app just breaks when trying to connect to a ws url which doesn't exist.
-  const onWsError = useCallback(() => {}, []);
+  const onWsError = useCallback(() => {
+    console.log("WebSocket connection is erroring...");
+  }, []);
 
   const sessionId = getSessionId(history.location.pathname);
   const username = getUsername(history.location.pathname);
@@ -146,6 +154,10 @@ function Game({ initialState }: GameProps) {
         <CommentSider comments={state.comments} setFocusLines={setFocusLines} />
       </div>
       <Notification />
+      <DisconnectionModal
+        shouldOpen={disconnectionMessage !== ""}
+        message={disconnectionMessage}
+      />
     </>
   );
 }

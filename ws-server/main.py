@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.mount("/socket", socket_app)
 
+
 @app.get("/hello")
 def greet():
     return {"msg": "ws server"}

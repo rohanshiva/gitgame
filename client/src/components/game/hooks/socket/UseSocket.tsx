@@ -5,7 +5,7 @@ function useSocket(
   beforeOpen: () => void,
   onOpen: () => void,
   onMessage: (data: any) => void,
-  onClose: () => void,
+  onClose: (code: number, reason: string) => void,
   onError: () => void
 ) {
   const [ws, setWs] = useState<WebSocket>(null as unknown as WebSocket);
@@ -26,8 +26,9 @@ function useSocket(
       onError();
     };
 
-    socket.onclose = (ev) => {
-      onClose();
+    socket.onclose = (ev: CloseEvent) => {
+      console.log(`Closing Event: ${ev.code} with reason ${ev.reason}`);
+      onClose(ev.code, ev.reason);
     };
 
     socket.onopen = (ev) => {
