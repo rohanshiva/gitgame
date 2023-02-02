@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, status
 from models import Session, File, Player, Comment as DBComment
 from services.github_client import GithubClient
 from models import (
@@ -10,14 +10,20 @@ from models import (
 from ws.connection_manager import Connection, ConnectionManager
 from config import GITHUB_ACCESS_TOKEN
 from enum import IntEnum
-from uuid import uuid4, UUID
+from uuid import UUID
 from pydantic import BaseModel
 import logging
-import json
 
 LOGGER = logging.getLogger(__name__)
 
 socket_app = FastAPI()
+
+
+class WSAppStatusCodes(IntEnum):
+    SWITCHING_CONNECTIONS = 4001
+    SESSION_NOT_FOUND = 4002
+    PLAYER_NOT_IN_GITHUB = 4003
+    NOT_ALLOWED = 4004
 
 
 class WSRequestType(IntEnum):
@@ -35,13 +41,6 @@ class WSResponseType(IntEnum):
     COMMENTS = 5
 
 
-class WSErrorType(IntEnum):
-    ALREADY_CONNECTED_PLAYER = 0
-    PLAYER_NOT_IN_GITHUB = 1
-    SESSION_NOT_FOUND = 2
-    NOT_ALLOWED = 3
-
-
 class AddCommentBody(BaseModel):
     content: str
     line_start: int
@@ -52,9 +51,11 @@ class AddCommentBody(BaseModel):
 class DeleteCommentBody(BaseModel):
     comment_id: UUID
 
+
 class CommentAuthor(BaseModel):
     username: str
     profile_url: str
+
 
 class Comment(BaseModel):
     id: str
@@ -64,14 +65,14 @@ class Comment(BaseModel):
     type: DBComment.Type
     author: CommentAuthor
 
+
 class Code(BaseModel):
     id: str
     content: str
-    author: str # username
+    author: str  # username
     file_name: str
     file_visit_url: str
     file_extension: str
-
 
 
 def get_gh_client():
@@ -113,14 +114,11 @@ async def broadcast_source_code(session: Session, manager: ConnectionManager):
             author=player.username,
             file_name=file.name,
             file_extension=file.extension,
-            file_visit_url=file.visit_url
+            file_visit_url=file.visit_url,
         )
         await manager.broadcast(
             session.id,
-            {
-                "message_type": WSResponseType.SOURCE_CODE,
-                "code": code.dict()
-            },
+            {"message_type": WSResponseType.SOURCE_CODE, "code": code.dict()},
         )
 
 
@@ -132,7 +130,9 @@ async def broadcast_comments(session: Session, manager: ConnectionManager):
         players = await session.players.all()
         id_to_player: dict[str, CommentAuthor] = {}
         for player in players:
-            id_to_player[player.id] = CommentAuthor(username=player.username, profile_url=player.profile_url)
+            id_to_player[player.id] = CommentAuthor(
+                username=player.username, profile_url=player.profile_url
+            )
         comments = []
         for db_comment in db_comments:
             author = id_to_player[db_comment.author_id]
@@ -143,7 +143,7 @@ async def broadcast_comments(session: Session, manager: ConnectionManager):
                     line_start=db_comment.line_start,
                     line_end=db_comment.line_end,
                     type=db_comment.type,
-                    author=author
+                    author=author,
                 ).dict()
             )
         await manager.broadcast(
@@ -163,19 +163,15 @@ async def on_websocket_event(
 ):
     await websocket.accept()
     session = await Session.filter(id=session_id).first()
-    connection = Connection(str(uuid4()), session_id, websocket)
+    connection = Connection(username, session_id, websocket)
     if session is None:
-        await connection.close_with_error(
-            {
-                "message_type": WSResponseType.ERROR,
-                "error_type": WSErrorType.SESSION_NOT_FOUND,
-                "error": f"Session {session_id} not found",
-            }
+        await connection.close(
+            code=WSAppStatusCodes.SESSION_NOT_FOUND,
+            reason=f"Session {session_id} not found",
         )
         return
 
     manager = ConnectionManager.instance()
-    manager.add_connection(connection)
 
     async def on_leave():
         LOGGER.info(f"{username} attempting to leave {session.id}")
@@ -186,37 +182,33 @@ async def on_websocket_event(
         LOGGER.info(f"{username} left {session.id}")
 
     async def on_join():
+        LOGGER.info(f"{username} attemping to join {session.id}")
         try:
-            LOGGER.info(f"{username} attempting to join {session.id}")
             await session.join(username, gh_client)
-            # todo: look into batching the below different ws responses into 1 response
-            # todo: don't broadcast source code and comments to everyone
-            await broadcast_lobby(session, manager)
-            await broadcast_alert(session, manager, f"{username} has joined")
-            await broadcast_source_code(session, manager)
-            await broadcast_comments(session, manager)
-            LOGGER.info(f"{username} joined {session.id}")
-        except AlreadyConnectedPlayerError as e:
-            await connection.close_with_error(
-                {
-                    "message_type": WSResponseType.ERROR,
-                    "error_type": WSErrorType.ALREADY_CONNECTED_PLAYER,
-                    "error": f"Player {username} has already connected to session {session_id}",
-                }
-            )
-            manager.remove_connection(connection)
-            raise e
         except PlayerNotInGithubError as e:
-            await connection.close_with_error(
-                {
-                    "message_type": WSResponseType.ERROR,
-                    "error_type": WSErrorType.PLAYER_NOT_IN_GITHUB,
-                    "error": f"Player's username {username} is not a valid Github username",
-                }
+            await connection.close(
+                code=WSAppStatusCodes.PLAYER_NOT_IN_GITHUB,
+                reason=f"{username} is not a valid Github user",
             )
-            manager.remove_connection(connection)
             raise e
+        except AlreadyConnectedPlayerError:
+            other_connection = manager.get_connection(username, session_id)
+            if other_connection is not None:
+                manager.remove_connection(other_connection)
+                await other_connection.close(
+                    code=WSAppStatusCodes.SWITCHING_CONNECTIONS,
+                    reason="You connected elsewhere. Refresh the current tab to connect at this location.",
+                )
 
+        manager.add_connection(connection)
+        LOGGER.info(f"Added connection {connection.id}")
+        # todo: look into batching the below different ws responses into 1 response
+        # todo: don't broadcast source code and comments to everyone
+        await broadcast_lobby(session, manager)
+        await broadcast_alert(session, manager, f"{username} has joined")
+        await broadcast_source_code(session, manager)
+        await broadcast_comments(session, manager)
+        LOGGER.info(f"{username} joined {session.id}")
         # todo: figure out how to ensure session is a consistent state when there are errors raised from broadcast_lobby and broadcast_alert
 
     async def on_pick():
@@ -236,12 +228,9 @@ async def on_websocket_event(
                         {"message_type": WSResponseType.OUT_OF_FILES_TO_PICK},
                     )
             else:
-                await connection.send(
-                    {
-                        "message_type": WSResponseType.ERROR,
-                        "error_type": WSErrorType.NOT_ALLOWED,
-                        "error": f"{username} cannot pick since they are not the host",
-                    }
+                await connection.close(
+                    code=WSAppStatusCodes.NOT_ALLOWED,
+                    reason=f"{username} cannot pick since they are not host",
                 )
 
     async def on_add_comment(add_comment_body: AddCommentBody):
@@ -255,12 +244,9 @@ async def on_websocket_event(
             )
             await broadcast_comments(session, manager)
         except NoSelectedSourceCodeError:
-            await connection.send(
-                {
-                    "message_type": WSResponseType.ERROR,
-                    "error_type": WSErrorType.NOT_ALLOWED,
-                    "error": f"{username} tried to make a comment when there doesn't exist any active source code",
-                }
+            await connection.close(
+                code=WSAppStatusCodes.NOT_ALLOWED,
+                reason=f"{username} tried to make a comment when there doesn't exist any active source code",
             )
 
     async def on_delete_comment(delete_comment_body: DeleteCommentBody):
@@ -273,19 +259,17 @@ async def on_websocket_event(
             )
 
         if comment.author_id != session.get_player_id(username):
-            deletion_error = f"{username} attempted to delete a comment authored by a different author {comment.author_id}"
+            deletion_error = (
+                f"{username} attempted to delete a comment not authored by them"
+            )
 
         if deletion_error is None:
             await session.delete_comment(comment_id)
             await broadcast_comments(session, manager)
         else:
             LOGGER.info(deletion_error)
-            await connection.send(
-                {
-                    "message_type": WSResponseType.ERROR,
-                    "error_type": WSErrorType.NOT_ALLOWED,
-                    "error": deletion_error,
-                }
+            await connection.close(
+                code=WSAppStatusCodes.NOT_ALLOWED, reason=deletion_error
             )
 
     try:
@@ -308,10 +292,11 @@ async def on_websocket_event(
                     delete_comment_body = DeleteCommentBody(**data)
                     await on_delete_comment(delete_comment_body)
             except ValueError as e:
-                LOGGER.warn(f"Invalid request body: {json.dumps(data, indent=2)}, exception: {str(e)}")
+                LOGGER.warn(f"Invalid request body: {data}, exception: {str(e)}")
             except KeyError as e:
                 LOGGER.warn(
                     f"Invalid request body: 'message_type' key missing from request"
                 )
-    except WebSocketDisconnect:
-        await on_leave()
+    except WebSocketDisconnect as e:
+        if e.code != WSAppStatusCodes.SWITCHING_CONNECTIONS:
+            await on_leave()
