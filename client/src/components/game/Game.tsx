@@ -44,6 +44,8 @@ function Game() {
     onAlert
   );
 
+  const {source_code} = state;
+
   const { isDisconnected, disconnectionMessage } = disconnection;
 
   const copyHandler = async () => {
@@ -70,8 +72,8 @@ function Game() {
   return (
     <>
       <div className="top">
-        <a href="https://github.com/rohanshiva/gitgame">
-          github.com/rohanshiva/gitgame
+        <a href={source_code.file_visit_url}>
+          {source_code.file_display_path}
         </a>
         <div className="top-btns">
           <button onClick={nextHandler} disabled={!isYouHost}>

@@ -47,6 +47,7 @@ export interface Code {
   file_name: string;
   file_extension: string;
   file_visit_url: string;
+  file_display_path: string
 }
 
 export enum ResponseType {
@@ -102,5 +103,6 @@ export const lobbyCode: Code = {
   content: "Waiting for players...",
   file_name: "lobby_waiting_for_players",
   file_extension: "markdown",
-  file_visit_url: "",
+  file_visit_url: "https://github.com/rohanshiva/gitgame",
+  file_display_path: "rohanshiva/gitgame"
 };

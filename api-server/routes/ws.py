@@ -1,5 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
-from models import Session, File, Player as DBPlayer, Comment as DBComment
+from models import Session, File, Repository, Player as DBPlayer, Comment as DBComment
 from services.github_client import GithubClient
 from models import (
     AlreadyConnectedPlayerError,
@@ -12,8 +12,9 @@ from config import GITHUB_ACCESS_TOKEN
 from enum import IntEnum
 from uuid import UUID
 from pydantic import BaseModel
-import logging
+from pathlib import PurePosixPath
 
+import logging
 LOGGER = logging.getLogger(__name__)
 
 socket_app = FastAPI()
@@ -74,6 +75,7 @@ class Code(BaseModel):
     file_name: str
     file_visit_url: str
     file_extension: str
+    file_display_path: str
 
 
 class Player(BaseModel):
@@ -81,7 +83,6 @@ class Player(BaseModel):
     username: str
     is_connected: bool
     is_host: bool
-
 
 class LobbyResponse(BaseModel):
     message_type: WSResponseType = WSResponseType.LOBBY
@@ -146,6 +147,7 @@ async def get_source_code(session: Session):
     if source_code is None:
         return None
     file = await File.get(id=source_code.file_id)
+    repo = await Repository.get(id=file.repo_id)
     player = await DBPlayer.get(id=file.author_id)
     code = Code(
         id=str(source_code.id),
@@ -154,6 +156,7 @@ async def get_source_code(session: Session):
         file_name=file.name,
         file_extension=file.extension,
         file_visit_url=file.visit_url,
+        file_display_path = str(PurePosixPath(repo.name, "...", file.name))
     )
     return CodeResponse(code=code)
 
