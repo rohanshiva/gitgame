@@ -249,7 +249,6 @@ async def on_websocket_event(
                 )
 
         manager.add_connection(connection)
-        # todo: look into batching the below different ws responses into 1 response
         # todo: don't broadcast source code and comments to everyone
         lobby = await get_lobby(session)
         alert = get_alert(f"{username} has joined")
