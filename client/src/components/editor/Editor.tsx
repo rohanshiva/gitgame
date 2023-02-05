@@ -22,7 +22,9 @@ const prismExtensionMapping: { [index: string]: string } = {
   dart: "clike",
   java: "clike",
   py: "python",
+  swift: "typescript" // dummy value to get prism to highlight swift code
 };
+
 
 function getPrismExtension(extension: string): Language {
   if (extension in prismExtensionMapping) {
