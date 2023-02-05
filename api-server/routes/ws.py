@@ -1,5 +1,5 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, status
-from models import Session, File, Player, Comment as DBComment
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
+from models import Session, File, Player as DBPlayer, Comment as DBComment
 from services.github_client import GithubClient
 from models import (
     AlreadyConnectedPlayerError,
@@ -39,6 +39,7 @@ class WSResponseType(IntEnum):
     LOBBY = 3
     SOURCE_CODE = 4
     COMMENTS = 5
+    BATCH = 6
 
 
 class AddCommentBody(BaseModel):
@@ -75,81 +76,123 @@ class Code(BaseModel):
     file_extension: str
 
 
+class Player(BaseModel):
+    profile_url: str
+    username: str
+    is_connected: bool
+    is_host: bool
+
+
+class LobbyResponse(BaseModel):
+    message_type: WSResponseType = WSResponseType.LOBBY
+    players: list[Player]
+
+
+class AlertResponse(BaseModel):
+    message_type: WSResponseType = WSResponseType.ALERT
+    alert: str
+
+
+class CodeResponse(BaseModel):
+    message_type: WSRequestType = WSResponseType.SOURCE_CODE
+    code: Code
+
+
+class CommentsResponse(BaseModel):
+    message_type: WSRequestType = WSResponseType.COMMENTS
+    comments: list[Comment]
+
+
+Response = LobbyResponse | AlertResponse | CodeResponse | CommentsResponse | None
+
+
+class BatchResponse(BaseModel):
+    message_type: WSRequestType = WSResponseType.BATCH
+    messages: list[Response]
+
+
+class WSAppPolicyViolation(Exception):
+    def __init__(self, code: int, reason: str = ""):
+        self.code = code
+        self.reason = reason
+
+
 def get_gh_client():
     return GithubClient(GITHUB_ACCESS_TOKEN)
 
 
-async def broadcast_lobby(session: Session, manager: ConnectionManager):
-    lobby_players: list[dict] = []
+async def get_lobby(session: Session):
+    lobby_players: list[Player] = []
     players = await session.players.all()
     for player in players:
         lobby_players.append(
-            dict(
+            Player(
                 profile_url=player.profile_url,
                 username=player.username,
                 is_connected=player.connection_state
-                == Player.ConnectionState.CONNECTED,
+                == DBPlayer.ConnectionState.CONNECTED,
                 is_host=session.host == player.id,
             )
         )
-    await manager.broadcast(
-        session.id, {"message_type": WSResponseType.LOBBY, "players": lobby_players}
-    )
+    return LobbyResponse(players=lobby_players)
 
 
-async def broadcast_alert(session: Session, manager: ConnectionManager, alert: str):
-    await manager.broadcast(
-        session.id, {"message_type": WSResponseType.ALERT, "alert": alert}
-    )
+def get_alert(alert: str):
+    return AlertResponse(alert=alert)
 
 
-async def broadcast_source_code(session: Session, manager: ConnectionManager):
+async def get_source_code(session: Session):
     source_code = await session.get_source_code()
-    if source_code is not None:
-        file = await File.get(id=source_code.file_id)
-        player = await Player.get(id=file.author_id)
-        code = Code(
-            id=str(source_code.id),
-            content=source_code.content,
-            author=player.username,
-            file_name=file.name,
-            file_extension=file.extension,
-            file_visit_url=file.visit_url,
-        )
-        await manager.broadcast(
-            session.id,
-            {"message_type": WSResponseType.SOURCE_CODE, "code": code.dict()},
-        )
+    if source_code is None:
+        return None
+    file = await File.get(id=source_code.file_id)
+    player = await DBPlayer.get(id=file.author_id)
+    code = Code(
+        id=str(source_code.id),
+        content=source_code.content,
+        author=player.username,
+        file_name=file.name,
+        file_extension=file.extension,
+        file_visit_url=file.visit_url,
+    )
+    return CodeResponse(code=code)
 
 
-async def broadcast_comments(session: Session, manager: ConnectionManager):
+async def get_comments(session: Session):
     source_code = await session.get_source_code()
-    if source_code is not None:
-        # not efficient from DB perspective, but when the time comes to optimize, that is when we will optimize
-        db_comments = await source_code.comments.all()
-        players = await session.players.all()
-        id_to_player: dict[str, CommentAuthor] = {}
-        for player in players:
-            id_to_player[player.id] = CommentAuthor(
-                username=player.username, profile_url=player.profile_url
-            )
-        comments = []
-        for db_comment in db_comments:
-            author = id_to_player[db_comment.author_id]
-            comments.append(
-                Comment(
-                    id=str(db_comment.id),
-                    content=db_comment.content,
-                    line_start=db_comment.line_start,
-                    line_end=db_comment.line_end,
-                    type=db_comment.type,
-                    author=author,
-                ).dict()
-            )
-        await manager.broadcast(
-            session.id,
-            {"message_type": WSResponseType.COMMENTS, "comments": comments},
+    if source_code is None:
+        return None
+    # not efficient from DB perspective, but when the time comes to optimize, that is when we will optimize
+    db_comments = await source_code.comments.all()
+    players = await session.players.all()
+    id_to_player: dict[str, CommentAuthor] = {}
+    for player in players:
+        id_to_player[player.id] = CommentAuthor(
+            username=player.username, profile_url=player.profile_url
         )
+    comments = []
+    for db_comment in db_comments:
+        author = id_to_player[db_comment.author_id]
+        comments.append(
+            Comment(
+                id=str(db_comment.id),
+                content=db_comment.content,
+                line_start=db_comment.line_start,
+                line_end=db_comment.line_end,
+                type=db_comment.type,
+                author=author,
+            ).dict()
+        )
+
+    return CommentsResponse(comments=comments)
+
+
+def get_batch(*messages: Response):
+    batch_messages = []
+    for message in messages:
+        if message is not None:
+            batch_messages.append(message)
+    return BatchResponse(messages=batch_messages)
 
 
 @socket_app.websocket(
@@ -174,15 +217,16 @@ async def on_websocket_event(
     manager = ConnectionManager.instance()
 
     async def on_leave():
-        LOGGER.info(f"{username} attempting to leave {session.id}")
+        # LOGGER.info(f"{username} attempting to leave {session.id}")
         await session.leave(username)
         manager.remove_connection(connection)
-        await broadcast_lobby(session, manager)
-        await broadcast_alert(session, manager, f"{username} has left")
-        LOGGER.info(f"{username} left {session.id}")
+        lobby = await get_lobby(session)
+        alert = get_alert(f"{username} has left")
+        await manager.broadcast(session.id, get_batch(lobby, alert).dict())
+        # LOGGER.info(f"{username} left {session.id}")
 
     async def on_join():
-        LOGGER.info(f"{username} attemping to join {session.id}")
+        # LOGGER.info(f"{username} attemping to join {session.id}")
         try:
             await session.join(username, gh_client)
         except PlayerNotInGithubError as e:
@@ -195,20 +239,23 @@ async def on_websocket_event(
             other_connection = manager.get_connection(username, session_id)
             if other_connection is not None:
                 manager.remove_connection(other_connection)
+                # calling .close on a websocket in a different event loop raises a WebSocketDisconnect error in that websocket's event loop
                 await other_connection.close(
                     code=WSAppStatusCodes.SWITCHING_CONNECTIONS,
-                    reason="You connected elsewhere. Refresh the current tab to connect at this location.",
+                    reason="You connected elsewhere. Refresh to connect at this location.",
                 )
 
         manager.add_connection(connection)
-        LOGGER.info(f"Added connection {connection.id}")
         # todo: look into batching the below different ws responses into 1 response
         # todo: don't broadcast source code and comments to everyone
-        await broadcast_lobby(session, manager)
-        await broadcast_alert(session, manager, f"{username} has joined")
-        await broadcast_source_code(session, manager)
-        await broadcast_comments(session, manager)
-        LOGGER.info(f"{username} joined {session.id}")
+        lobby = await get_lobby(session)
+        alert = get_alert(f"{username} has joined")
+        source_code = await get_source_code(session)
+        comments = await get_comments(session)
+        await manager.broadcast(
+            session.id, get_batch(lobby, alert, source_code, comments).dict()
+        )
+        # LOGGER.info(f"{username} joined {session.id}")
         # todo: figure out how to ensure session is a consistent state when there are errors raised from broadcast_lobby and broadcast_alert
 
     async def on_pick():
@@ -221,14 +268,15 @@ async def on_websocket_event(
             if session.host == acting_player:
                 try:
                     await session.pick_source_code(gh_client)
-                    await broadcast_source_code(session, manager)
+                    source_code = await get_source_code(session)
+                    await manager.broadcast(session.id, source_code.dict())
                 except OutOfFilesError:
                     await manager.broadcast(
                         session_id,
                         {"message_type": WSResponseType.OUT_OF_FILES_TO_PICK},
                     )
             else:
-                await connection.close(
+                raise WSAppPolicyViolation(
                     code=WSAppStatusCodes.NOT_ALLOWED,
                     reason=f"{username} cannot pick since they are not host",
                 )
@@ -242,9 +290,10 @@ async def on_websocket_event(
                 add_comment_body.type,
                 username,
             )
-            await broadcast_comments(session, manager)
+            comments = await get_comments(session)
+            await manager.broadcast(session.id, comments.dict())
         except NoSelectedSourceCodeError:
-            await connection.close(
+            raise WSAppPolicyViolation(
                 code=WSAppStatusCodes.NOT_ALLOWED,
                 reason=f"{username} tried to make a comment when there doesn't exist any active source code",
             )
@@ -265,17 +314,17 @@ async def on_websocket_event(
 
         if deletion_error is None:
             await session.delete_comment(comment_id)
-            await broadcast_comments(session, manager)
+            comments = await get_comments(session)
+            await manager.broadcast(session.id, comments.dict())
         else:
-            LOGGER.info(deletion_error)
-            await connection.close(
+            raise WSAppPolicyViolation(
                 code=WSAppStatusCodes.NOT_ALLOWED, reason=deletion_error
             )
 
     try:
         await on_join()
     except Exception as e:
-        LOGGER.error(e)
+        LOGGER.exception(e)
         return
 
     try:
@@ -298,5 +347,12 @@ async def on_websocket_event(
                     f"Invalid request body: 'message_type' key missing from request"
                 )
     except WebSocketDisconnect as e:
+        LOGGER.info(f"Client disconnection: {e.code} {e.reason}")
         if e.code != WSAppStatusCodes.SWITCHING_CONNECTIONS:
             await on_leave()
+    except WSAppPolicyViolation as e:
+        # Calling websocket.close in the same event loop which processes the websocket does not seem to throw a WebSocketDisconnect error
+        # Hence this custom exception was created
+        LOGGER.info(f"Server disconnection: {e.code} {e.reason}")
+        await connection.close(code=e.code, reason=e.reason)
+        await on_leave()

@@ -1,37 +1,37 @@
 export enum CommentType {
   POOP = "poop",
-  DIAMOND = "diamond"
+  DIAMOND = "diamond",
 }
 
 export interface Lines {
-  start: number,
-  end: number
+  start: number;
+  end: number;
 }
 
 export interface Author {
-  username: string,
-  profile_url: string
+  username: string;
+  profile_url: string;
 }
 
 export interface AddComment {
-  content: string,
-  line_start: number,
-  line_end: number,
-  type: CommentType
+  content: string;
+  line_start: number;
+  line_end: number;
+  type: CommentType;
 }
 
 export interface Comment {
-  content: string,
-  line_start: number,
-  line_end: number,
-  type: CommentType,
-  id: string,
-  author: Author
+  content: string;
+  line_start: number;
+  line_end: number;
+  type: CommentType;
+  id: string;
+  author: Author;
 }
 
 export const commentTypeToEmoji = (commentType: CommentType) => {
- return commentType === CommentType.POOP ? "💩" : "💎"
-}
+  return commentType === CommentType.POOP ? "💩" : "💎";
+};
 
 export interface Player {
   username: string;
@@ -55,13 +55,14 @@ export enum ResponseType {
   OUT_OF_FILES_TO_PICK = 2,
   LOBBY = 3,
   SOURCE_CODE = 4,
-  COMMENTS = 5
+  COMMENTS = 5,
+  BATCH = 6,
 }
 
 export enum RequestType {
   PICK_SOURCE_CODE = 1,
   ADD_COMMENT = 2,
-  DELETE_COMMENT = 3
+  DELETE_COMMENT = 3,
 }
 
 export interface ResponsePayload {
@@ -81,7 +82,11 @@ export interface AlertPayload extends ResponsePayload {
 }
 
 export interface CommentsPayload extends ResponsePayload {
-  comments: Comment[]
+  comments: Comment[];
+}
+
+export interface BatchPayload extends ResponsePayload {
+  messages: ResponsePayload[];
 }
 
 export interface GameState {

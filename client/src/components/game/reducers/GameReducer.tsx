@@ -1,31 +1,46 @@
-import { CommentsAction, LobbyAction, SourceCodeAction } from "../actions/GameActions";
-import toast from "react-hot-toast";
-import { SUCCESS } from "../../notifications/Notification";
 import {
-  AlertPayload,
+  CommentsAction,
+  LobbyAction,
+  SourceCodeAction,
+} from "../actions/GameActions";
+import {
   GameState,
   LobbyPayload,
   ResponsePayload,
   ResponseType,
   SourceCodePayload,
-  CommentsPayload
+  CommentsPayload,
+  BatchPayload,
 } from "../../../Interface";
 
-export default function gameReducer(
-  state: GameState,
-  [type, payload]: [ResponseType, ResponsePayload]
-) {
-  switch (type) {
+
+function getNewState(state: GameState, payload: ResponsePayload) {
+  switch (payload.message_type) {
     case ResponseType.LOBBY:
       return LobbyAction(state, payload as LobbyPayload);
     case ResponseType.SOURCE_CODE:
       return SourceCodeAction(state, payload as SourceCodePayload);
     case ResponseType.COMMENTS:
-      return CommentsAction(state, payload as CommentsPayload)
-    case ResponseType.ALERT:
-      //todo: 2 toasts get rendered, investigate and ensure only 1 toast gets rendered
-      toast((payload as AlertPayload).alert, SUCCESS as any);
+      return CommentsAction(state, payload as CommentsPayload);
+    default:
       return state;
   }
-  return state;
+
+}
+
+export default function gameReducer(
+  state: GameState,
+  payload: ResponsePayload
+) {
+  let messages = [payload];
+  if (payload.message_type === ResponseType.BATCH) {
+    messages = (payload as BatchPayload).messages;
+  }
+
+  let newState = state;
+  for (const message of messages) {
+    newState = getNewState(newState, message);
+  }
+
+  return newState;
 }

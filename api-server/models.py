@@ -12,7 +12,6 @@ from services.github_client import (
     GithubRepositoryFileLoadingError,
 )
 from pathlib import Path
-from typing import TypedDict
 
 LOGGER = logging.getLogger()
 
@@ -36,6 +35,7 @@ class NoSelectedSourceCodeError(Exception):
 class Session(models.Model):
     id = fields.CharField(max_length=20, pk=True)
     created_at = fields.DatetimeField(auto_now_add=True)
+    version = fields.IntField(default=0)
 
     # nullable, stores the host player's id. Attempting to make this a type of a ForeignKey relation will result in an 'cylical fk reference' error by Tortoise
     host = fields.CharField(null=True, max_length=40)
@@ -46,12 +46,17 @@ class Session(models.Model):
 
     async def join(self, username: str, gh_client: GithubClient):
         player_id = self.get_player_id(username)
+        LOGGER.info(f"{player_id} is trying to join")
         async with in_transaction():
             await self.select_for_update()
+            await self.refresh_from_db()
             player = await Player.get_or_none(id=player_id)
             if player and player.connection_state == Player.ConnectionState.CONNECTED:
                 raise AlreadyConnectedPlayerError()
 
+            LOGGER.info(
+                f"{player_id} is joining with host {self.host}, version: {self.version}"
+            )
             if player:
                 player.connection_state = Player.ConnectionState.CONNECTED
                 await player.save(update_fields=["connection_state"])
@@ -70,17 +75,30 @@ class Session(models.Model):
                     raise PlayerNotInGithubError()
                 await player.load_files(gh_client)
 
+            update_fields = ["version"]
             if self.host is None:
                 self.host = player.id
-                await self.save(update_fields=["host"])
+                update_fields.append("host")
+
+            self.version += 1
+            await self.save(update_fields=update_fields)
+            LOGGER.info(
+                f"{player_id} is joining update complete, version: {self.version}"
+            )
 
     async def leave(self, username: str):
         player_id = self.get_player_id(username)
+        LOGGER.info(f"{player_id} is trying to leave")
         async with in_transaction():
             await self.select_for_update()
+            await self.refresh_from_db()
             player = await Player.get(id=player_id)
             player.connection_state = Player.ConnectionState.DISCONNECTED
             await player.save(update_fields=["connection_state"])
+            LOGGER.info(
+                f"{player_id} is leaving with host {self.host}, version: {self.version}"
+            )
+            update_fields = ["version"]
             if self.host == player_id:
                 connected_players = await self.players.filter(
                     connection_state=Player.ConnectionState.CONNECTED
@@ -92,8 +110,12 @@ class Session(models.Model):
                     LOGGER.info(f"Host changing to {new_host.id} for {self.id}")
                 else:
                     self.host = None
-                await self.save(update_fields=["host"])
-        LOGGER.info(f"{username} leaving update has been applied to {self.id}")
+                update_fields.append("host")
+            self.version += 1
+            await self.save(update_fields=update_fields)
+            LOGGER.info(
+                f"{username} leaving update has been applied to {self.id}, version: {self.version}"
+            )
 
     async def pick_source_code(self, gh_client: GithubClient):
         async with in_transaction():
