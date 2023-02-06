@@ -118,11 +118,11 @@ export const Playground = () => {
 
   return (
     <>
-      <div className="top">
+      <div className="playground-top">
         <a href="https://github.com/rohanshiva/gitgame">
           github.com/rohanshiva/gitgame
         </a>
-        <div className="top-btns">
+        <div className="playground-top-btns">
           <button>Next</button>
           <button onClick={() => setShowHelp((v) => !v)}>
             {showHelp ? "Comments" : "Help"}

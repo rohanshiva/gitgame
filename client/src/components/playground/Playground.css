@@ -10,7 +10,7 @@
   }
 }
 
-.top {
+.playground-top {
   padding: 0.2rem 0rem;
   display: flex;
   flex-direction: row;
@@ -18,7 +18,7 @@
   align-items: center;
 }
 
-.top > a {
+.playground-top > a {
   font-family: monospace;
   color: var(--accent);
   font-weight: bold;
@@ -29,17 +29,17 @@
   max-width: 20ch;
 }
 
-.top > a:hover {
+.playground-top > a:hover {
   text-decoration: underline;
 }
 
-.top-btns {
+.playground-top-btns {
   display: flex;
   flex: row;
   gap: 1rem;
 }
 
-/* .top-btns > button {
+/* .playground-top-btns > button {
 
     color: var(--primary);
     cursor: pointer;
@@ -52,12 +52,12 @@
     border: 0.1rem solid var(--secondary-accent);
 }
 
-.top-btns > button:hover {
+.playground-top-btns > button:hover {
     color: var(--bg);
     background-color: var(--primary);
 } */
 
-.top-btns > button {
+.playground-top-btns > button {
   padding: 0.5rem 0.8rem;
   font-size: 1rem;
   font-weight: 600;
@@ -68,17 +68,17 @@
   height: min-content;
 }
 
-.top-btns > button:hover {
+.playground-top-btns > button:hover {
   cursor: pointer;
   color: var(--accent);
   transition: background 0.5s ease;
 }
 
-.top-btns > button:disabled {
+.playground-top-btns > button:disabled {
   opacity: 60%;
 }
 
-.top-btns > button:disabled:hover {
+.playground-top-btns > button:disabled:hover {
   color: var(--primary);
 }
 

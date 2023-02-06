@@ -53,8 +53,6 @@
   white-space: nowrap;
   overflow: hidden;
   direction: rtl;
-  text-overflow: ellipsis;
-  max-width: 20ch;
 }
 
 .top > a:hover {

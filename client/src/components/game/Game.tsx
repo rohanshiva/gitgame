@@ -1,28 +1,22 @@
-import { useReducer, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useHistory } from "react-router-dom";
-import routes_ from "../../constants/Route";
 import Notification, {
   SUCCESS,
-  ERROR,
   LOADING,
   toastWithId,
   NotificationDisplay,
 } from "../notifications/Notification";
 import Editor from "../editor";
-import config from "../../config";
-import gameReducer from "./reducers/GameReducer";
 import toast from "react-hot-toast";
 import "./Game.css";
-import useSocket from "./hooks/socket/UseSocket";
 import {
   AddComment,
-  GameState,
-  lobbyCode,
-  RequestType,
-  Lines,
+  Lines
 } from "../../Interface";
 import CommentSider from "../commentSider";
+import DisconnectionModal from "./disconnection/DisconnectionModal";
+import useGameConnection from "./hooks/gameConnection/UseGameConnection";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
@@ -34,72 +28,25 @@ function getUsername(path: string) {
   return pathParams[pathParams.length - 1];
 }
 
-function getWebSocketAddress(sessionId: string, username: string) {
-  return `${config.wsUri}/${config.socket.uri
-    .replace(":sessionId", sessionId)
-    .replace(":username", username)}`;
-}
-
-interface GameProps {
-  initialState: GameState;
-}
-
-const defaultState: GameState = {
-  players: [],
-  host: "",
-  source_code: lobbyCode,
-  comments: [],
-};
-
-function Game({ initialState }: GameProps) {
+function Game() {
   const history = useHistory();
-  const [focusLines, setFocusLines] = useState<Lines | undefined>(undefined);
-  const [state, dispatch] = useReducer(gameReducer, initialState);
-
-  const beforeWsOpen = useCallback(() => {
-    /*toast(
-      "Connecting to session...",
-      toastWithId(LOADING, NotificationDisplay.CONNECTING)
-    );
-    */
-  }, []);
-
-  const onWsOpen = useCallback(() => {
-    //toast.dismiss(NotificationDisplay.CONNECTING);
-  }, []);
-
-  const onWsMessage = useCallback(
-    (data: any) => {
-      const packet = JSON.parse(data);
-      if (packet.error) {
-        toast(
-          `Failed to join session with error: ${packet.error}`,
-          ERROR as any
-        );
-        history.push(routes_.root());
-      } else {
-        dispatch([packet.message_type, packet]);
-      }
-    },
-    [dispatch, history]
-  );
-
-  const onWsClose = useCallback(() => {}, []);
-
-  // implement this, right now the app just breaks when trying to connect to a ws url which doesn't exist.
-  const onWsError = useCallback(() => {}, []);
-
   const sessionId = getSessionId(history.location.pathname);
   const username = getUsername(history.location.pathname);
-  const socketUrl = getWebSocketAddress(sessionId, username);
-  const { sendMessage } = useSocket(
-    socketUrl,
-    beforeWsOpen,
-    onWsOpen,
-    onWsMessage,
-    onWsClose,
-    onWsError
+  const [focusLines, setFocusLines] = useState<Lines | undefined>(undefined);
+
+  const onAlert = useCallback((alert: string) => {
+    toast(alert, SUCCESS as any);
+  }, []);
+
+  const { state, actions, disconnection } = useGameConnection(
+    sessionId,
+    username,
+    onAlert
   );
+
+  const {source_code} = state;
+
+  const { isDisconnected, disconnectionMessage } = disconnection;
 
   const copyHandler = async () => {
     await navigator.clipboard.writeText(sessionId);
@@ -107,28 +54,26 @@ function Game({ initialState }: GameProps) {
   };
 
   const nextHandler = () => {
+    
     toast(
       "Fetching next chunk",
       toastWithId(LOADING, NotificationDisplay.NEXT_ROUND)
     );
-    sendMessage({ message_type: RequestType.PICK_SOURCE_CODE });
+
+    actions.pickSourceCode();
   };
 
   const addCommentHandler = (comment: AddComment) => {
-    sendMessage({
-      message_type: RequestType.ADD_COMMENT,
-      ...comment,
-    });
+    actions.addComment(comment);
   };
 
   const isHost = (username: string) => username === state.host;
   const isYouHost = isHost(username);
-
   return (
     <>
       <div className="top">
-        <a href="https://github.com/rohanshiva/gitgame">
-          github.com/rohanshiva/gitgame
+        <a href={source_code.file_visit_url}>
+          {source_code.file_display_path}
         </a>
         <div className="top-btns">
           <button onClick={nextHandler} disabled={!isYouHost}>
@@ -146,12 +91,12 @@ function Game({ initialState }: GameProps) {
         <CommentSider comments={state.comments} setFocusLines={setFocusLines} />
       </div>
       <Notification />
+      <DisconnectionModal
+        shouldOpen={isDisconnected}
+        message={disconnectionMessage as string}
+      />
     </>
   );
 }
-
-Game.defaultProps = {
-  initialState: defaultState,
-};
 
 export default Game;
