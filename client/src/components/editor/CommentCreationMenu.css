@@ -1,0 +1,43 @@
+.add-comment-container {
+  padding: 0.5rem 0.5rem;
+  font-size: 0.6rem;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+textarea {
+  border: none;
+  border-radius: 0.3rem;
+  outline: none;
+  width: max-content;
+  padding: 0.5rem;
+  color: var(--primary);
+  background-color: var(--section-bg);
+  font-weight: 400;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.add-comments-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.add-comment-button {
+  border: none;
+  background-color: var(--bg);
+  color: var(--primary);
+  outline: none;
+  height: min-content;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.add-comment-header {
+  font-size: 1rem;
+  font-weight: 500;
+}

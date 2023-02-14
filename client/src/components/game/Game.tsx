@@ -66,6 +66,8 @@ function Game() {
 
   const isHost = (username: string) => username === state.host;
   const isYouHost = isHost(username);
+
+  //disable comment creation on initial lobby chunk
   return (
     <>
       <div className="top">
