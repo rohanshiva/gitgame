@@ -68,6 +68,10 @@ function useGameConnection(
       setDisconnectionMessage(null);
     };
 
+    socket.onerror = (ev) => {
+      console.log(`Ran into a WS error: ${ev}`);
+    } 
+
     setWs(socket);
 
     return () => {
