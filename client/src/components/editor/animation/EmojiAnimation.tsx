@@ -230,7 +230,6 @@ function EmojiShower({ zone, emoji, count, onFinish }: EmojiShowerProps) {
       const rightBoundary =
         zone.topLeft.x + (zone.width - emoji.size) - boundingBox.topLeft.x;
 
-      // todo(ramko9999): bound the pieces using the topBoundary?
       if (emoji.type === EmojiSpriteType.PIECE) {
         if (
           emoji.position.x <= leftBoundary ||
@@ -257,13 +256,14 @@ function EmojiShower({ zone, emoji, count, onFinish }: EmojiShowerProps) {
 
       const dx = emoji.velocity.x;
       newEmoji.position.x = Math.min(
-        Math.max(newEmoji.position.x + dx, 0),
+        Math.max(newEmoji.position.x + dx, leftBoundary),
         rightBoundary
       );
 
       newEmoji.version++;
 
       const dy = emoji.velocity.y;
+      // todo(ramko9999): bound the pieces using the topBoundary instead of 0 (height of the parent)?
       newEmoji.position.y = Math.min(
         Math.max(newEmoji.position.y + dy, 0),
         bottomBoundary
