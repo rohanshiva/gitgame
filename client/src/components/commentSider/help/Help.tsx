@@ -26,15 +26,14 @@ function Help() {
         </div>
         <div>Click on any line number.</div>
         <div>
-          Hold{" "}
+          To select multiple lines, hold{" "}
           <strong>
             <kbd>shift</kbd>
           </strong>{" "}
-          and click on any line number below or above to select a group of
-          lines.
+          and click on any line number below or above.
         </div>
         <div>
-          Click the <kbd>...</kbd> next to the selected line number to trigger
+          Right click within the highlighted region to trigger
           the comment creation popup.
         </div>
         <div>Type your comment in the popover texarea.</div>
