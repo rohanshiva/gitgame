@@ -47,7 +47,7 @@ export interface Code {
   file_name: string;
   file_extension: string;
   file_visit_url: string;
-  file_display_path: string
+  file_display_path: string;
 }
 
 export enum ResponseType {
@@ -58,6 +58,7 @@ export enum ResponseType {
   SOURCE_CODE = 4,
   COMMENTS = 5,
   BATCH = 6,
+  NEW_COMMENT = 7,
 }
 
 export enum RequestType {
@@ -66,7 +67,16 @@ export enum RequestType {
   DELETE_COMMENT = 3,
 }
 
-export interface ResponsePayload {
+export enum GameStateDispatchEventType {
+  WS_RESPONSE = 1,
+  ACK_NEW_COMMENT = 2,
+}
+
+export interface GameStateDispatchEvent {
+  event_type: GameStateDispatchEventType;
+}
+
+export interface ResponsePayload extends GameStateDispatchEvent {
   message_type: ResponseType;
 }
 
@@ -86,8 +96,16 @@ export interface CommentsPayload extends ResponsePayload {
   comments: Comment[];
 }
 
+export interface NewCommentPayload extends ResponsePayload {
+  comment: Comment;
+}
+
 export interface BatchPayload extends ResponsePayload {
   messages: ResponsePayload[];
+}
+
+export interface AckNewComment extends GameStateDispatchEvent {
+  comment_id: string;
 }
 
 export interface GameState {
@@ -95,6 +113,7 @@ export interface GameState {
   host: string;
   source_code: Code;
   comments: Comment[];
+  new_comments: Comment[];
 }
 
 export const lobbyCode: Code = {
@@ -104,5 +123,5 @@ export const lobbyCode: Code = {
   file_name: "lobby_waiting_for_players",
   file_extension: "markdown",
   file_visit_url: "https://github.com/rohanshiva/gitgame",
-  file_display_path: "rohanshiva/gitgame"
+  file_display_path: "rohanshiva/gitgame",
 };

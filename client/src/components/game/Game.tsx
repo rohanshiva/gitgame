@@ -42,7 +42,7 @@ function Game() {
     onAlert
   );
 
-  const { source_code, players } = state;
+  const { source_code, players, new_comments, comments } = state;
 
   const { isDisconnected, disconnectionMessage } = disconnection;
 
@@ -71,7 +71,9 @@ function Game() {
   return (
     <>
       <div className="top">
-        <a href={source_code.file_visit_url} target="_blank">{source_code.file_display_path}</a>
+        <a href={source_code.file_visit_url} target="_blank">
+          {source_code.file_display_path}
+        </a>
         <div className="top-right">
           <Lobby players={players} locationUser={username} />
           <div className="top-btns">
@@ -84,11 +86,13 @@ function Game() {
       </div>
       <div className="mid">
         <Editor
-          code={state.source_code}
+          code={source_code}
+          newComments={new_comments}
+          onNewCommentAck={actions.ackNewComment}
           addComment={addCommentHandler}
           focusLines={focusLines}
         />
-        <CommentSider comments={state.comments} setFocusLines={setFocusLines} />
+        <CommentSider comments={comments} setFocusLines={setFocusLines} />
       </div>
       <Notification />
       <DisconnectionModal

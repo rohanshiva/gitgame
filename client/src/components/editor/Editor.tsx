@@ -3,7 +3,13 @@ import "./Editor.css";
 import darkTheme from "./EditorDarkTheme";
 import lightTheme from "prism-react-renderer/themes/github";
 import "./Editor.css";
-import { Code, Lines, AddComment, commentTypeToEmoji } from "../../Interface";
+import {
+  Code,
+  Lines,
+  AddComment,
+  commentTypeToEmoji,
+  Comment,
+} from "../../Interface";
 import ThemeContext, { isDark } from "../../context/ThemeContext";
 import { Pre, Line, LineNo, LineContent } from "./Styles";
 import Highlight, { defaultProps, Language } from "prism-react-renderer";
@@ -13,6 +19,8 @@ import EmojiShower, { BoundingBox } from "./animation/EmojiAnimation";
 
 interface EditorProps {
   code: Code;
+  newComments: Comment[];
+  onNewCommentAck: (comment_id: string) => void;
   addComment?: (comment: AddComment) => void;
   focusLines?: Lines;
 }
@@ -44,7 +52,16 @@ function getPrismExtension(extension: string): Language {
   return extension as Language;
 }
 
-function Editor({ code, addComment, focusLines }: EditorProps) {
+function Editor({
+  code,
+  newComments,
+  onNewCommentAck,
+  addComment,
+  focusLines,
+}: EditorProps) {
+
+  console.log(newComments);
+
   useEffect(() => {
     scrollToFocusLine();
   }, [focusLines]);
@@ -55,15 +72,6 @@ function Editor({ code, addComment, focusLines }: EditorProps) {
     shouldOpen: false,
     posX: -1,
     posY: -1,
-  });
-  const [emojiShowerProps, setEmojiShowerProps] = useState<EmojiShowerState>({
-    shouldShower: false,
-    emoji: "",
-    box: {
-      topLeft: { x: -1, y: -1 },
-      width: -1,
-      height: -1,
-    },
   });
 
   const closeContextMenu = () => {
@@ -80,47 +88,16 @@ function Editor({ code, addComment, focusLines }: EditorProps) {
     setSelectedLines({ start: undefined, end: undefined });
   };
 
-  const shower = (
-    emoji: string,
-    start: number,
-    end: number,
-    box: BoundingBox
-  ) => {
-    setEmojiShowerProps({
-      shouldShower: true,
-      emoji: emoji,
-      box,
-    });
-  };
 
   const addCommentToLineSelection = (comment: AddComment) => {
     if (addComment !== undefined) {
       addComment(comment);
     }
-    const start = selectedLines.start as number;
-    const end = selectedLines.end as number;
-
-    const startBox =
-      selectionStartRef.current?.getBoundingClientRect() as DOMRect;
-
-    let box = {
-      topLeft: { x: startBox.x, y: startBox.y },
-      width: startBox.width,
-      height: startBox.height
-    }
-
-    if(selectionEndRef.current != null){
-      const endBox = selectionEndRef.current?.getBoundingClientRect() as DOMRect;
-      box.width = Math.max(box.width, endBox.width);
-      box.height = endBox.y - startBox.y;
-    }
     cancelLineSelection();
-    shower(commentTypeToEmoji(comment.type), start, end, box);
   };
 
   const focusLineRef = useRef<HTMLInputElement | null>(null);
-  const selectionStartRef = useRef<HTMLElement | null>(null);
-  const selectionEndRef = useRef<HTMLElement | null>(null);
+  const codeRef = useRef<HTMLPreElement | null>(null);
 
   const scrollToFocusLine = () => {
     focusLineRef.current?.scrollIntoView();
@@ -139,6 +116,40 @@ function Editor({ code, addComment, focusLines }: EditorProps) {
     }
 
     return focusLines.start <= lineNumber && lineNumber <= focusLines.end;
+  };
+
+  const computeBoundingBox = (lineStartNo: number, lineEndNo: number) => {
+    const lineStart = document.getElementById(`${lineStartNo}-content`);
+    const lineEnd = document.getElementById(`${lineEndNo}-content`);
+
+    const startBox = (
+      lineStart as HTMLElement
+    ).getBoundingClientRect() as DOMRect;
+
+    let box = {
+      topLeft: { x: startBox.x, y: startBox.y },
+      width: startBox.width,
+      height: startBox.height,
+    };
+    if (lineStart !== lineEnd) {
+      const endBox = (lineEnd as HTMLElement).getBoundingClientRect() as DOMRect;
+      box.width = Math.max(box.width, endBox.width);
+      box.height = endBox.y - startBox.y;
+    }
+    return box;
+  };
+
+  const getShowersProps = () => {
+    return newComments.map((comment) => {
+      const { id, line_end, line_start, type } = comment;
+      const box = computeBoundingBox(line_start, line_end);
+      return {
+        comment,
+        id,
+        box,
+        emoji: commentTypeToEmoji(type),
+      };
+    });
   };
 
   return (
@@ -172,23 +183,22 @@ function Editor({ code, addComment, focusLines }: EditorProps) {
         {({ className, style, tokens, getLineProps, getTokenProps }) => {
           return (
             <>
-              <Pre>
-                {emojiShowerProps.shouldShower && (
-                  <EmojiShower
-                    key={"shower"}
-                    emoji={emojiShowerProps.emoji}
-                    zone={emojiShowerProps.box}
-                    count={30}
-                    onFinish={() => {
-                      setEmojiShowerProps((props) => {
-                        return {
-                          ...props,
-                          shouldShower: false,
-                        };
-                      });
-                    }}
-                  />
-                )}
+              <Pre ref={codeRef}>
+                {getShowersProps().map((props) => {
+                  return (
+                    <EmojiShower
+                      key={props.id}
+                      emoji={props.emoji}
+                      zone={props.box}
+                      count={30}
+                      onFinish={() => {
+                        //Understand why onFinish can be triggered even after the next source code arrives and the Editor is re-rendered with
+                        //that next source code
+                        onNewCommentAck(props.comment.id)
+                      }}
+                    />
+                  );
+                })}
                 {tokens.map((line, lineIndex) => (
                   <Line
                     key={lineIndex}
@@ -199,7 +209,7 @@ function Editor({ code, addComment, focusLines }: EditorProps) {
                       {lineIndex + 1}
                     </LineNo>
                     <LineContent
-                      onClick={(e) => console.log(e.pageY)}
+                      id={`${lineIndex}-content`}
                       className={
                         isLineSelected(lineIndex) || isFocusLine(lineIndex + 1)
                           ? "selected-line"
@@ -218,13 +228,6 @@ function Editor({ code, addComment, focusLines }: EditorProps) {
                           });
                         }
                       }}
-                      ref={
-                        selectedLines.start === lineIndex
-                          ? selectionStartRef
-                          : selectedLines.end === lineIndex
-                          ? selectionEndRef
-                          : null
-                      }
                     >
                       {line.map((token, tokenIndex) => (
                         <span

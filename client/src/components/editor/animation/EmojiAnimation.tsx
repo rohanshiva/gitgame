@@ -230,8 +230,12 @@ function EmojiShower({ zone, emoji, count, onFinish }: EmojiShowerProps) {
       const rightBoundary =
         zone.topLeft.x + (zone.width - emoji.size) - boundingBox.topLeft.x;
 
+      // todo(ramko9999): bound the pieces using the topBoundary?
       if (emoji.type === EmojiSpriteType.PIECE) {
-        if (emoji.position.x <= leftBoundary || emoji.position.x >= rightBoundary) {
+        if (
+          emoji.position.x <= leftBoundary ||
+          emoji.position.x >= rightBoundary
+        ) {
           return [];
         }
         if (emoji.position.y >= bottomBoundary) {
