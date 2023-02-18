@@ -31,12 +31,6 @@ interface EditorContextMenu {
   posY: number;
 }
 
-interface EmojiShowerState {
-  shouldShower: boolean;
-  emoji: string;
-  box: BoundingBox;
-}
-
 // todo: fill this out for supported languages
 const prismExtensionMapping: { [index: string]: string } = {
   dart: "clike",
@@ -59,9 +53,6 @@ function Editor({
   addComment,
   focusLines,
 }: EditorProps) {
-
-  console.log(newComments);
-
   useEffect(() => {
     scrollToFocusLine();
   }, [focusLines]);
@@ -87,7 +78,6 @@ function Editor({
     closeContextMenu();
     setSelectedLines({ start: undefined, end: undefined });
   };
-
 
   const addCommentToLineSelection = (comment: AddComment) => {
     if (addComment !== undefined) {
@@ -132,7 +122,9 @@ function Editor({
       height: startBox.height,
     };
     if (lineStart !== lineEnd) {
-      const endBox = (lineEnd as HTMLElement).getBoundingClientRect() as DOMRect;
+      const endBox = (
+        lineEnd as HTMLElement
+      ).getBoundingClientRect() as DOMRect;
       box.width = Math.max(box.width, endBox.width);
       box.height = endBox.y - startBox.y;
     }
@@ -163,7 +155,7 @@ function Editor({
         className="editor-context-menu"
         onClick={(event: React.MouseEvent) => {
           event.stopPropagation();
-          console.log("Context Menu Clicked");
+          console.log("Editor Context Menu Triggered");
         }}
         style={{ top: contextMenuProps.posY, left: contextMenuProps.posX }}
       >
@@ -192,9 +184,9 @@ function Editor({
                       zone={props.box}
                       count={30}
                       onFinish={() => {
-                        //Understand why onFinish can be triggered even after the next source code arrives and the Editor is re-rendered with
+                        //todo(Ramko9999): Understand why onFinish can be triggered even after the next source code arrives and the Editor is re-rendered with
                         //that next source code
-                        onNewCommentAck(props.comment.id)
+                        onNewCommentAck(props.comment.id);
                       }}
                     />
                   );
@@ -205,20 +197,24 @@ function Editor({
                     {...getLineProps({ line, key: lineIndex })}
                     ref={isStartOfFocusLines(lineIndex) ? focusLineRef : null}
                   >
-                    <LineNo onClick={(e) => handleLineToggle(e, lineIndex)}>
+                    <LineNo
+                      onClick={(e) => {
+                        handleLineToggle(e, lineIndex);
+                      }}
+                    >
                       {lineIndex + 1}
                     </LineNo>
                     <LineContent
                       id={`${lineIndex}-content`}
                       className={
-                        isLineSelected(lineIndex) || isFocusLine(lineIndex + 1)
+                        isLineSelected(lineIndex) || isFocusLine(lineIndex)
                           ? "selected-line"
                           : "line"
                       }
                       onContextMenu={(event: React.MouseEvent) => {
                         if (
                           isLineSelected(lineIndex) ||
-                          isFocusLine(lineIndex + 1)
+                          isFocusLine(lineIndex)
                         ) {
                           event.preventDefault();
                           setContextMenuProps({

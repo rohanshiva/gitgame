@@ -57,6 +57,7 @@ function Game() {
       toastWithId(LOADING, NotificationDisplay.NEXT_ROUND)
     );
 
+    setFocusLines(undefined);
     actions.pickSourceCode();
   };
 
@@ -67,7 +68,7 @@ function Game() {
   const isHost = (username: string) => username === state.host;
   const isYouHost = isHost(username);
 
-  //disable comment creation on initial lobby chunk
+  //todo(Ramko9999): disable any interaction on the lobby chunk
   return (
     <>
       <div className="top">

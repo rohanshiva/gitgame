@@ -25,6 +25,7 @@ function CommentCreationMenu({
         type: CommentType.DIAMOND,
         content: commentMessage,
       });
+      setCommentMessage("");
     }
   };
 
@@ -36,6 +37,7 @@ function CommentCreationMenu({
         type: CommentType.POOP,
         content: commentMessage,
       });
+      setCommentMessage("");
     }
   };
 
