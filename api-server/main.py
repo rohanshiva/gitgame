@@ -6,10 +6,12 @@ from tortoise import Tortoise
 from config import DB_URI
 from routes import socket_app
 from routes import session
+from routes import auth
 
 logger = logging.getLogger()
 
 app = FastAPI()
+app.include_router(auth.router)
 app.include_router(session.router)
 
 origins = ["http://localhost:3000", "http://127.0.0.1:3000"]

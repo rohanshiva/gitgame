@@ -17,7 +17,7 @@ const config = {
     uri: "session/:sessionId",
   },
   socket: {
-    uri: "socket/:sessionId/:username",
+    uri: "socket/:sessionId",
   },
 };
 

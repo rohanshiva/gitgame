@@ -31,6 +31,12 @@ class RateLimitResult(TypedDict):
     reset: datetime
 
 
+class UserDict(TypedDict):
+    username: str
+    name: str
+    node_id: str
+
+
 class GithubUserNotFound(Exception):
     pass
 
@@ -40,6 +46,10 @@ class GithubRepositoryFileLoadingError(Exception):
 
 
 class GithubFileDownloadError(Exception):
+    pass
+
+
+class GithubUserLoadingError(Exception):
     pass
 
 
@@ -155,3 +165,19 @@ class GithubClient:
             if response.status_code != status.HTTP_200_OK:
                 raise GithubFileDownloadError()
             return str(response.content, encoding="utf-8")
+
+    async def get_user(self):
+        endpoint = "https://api.github.com/user"
+        async with AsyncClient() as client:
+            response = await client.get(endpoint, headers=self.HEADERS)
+            if response.status_code == status.HTTP_404_NOT_FOUND:
+                raise GithubUserNotFound()
+            if response.status_code != status.HTTP_200_OK:
+                logger.warn(
+                    f"Unable to load user information: {response.json()['message']}"
+                )
+                raise GithubUserLoadingError()
+            user = response.json()
+            return UserDict(
+                username=user["login"], name=user["name"], node_id=user["node_id"]
+            )

@@ -38,7 +38,6 @@ function Game() {
 
   const { state, actions, disconnection } = useGameConnection(
     sessionId,
-    username,
     onAlert
   );
 

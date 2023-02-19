@@ -1,5 +1,6 @@
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, Cookies
+from services.auth import Auth
 from models import Session
 
 
@@ -7,6 +8,10 @@ from models import Session
 class TestMakeSession:
     @pytest.mark.anyio
     async def test_make_session(self, api_client: AsyncClient):
+        cookies = Cookies()
+        username = "test_username"
+        cookies.set("token", Auth.encode(username))
+        api_client.cookies = cookies
         response = await api_client.post("/session/make")
         assert response.status_code == 201
         response_json = response.json()

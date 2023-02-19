@@ -20,7 +20,6 @@ def get_mock_repo(
     default_branch: str = "master",
     fork: bool = False,
 ):
-
     mock_repo = Mock(spec=Repository)
     mock_repo.full_name = full_name
     mock_repo.html_url = url
@@ -50,7 +49,6 @@ def get_git_tree_callback(elements: List[tuple[str, str, int]]):
 
 
 def get_mock_github(repos: List[Repository]):
-
     mock_named_user = None
 
     def get_user(user: str):

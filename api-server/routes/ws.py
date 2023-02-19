@@ -7,14 +7,17 @@ from models import (
     OutOfFilesError,
     NoSelectedSourceCodeError,
 )
+from services.auth import Context
+from deps.auth import get_context
+from deps.github import get_gh_client
 from ws.connection_manager import Connection, ConnectionManager
-from config import GITHUB_ACCESS_TOKEN
 from enum import IntEnum
 from uuid import UUID
 from pydantic import BaseModel
 from pathlib import PurePosixPath
 
 import logging
+
 LOGGER = logging.getLogger(__name__)
 
 socket_app = FastAPI()
@@ -84,6 +87,7 @@ class Player(BaseModel):
     is_connected: bool
     is_host: bool
 
+
 class LobbyResponse(BaseModel):
     message_type: WSResponseType = WSResponseType.LOBBY
     players: list[Player]
@@ -116,10 +120,6 @@ class WSAppPolicyViolation(Exception):
     def __init__(self, code: int, reason: str = ""):
         self.code = code
         self.reason = reason
-
-
-def get_gh_client():
-    return GithubClient(GITHUB_ACCESS_TOKEN)
 
 
 async def get_lobby(session: Session):
@@ -156,7 +156,7 @@ async def get_source_code(session: Session):
         file_name=file.name,
         file_extension=file.extension,
         file_visit_url=file.visit_url,
-        file_display_path = str(PurePosixPath(repo.name, "...", file.name))
+        file_display_path=str(PurePosixPath(repo.name, "...", file.name)),
     )
     return CodeResponse(code=code)
 
@@ -198,15 +198,14 @@ def get_batch(*messages: Response):
     return BatchResponse(messages=batch_messages)
 
 
-@socket_app.websocket(
-    "/{session_id}/{username}",
-)
+@socket_app.websocket("/{session_id}")
 async def on_websocket_event(
     websocket: WebSocket,
-    username: str,
     session_id: str,
+    context: Context = Depends(get_context),
     gh_client: GithubClient = Depends(get_gh_client),
 ):
+    username = context["username"]
     await websocket.accept()
     session = await Session.filter(id=session_id).first()
     connection = Connection(username, session_id, websocket)

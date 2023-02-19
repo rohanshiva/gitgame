@@ -13,6 +13,7 @@ import asyncio
 
 logger = logging.getLogger()
 
+
 # this class with constants is used to specify the type of message the server sends to the clients through the websockets
 class ServerMessageType:
     LOBBY = "lobby"
