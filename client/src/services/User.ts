@@ -1,10 +1,10 @@
 import config from "../config/index";
 import { StatusCodes } from "http-status-codes";
 import api from "../utils/Api";
-import { UserType } from "../context/UserContext";
+import { User} from "../context/UserContext";
 
 class UserService {
-    static async getUser(): Promise<UserType> {
+    static async getUser(): Promise<User> {
         const response = await api.get(config.user.uri);
         if (response.status === StatusCodes.OK) {
             return response.data;

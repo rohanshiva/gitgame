@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import AppRouter from "./routers/Router";
 import Navbar from "./components/navbar";
 import ThemeContext, { Theme } from "./context/ThemeContext";
-import UserContext, { User, UserType } from "./context/UserContext";
+import UserContext, { User, UserState } from "./context/UserContext";
 import UserService from "./services/User";
 
 function App() {
   const [theme, setTheme] = useState("light");
 
-  const [user, setUser] = useState<UserType>();
+  const [user, setUser] = useState<User>();
 
   useEffect(() => {
     const getUser = async () => {
@@ -25,7 +25,7 @@ function App() {
   return (
     <>
       <ThemeContext.Provider value={{ theme, setTheme } as Theme}>
-        <UserContext.Provider value={{ user, setUser } as User}>
+        <UserContext.Provider value={{ user, setUser } as UserState}>
           <div className="app">
             <Navbar />
             <div className="main-section">

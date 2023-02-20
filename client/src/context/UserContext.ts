@@ -1,15 +1,15 @@
 import React from "react";
 
-export interface UserType {
+export interface User {
     username: string;
 }
 
-export interface User {
-    user?: UserType;
+export interface UserState {
+    user?: User;
     setUser: () => void;
 }
 
-const UserContext = React.createContext<User>({
+const UserContext = React.createContext<UserState>({
     setUser: () => { },
 })
 
