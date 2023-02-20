@@ -195,6 +195,7 @@ class Session(models.Model):
                 source_code_id=source_code.id,
             )
             await db_comment.save()
+            return db_comment
 
     async def delete_comment(self, comment_id: UUID):
         await Comment.filter(id=comment_id).delete()

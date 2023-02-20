@@ -17,3 +17,11 @@
   background-color: var(--line-selection-highlight);
   border-left: solid var(--line-selection-border-color);
 }
+
+
+.editor-context-menu {
+  position: absolute;
+  border-radius: 5%;
+  background-color: white;
+  box-shadow: 0px 0px 5px 1px darkgrey;
+}

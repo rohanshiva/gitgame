@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from pathlib import PurePosixPath
 
 import logging
+
 LOGGER = logging.getLogger(__name__)
 
 socket_app = FastAPI()
@@ -41,6 +42,7 @@ class WSResponseType(IntEnum):
     SOURCE_CODE = 4
     COMMENTS = 5
     BATCH = 6
+    NEW_COMMENT = 7
 
 
 class AddCommentBody(BaseModel):
@@ -84,6 +86,7 @@ class Player(BaseModel):
     is_connected: bool
     is_host: bool
 
+
 class LobbyResponse(BaseModel):
     message_type: WSResponseType = WSResponseType.LOBBY
     players: list[Player]
@@ -95,16 +98,28 @@ class AlertResponse(BaseModel):
 
 
 class CodeResponse(BaseModel):
-    message_type: WSRequestType = WSResponseType.SOURCE_CODE
+    message_type: WSResponseType = WSResponseType.SOURCE_CODE
     code: Code
 
 
 class CommentsResponse(BaseModel):
-    message_type: WSRequestType = WSResponseType.COMMENTS
+    message_type: WSResponseType = WSResponseType.COMMENTS
     comments: list[Comment]
 
 
-Response = LobbyResponse | AlertResponse | CodeResponse | CommentsResponse | None
+class NewCommentResponse(BaseModel):
+    message_type: WSResponseType = WSResponseType.NEW_COMMENT
+    comment: Comment
+
+
+Response = (
+    LobbyResponse
+    | AlertResponse
+    | CodeResponse
+    | CommentsResponse
+    | NewCommentResponse
+    | None
+)
 
 
 class BatchResponse(BaseModel):
@@ -156,7 +171,7 @@ async def get_source_code(session: Session):
         file_name=file.name,
         file_extension=file.extension,
         file_visit_url=file.visit_url,
-        file_display_path = str(PurePosixPath(repo.name, "...", file.name))
+        file_display_path=str(PurePosixPath(repo.name, "...", file.name)),
     )
     return CodeResponse(code=code)
 
@@ -285,15 +300,24 @@ async def on_websocket_event(
 
     async def on_add_comment(add_comment_body: AddCommentBody):
         try:
-            await session.add_comment(
+            db_comment = await session.add_comment(
                 add_comment_body.content,
                 add_comment_body.line_start,
                 add_comment_body.line_end,
                 add_comment_body.type,
                 username,
             )
-            comments = await get_comments(session)
-            await manager.broadcast(session.id, comments.dict())
+            comments_resp = await get_comments(session)
+            comment = list(
+                filter(
+                    lambda comment: comment.id == str(db_comment.id),
+                    comments_resp.comments,
+                )
+            )[0]
+            await manager.broadcast(
+                session.id,
+                get_batch(comments_resp, NewCommentResponse(comment=comment)).dict(),
+            )
         except NoSelectedSourceCodeError:
             raise WSAppPolicyViolation(
                 code=WSAppStatusCodes.NOT_ALLOWED,

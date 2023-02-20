@@ -3,6 +3,8 @@ import {
   AddComment,
   AlertPayload,
   BatchPayload,
+  GameStateDispatchEvent,
+  GameStateDispatchEventType,
   lobbyCode,
   RequestType,
   ResponsePayload,
@@ -28,6 +30,7 @@ function useGameConnection(
     host: "",
     source_code: lobbyCode,
     comments: [],
+    new_comments: [],
   });
 
   const [disconnectionMessage, setDisconnectionMessage] = useState<
@@ -51,7 +54,10 @@ function useGameConnection(
       }
 
       // AlertPayloads are ignored in the reducer
-      dispatch(payload);
+      dispatch({
+        ...payload,
+        event_type: GameStateDispatchEventType.WS_RESPONSE,
+      });
     };
 
     socket.onclose = (ev: CloseEvent) => {
@@ -66,6 +72,10 @@ function useGameConnection(
 
     socket.onopen = () => {
       setDisconnectionMessage(null);
+    };
+
+    socket.onerror = (ev) => {
+      console.log(`Ran into a WS error: ${ev}`);
     };
 
     setWs(socket);
@@ -90,9 +100,17 @@ function useGameConnection(
     sendMessage({ message_type: RequestType.ADD_COMMENT, ...comment });
   };
 
+  const ackNewComment = (comment_id: string) => {
+    dispatch({
+      event_type: GameStateDispatchEventType.ACK_NEW_COMMENT,
+      comment_id: comment_id,
+    } as GameStateDispatchEvent);
+  };
+
   const actions = {
     pickSourceCode,
     addComment,
+    ackNewComment,
   };
 
   const disconnection = {
