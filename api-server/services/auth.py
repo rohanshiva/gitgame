@@ -26,7 +26,6 @@ class Auth:
     def encode(username: str):
         payload = {
             "exp": datetime.now(timezone.utc) + timedelta(days=0, minutes=30),
-            "iat": datetime.now(timezone.utc),
             "sub": username,
         }
 

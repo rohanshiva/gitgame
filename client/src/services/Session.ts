@@ -1,4 +1,4 @@
-import config from "../config/Config";
+import config from "../config/index";
 import { StatusCodes } from "http-status-codes";
 import api from "../utils/Api";
 

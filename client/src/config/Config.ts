@@ -19,6 +19,12 @@ const config = {
   socket: {
     uri: "socket/:sessionId",
   },
+  user: {
+    uri: "user/"
+  },
+  login: {
+    uri: "auth/login"
+  }
 };
 
 export default config;
