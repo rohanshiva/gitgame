@@ -13,15 +13,12 @@ import {
 import gameReducer from "../../reducers/GameReducer";
 import config from "../../../../config/Config";
 
-function getWebSocketAddress(sessionId: string, username: string) {
-  return `${config.wsUri}/${config.socket.uri
-    .replace(":sessionId", sessionId)
-    .replace(":username", username)}`;
+function getWebSocketAddress(sessionId: string) {
+  return `${config.wsUri}/${config.socket.uri.replace(":sessionId", sessionId)}`;
 }
 
 function useGameConnection(
   sessionId: string,
-  username: string,
   onAlert: (alert: string) => void
 ) {
   const [ws, setWs] = useState<WebSocket>(null as unknown as WebSocket);
@@ -38,7 +35,7 @@ function useGameConnection(
   >(null);
 
   useEffect(() => {
-    const socket = new WebSocket(getWebSocketAddress(sessionId, username));
+    const socket = new WebSocket(getWebSocketAddress(sessionId));
     socket.onmessage = ({ data }) => {
       const payload: ResponsePayload = JSON.parse(data);
       if (payload.message_type === ResponseType.ALERT) {

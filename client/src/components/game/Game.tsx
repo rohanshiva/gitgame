@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 
 import { useHistory } from "react-router-dom";
 import Notification, {
@@ -15,21 +15,18 @@ import CommentSider from "../commentSider";
 import DisconnectionModal from "./disconnection/DisconnectionModal";
 import useGameConnection from "./hooks/gameConnection/UseGameConnection";
 import Lobby from "./lobby/Lobby";
+import UserContext from "../../context/UserContext";
 
 function getSessionId(path: string) {
   const pathParts = path.split("/");
-  return pathParts[pathParts.length - 2];
-}
-
-function getUsername(path: string) {
-  const pathParams = path.split("/");
-  return pathParams[pathParams.length - 1];
+  return pathParts[pathParts.length - 1];
 }
 
 function Game() {
   const history = useHistory();
   const sessionId = getSessionId(history.location.pathname);
-  const username = getUsername(history.location.pathname);
+  const { user } = useContext(UserContext);
+  const username = user?.username as string;
   const [focusLines, setFocusLines] = useState<Lines | undefined>(undefined);
 
   const onAlert = useCallback((alert: string) => {
@@ -38,7 +35,6 @@ function Game() {
 
   const { state, actions, disconnection } = useGameConnection(
     sessionId,
-    username,
     onAlert
   );
 

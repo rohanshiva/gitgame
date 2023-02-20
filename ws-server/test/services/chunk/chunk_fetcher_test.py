@@ -49,7 +49,6 @@ def assert_chunk_lines(chunk: Chunk, expected_lines: List[str]):
 
 
 def test_fileLinesLessThanStartingChunkSize_entireFileShouldBeChunk():
-
     test_file_lines = ["import os", "\tdir_entries = os.listdir()"]
 
     def readlines() -> List[str]:

@@ -133,12 +133,12 @@ class Session(models.Model):
                 files_by_author_repo[author_repo].append(file)
 
             authors_in_pool = set([])
-            for (author, _) in files_by_author_repo:
+            for author, _ in files_by_author_repo:
                 authors_in_pool.add(author)
 
             picked_author = random.choice(list(authors_in_pool))
             repos_in_pool_for_picked_author = set([])
-            for (author, repo) in files_by_author_repo:
+            for author, repo in files_by_author_repo:
                 if author == picked_author:
                     repos_in_pool_for_picked_author.add(repo)
 
@@ -154,7 +154,7 @@ class Session(models.Model):
             )
 
             total_files_for_picked_author = 0
-            for (author, repo) in files_by_author_repo:
+            for author, repo in files_by_author_repo:
                 if author == picked_author:
                     total_files_for_picked_author += len(
                         files_by_author_repo[(author, repo)]

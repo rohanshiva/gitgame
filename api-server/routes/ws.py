@@ -7,8 +7,10 @@ from models import (
     OutOfFilesError,
     NoSelectedSourceCodeError,
 )
+from services.auth import Context
+from deps.auth import get_context
+from deps.github import get_gh_client
 from ws.connection_manager import Connection, ConnectionManager
-from config import GITHUB_ACCESS_TOKEN
 from enum import IntEnum
 from uuid import UUID
 from pydantic import BaseModel
@@ -133,10 +135,6 @@ class WSAppPolicyViolation(Exception):
         self.reason = reason
 
 
-def get_gh_client():
-    return GithubClient(GITHUB_ACCESS_TOKEN)
-
-
 async def get_lobby(session: Session):
     lobby_players: list[Player] = []
     players = await session.players.all()
@@ -213,15 +211,14 @@ def get_batch(*messages: Response):
     return BatchResponse(messages=batch_messages)
 
 
-@socket_app.websocket(
-    "/{session_id}/{username}",
-)
+@socket_app.websocket("/{session_id}")
 async def on_websocket_event(
     websocket: WebSocket,
-    username: str,
     session_id: str,
+    context: Context = Depends(get_context),
     gh_client: GithubClient = Depends(get_gh_client),
 ):
+    username = context["username"]
     await websocket.accept()
     session = await Session.filter(id=session_id).first()
     connection = Connection(username, session_id, websocket)
