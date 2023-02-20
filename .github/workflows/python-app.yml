@@ -24,9 +24,8 @@ jobs:
       env:
         GITHUB_ACCESS_TOKEN: ${{secrets.TOKEN}}
       run: |
-        cd ./ws-server
+        cd ./api-server
         python3 -m venv .venv
         source .venv/bin/activate
         pip install -r requirements.txt
-        pip install -e .
         pytest
