@@ -53,7 +53,7 @@ async def authenticate_gh_user(code: str):
 
         json = response.json()
 
-        if "errors" in json and json["errors"] == "bad_verification_code":
+        if "error" in json and json["error"] == "bad_verification_code":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid code. Try again here '/auth/login' ",
