@@ -19,7 +19,7 @@ class TestMakeSession:
         session = await Session.filter(id=response_json["id"]).first()
         assert session is not None
         assert session.host is None
-    
+
     @pytest.mark.anyio
     async def test_make_session_without_context(self, api_client: AsyncClient):
         response = await api_client.post("/session/make")

@@ -38,3 +38,19 @@ python main.py
 ```
 
 
+Local Testing Without Auth
+
+```
+python main.py -d
+```
+
+To impersonate a user, open a new private browser window and visit the following URL
+
+```
+http://127.0.0.1:8001/user/impersonate/<username>
+```
+
+Doing this will set an auth token cookie for the user. 
+
+After impersonating the user, you can use the app regularly. 
+

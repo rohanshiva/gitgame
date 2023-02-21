@@ -14,21 +14,14 @@ GITHUB_LOGIN_ENDPOINT = os.environ.get("GITHUB_LOGIN_ENDPOINT")
 AUTH_SECRET = os.environ.get("AUTH_SECRET")
 
 """
-Added this bit here to make local testing easy. Run `python main.py -da -u <YOUR_GH_USERNAME>`
+Added this bit here to make local testing easy. Run `python main.py -d`
 
-Example: `python main.py -da -u ramko9999` to run app without auth as ramko9999
+Example: `python main.py -d` to run app without auth
 """
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-u", "--username", required=False)
-parser.add_argument("-da", "--disable-auth", action="store_true", required=False)
+parser.add_argument("-d", "--disable-auth", action="store_true", required=False)
 
 args = parser.parse_args()
 
 DISABLE_AUTH = args.disable_auth
-USERNAME = args.username
-
-if DISABLE_AUTH and not USERNAME:
-    raise Exception(
-        "Please provide username to run app without auth. Example: `python main.py -da -u <YOUR_GH_USERNAME>`"
-    )
