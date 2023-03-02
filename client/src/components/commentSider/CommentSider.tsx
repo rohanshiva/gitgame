@@ -1,33 +1,46 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
   Comment as IComment,
   CommentType,
   commentTypeToEmoji,
-  Lines,
-  Author,
 } from "../../Interface";
 import "./CommentSider.css";
 import "./help/Help.css";
 import Help from "./help/Help";
 import { HelpComment } from "./help/Help";
 import { getColor } from "../../utils";
+import CommentHighlightContext from "../../context/CommentHighlightContext";
 
 interface CommentProps {
-  id: string;
-  author: Author;
-  content: string;
+  comment: IComment;
 }
 
-function Comment({ id, author, content }: CommentProps) {
+function Comment({ comment }: CommentProps) {
+  const { id, author, content } = comment;
+  const { commentHighlight, highlightComment } = useContext(
+    CommentHighlightContext
+  );
   const profileBorderColor = getColor(author.username);
 
+  let className = "player-comment";
+  if (commentHighlight && commentHighlight.comment.id === id) {
+    className += " player-comment-selected";
+  }
+
+  const onCommentClick = (ev: React.MouseEvent) => {
+    ev.stopPropagation();
+    if (!(commentHighlight && commentHighlight.comment.id === id)) {
+      highlightComment({ comment });
+    }
+  };
+
   return (
-    <div className="player-comment" key={id}>
+    <div className={className} onClick={onCommentClick}>
       <div className="player-comment-header">
         <img
           alt={`https://github.com/${author.username}`}
           className="player-comment-avatar"
-          style={{borderColor: profileBorderColor}}
+          style={{ borderColor: profileBorderColor }}
           src={author.profile_url}
         />
         <div>{author.username}</div>
@@ -40,14 +53,9 @@ function Comment({ id, author, content }: CommentProps) {
 interface CommentListProps {
   comments: IComment[];
   commentType: CommentType;
-  onLinesClick: (lines: Lines) => void;
 }
 
-function CommentList({
-  comments,
-  commentType,
-  onLinesClick,
-}: CommentListProps) {
+function CommentList({ comments, commentType }: CommentListProps) {
   const groupCommentsByLines = () => {
     const map = new Map<string, IComment[]>();
     for (const comment of comments) {
@@ -97,9 +105,7 @@ function CommentList({
         return (
           <div className="comments-section" key={index}>
             <div className="comments-section-header">
-              <code onClick={() => onLinesClick(lines)}>{`L${
-                lines.start + 1
-              }-L${lines.end + 1}`}</code>
+              <code>{`L${lines.start + 1}-L${lines.end + 1}`}</code>
               <abbr title={authors.join(", ")}>
                 <span className="emoji-reactions">
                   {commentTypeToEmoji(commentType)} {comments.length}
@@ -108,21 +114,7 @@ function CommentList({
             </div>
             <div className="comments-section-content">
               {comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  onClick={() =>
-                    onLinesClick({
-                      start: comment.line_start,
-                      end: comment.line_end,
-                    })
-                  }
-                >
-                  <Comment
-                    id={comment.id}
-                    author={comment.author}
-                    content={comment.content}
-                  />
-                </div>
+                <Comment key={comment.id} comment={comment} />
               ))}
             </div>
           </div>
@@ -134,12 +126,12 @@ function CommentList({
 
 interface CommentSiderProps {
   comments: IComment[];
-  setFocusLines: React.Dispatch<React.SetStateAction<Lines | undefined>>;
 }
 
-function CommentSider({ comments, setFocusLines }: CommentSiderProps) {
+function CommentSider({ comments }: CommentSiderProps) {
   const [filter, setFilter] = useState<CommentType>(CommentType.POOP);
   const [isHelpSelected, setIsHelpSelected] = useState<boolean>(false);
+  const { dehighlight } = useContext(CommentHighlightContext);
 
   const getCommentsDisplay = () => {
     if (isHelpSelected) {
@@ -147,13 +139,7 @@ function CommentSider({ comments, setFocusLines }: CommentSiderProps) {
     }
     if (hasCommentsForType(filter)) {
       const filteredComments = comments.filter(({ type }) => type === filter);
-      return (
-        <CommentList
-          comments={filteredComments}
-          commentType={filter}
-          onLinesClick={setFocusLines}
-        />
-      );
+      return <CommentList comments={filteredComments} commentType={filter} />;
     } else {
       return (
         <HelpComment>
@@ -170,8 +156,11 @@ function CommentSider({ comments, setFocusLines }: CommentSiderProps) {
   };
 
   return (
-    <div className="comments-container">
-      <div className="comments-container-header">
+    <div className="comments-container" onClick={dehighlight}>
+      <div
+        className="comments-container-header"
+        onClick={(ev) => ev.stopPropagation()}
+      >
         <div className="filters">
           <div
             className={
