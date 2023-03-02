@@ -14,7 +14,10 @@ import gameReducer from "../../reducers/GameReducer";
 import config from "../../../../config/Config";
 
 function getWebSocketAddress(sessionId: string) {
-  return `${config.wsUri}/${config.socket.uri.replace(":sessionId", sessionId)}`;
+  return `${config.wsUri}/${config.socket.uri.replace(
+    ":sessionId",
+    sessionId
+  )}`;
 }
 
 function useGameConnection(
@@ -72,7 +75,7 @@ function useGameConnection(
     };
 
     socket.onerror = (ev) => {
-      console.log(`Ran into a WS error: ${ev}`);
+      console.log("Ran into a WS error", ev);
     };
 
     setWs(socket);

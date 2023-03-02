@@ -1,10 +1,18 @@
 import { useRef, useEffect, useCallback } from "react";
+import {
+  anchorViewportBoundsRelativeTo,
+  getViewportBounds,
+  ViewportBounds,
+} from "../Util";
 import "./EmojiAnimation.css";
 
 interface EmojiAnimationProps {
   count: number;
-  createInitialEmoji: (boundingBox: BoundingBox) => EmojiSprite;
-  updateEmoji: (emoji: EmojiSprite, boundingBox: BoundingBox) => EmojiSprite[];
+  createInitialEmoji: (animationContainerBounds: ViewportBounds) => EmojiSprite;
+  updateEmoji: (
+    emoji: EmojiSprite,
+    animationContainerBounds: ViewportBounds
+  ) => EmojiSprite[];
   onFinish: () => void;
 }
 
@@ -36,33 +44,12 @@ interface EmojiSprite {
   opacity: number;
 }
 
-export interface BoundingBox {
-  topLeft: {
-    x: number;
-    y: number;
-  };
-  width: number;
-  height: number;
-}
-
 function getEmojiTransform({ position, rotation }: EmojiSprite) {
   return `translate3d(${position.x}px, ${position.y}px, 0px) rotate(${rotation.tilt}rad)`;
 }
 
 function cloneEmoji(emoji: EmojiSprite) {
   return JSON.parse(JSON.stringify(emoji));
-}
-
-function getBoundingBox(element: HTMLElement) {
-  const { x, y, width, height } = element.getBoundingClientRect();
-  return {
-    topLeft: {
-      x,
-      y,
-    },
-    width,
-    height,
-  };
 }
 
 function EmojiAnimation({
@@ -75,17 +62,17 @@ function EmojiAnimation({
 
   useEffect(() => {
     const showerGround = emojiShower.current as HTMLDivElement;
-    const boundingBox = getBoundingBox(showerGround);
+    const showerGroundBounds = getViewportBounds(showerGround);
 
     let currentEmojis: EmojiSprite[] = [];
     for (let i = 0; i < count; i++) {
-      currentEmojis.push(createInitialEmoji(boundingBox));
+      currentEmojis.push(createInitialEmoji(showerGroundBounds));
     }
 
     const update = () => {
       currentEmojis = currentEmojis
         .map((emoji) => {
-          return updateEmoji(emoji, boundingBox);
+          return updateEmoji(emoji, showerGroundBounds);
         })
         .flat();
 
@@ -148,7 +135,7 @@ function EmojiAnimation({
 }
 
 interface EmojiShowerProps {
-  zone: BoundingBox;
+  zone: ViewportBounds;
   emoji: string;
   count: number;
   onFinish: () => void;
@@ -183,52 +170,64 @@ function EmojiShower({ zone, emoji, count, onFinish }: EmojiShowerProps) {
     return [piece1, piece2];
   };
 
-  const createInitialEmoji = useCallback((boundingBox: BoundingBox) => {
-    const yOffset = zone.topLeft.y - boundingBox.topLeft.y;
-    const xOffset = zone.topLeft.x - boundingBox.topLeft.x;
+  const createInitialEmoji = useCallback(
+    (animationContainerBounds: ViewportBounds) => {
+      const animationBounds = anchorViewportBoundsRelativeTo(
+        zone,
+        animationContainerBounds
+      );
+      const sizeOffset = BASE_DROP_SIZE / 2;
+      const size =
+        BASE_DROP_SIZE + Math.ceil(Math.random() * BASE_DROP_SIZE) - sizeOffset;
 
-    const sizeOffset = BASE_DROP_SIZE / 2;
-    const size =
-      BASE_DROP_SIZE + Math.ceil(Math.random() * BASE_DROP_SIZE) - sizeOffset;
+      const px =
+        Math.ceil(Math.random() * (zone.width - size)) +
+        animationBounds.topLeft.x;
+      const vy = BASE_VELOCITY_Y + Math.random() * 0.2;
+      const ay = BASE_ACCELERATION_Y + Math.random() * 0.04;
+      const tilt = Math.random() * 2;
+      const rotationalSpeed = Math.random() * 0.01;
 
-    const px = Math.ceil(Math.random() * (zone.width - size)) + xOffset;
-    const vy = BASE_VELOCITY_Y + Math.random() * 0.2;
-    const ay = BASE_ACCELERATION_Y + Math.random() * 0.04;
-    const tilt = Math.random() * 2;
-    const rotationalSpeed = Math.random() * 0.01;
-
-    return {
-      version: 0,
-      emoji,
-      type: EmojiSpriteType.WHOLE,
-      size,
-      position: {
-        x: px,
-        y: yOffset,
-      },
-      velocity: {
-        x: 0,
-        y: vy,
-      },
-      acceleration: {
-        y: ay,
-      },
-      rotation: {
-        tilt: tilt, //radians,
-        speed: rotationalSpeed, //radians
-      },
-      opacity: 100,
-    };
-  }, []);
+      return {
+        version: 0,
+        emoji,
+        type: EmojiSpriteType.WHOLE,
+        size,
+        position: {
+          x: px,
+          y: animationBounds.topLeft.y,
+        },
+        velocity: {
+          x: 0,
+          y: vy,
+        },
+        acceleration: {
+          y: ay,
+        },
+        rotation: {
+          tilt: tilt, //radians,
+          speed: rotationalSpeed, //radians
+        },
+        opacity: 100,
+      };
+    },
+    []
+  );
 
   const updateEmoji = useCallback(
-    (emoji: EmojiSprite, boundingBox: BoundingBox) => {
-      const bottomBoundary =
-        zone.topLeft.y + zone.height - boundingBox.topLeft.y - emoji.size;
+    (emoji: EmojiSprite, animationContainerBounds: ViewportBounds) => {
+      const animationBounds = anchorViewportBoundsRelativeTo(
+        zone,
+        animationContainerBounds
+      );
 
-      const leftBoundary = zone.topLeft.x - boundingBox.topLeft.x;
-      const rightBoundary =
-        zone.topLeft.x + (zone.width - emoji.size) - boundingBox.topLeft.x;
+      const bottomBoundary = animationBounds.bottomRight.y - emoji.size;
+
+      const topBoundary = animationBounds.topLeft.y;
+
+      const leftBoundary = animationBounds.topLeft.x;
+
+      const rightBoundary = animationBounds.bottomRight.x - emoji.size;
 
       if (emoji.type === EmojiSpriteType.PIECE) {
         if (
@@ -253,22 +252,15 @@ function EmojiShower({ zone, emoji, count, onFinish }: EmojiShowerProps) {
 
       let newEmoji = cloneEmoji(emoji);
       newEmoji.velocity.y += emoji.acceleration.y;
-
-      const dx = emoji.velocity.x;
       newEmoji.position.x = Math.min(
-        Math.max(newEmoji.position.x + dx, leftBoundary),
+        Math.max(newEmoji.position.x + emoji.velocity.x, leftBoundary),
         rightBoundary
       );
-
       newEmoji.version++;
-
-      const dy = emoji.velocity.y;
-      // todo(ramko9999): bound the pieces using the topBoundary instead of 0 (height of the parent)?
       newEmoji.position.y = Math.min(
-        Math.max(newEmoji.position.y + dy, 0),
+        Math.max(newEmoji.position.y + emoji.velocity.y, topBoundary),
         bottomBoundary
       );
-
       newEmoji.rotation.tilt += emoji.rotation.speed;
 
       if (newEmoji.type === EmojiSpriteType.PIECE) {

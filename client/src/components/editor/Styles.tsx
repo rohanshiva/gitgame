@@ -2,7 +2,6 @@ import styled from "styled-components";
 
 export const Pre = styled.pre`
   text-align: left;
-  margin: 0;
   padding: 0.5rem;
   margin: 0rem;
   max-height: calc(75vh - 1.4rem);
@@ -13,7 +12,6 @@ export const Pre = styled.pre`
     line-height: 1.3em;
     height: 1.3em;
   }
-  z-index: 0;
 `;
 
 export const Line = styled.div`

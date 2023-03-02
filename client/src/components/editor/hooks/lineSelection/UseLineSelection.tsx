@@ -7,7 +7,7 @@ export interface SelectedLines {
 
 interface useLineSelectionResult {
   selectedLines: SelectedLines;
-  setSelectedLines: React.Dispatch<React.SetStateAction<SelectedLines>>;
+  clearLineSelection: () => void;
   handleLineToggle: (e: any, lineNumber: number) => void;
   isLineSelected: (lineNumber: number) => boolean;
   isStartOfSelection: (lineNumber: number) => boolean;
@@ -33,6 +33,10 @@ function useLineSelection(): useLineSelectionResult {
     }
   };
 
+  const clearLineSelection = () => {
+    setSelectedLines({ start: undefined, end: undefined });
+  };
+
   const isLineSelected = (lineNumber: number) => {
     const { start, end } = selectedLines;
 
@@ -51,7 +55,7 @@ function useLineSelection(): useLineSelectionResult {
 
   return {
     selectedLines,
-    setSelectedLines,
+    clearLineSelection,
     handleLineToggle,
     isLineSelected,
     isStartOfSelection,

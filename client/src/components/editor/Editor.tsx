@@ -15,14 +15,19 @@ import { Pre, Line, LineNo, LineContent } from "./Styles";
 import Highlight, { defaultProps, Language } from "prism-react-renderer";
 import useLineSelection from "./hooks/lineSelection/UseLineSelection";
 import CommentCreationMenu from "./CommentCreationMenu";
-import EmojiShower, { BoundingBox } from "./animation/EmojiAnimation";
+import EmojiShower from "./animation/EmojiAnimation";
+import CommentHighlightContext from "../../context/CommentHighlightContext";
+import {
+  computeLazyScrollYAxisOptions,
+  getViewportBounds,
+  mergeViewportBounds,
+} from "./Util";
 
 interface EditorProps {
   code: Code;
   newComments: Comment[];
   onNewCommentAck: (comment_id: string) => void;
   addComment?: (comment: AddComment) => void;
-  focusLines?: Lines;
 }
 
 interface EditorContextMenu {
@@ -51,19 +56,40 @@ function Editor({
   newComments,
   onNewCommentAck,
   addComment,
-  focusLines,
 }: EditorProps) {
-  useEffect(() => {
-    scrollToFocusLine();
-  }, [focusLines]);
+  const { commentHighlight, dehighlight } = useContext(CommentHighlightContext);
   const { theme } = useContext(ThemeContext);
-  const { selectedLines, setSelectedLines, handleLineToggle, isLineSelected } =
-    useLineSelection();
+  const {
+    selectedLines,
+    clearLineSelection,
+    handleLineToggle,
+    isLineSelected,
+  } = useLineSelection();
+
+  // todo(ramko9999): abstract the context menu state to a hook
   const [contextMenuProps, setContextMenuProps] = useState<EditorContextMenu>({
     shouldOpen: false,
     posX: -1,
     posY: -1,
   });
+
+  const cancelCommentCreation = () => {
+    closeContextMenu();
+    clearLineSelection();
+  };
+
+  useEffect(() => {
+    cancelCommentCreation();
+    dehighlight();
+    codeRef.current?.scroll(0, 0);
+  }, [code.id]);
+
+  useEffect(() => {
+    if (commentHighlight) {
+      scrollToHighlight();
+      cancelCommentCreation();
+    }
+  }, [commentHighlight]);
 
   const closeContextMenu = () => {
     setContextMenuProps((props) => {
@@ -74,61 +100,55 @@ function Editor({
     });
   };
 
-  const cancelLineSelection = () => {
-    closeContextMenu();
-    setSelectedLines({ start: undefined, end: undefined });
-  };
-
-  const addCommentToLineSelection = (comment: AddComment) => {
+  const createComment = (comment: AddComment) => {
     if (addComment !== undefined) {
       addComment(comment);
     }
-    cancelLineSelection();
+    cancelCommentCreation();
   };
 
-  const focusLineRef = useRef<HTMLInputElement | null>(null);
   const codeRef = useRef<HTMLPreElement | null>(null);
 
-  const scrollToFocusLine = () => {
-    focusLineRef.current?.scrollIntoView();
+  const scrollToHighlight = () => {
+    const lineStart = document.getElementById(
+      `${commentHighlight?.comment.line_start}-content`
+    );
+    const lineEnd = document.getElementById(
+      `${commentHighlight?.comment.line_end}-content`
+    );
+
+    const startBounds = getViewportBounds(lineStart as HTMLElement);
+    const codeBounds = getViewportBounds(codeRef.current as HTMLElement);
+
+    const highlightBounds = mergeViewportBounds(
+      startBounds,
+      getViewportBounds(lineEnd as HTMLElement)
+    );
+
+    const scrollToOptions = computeLazyScrollYAxisOptions(
+      codeBounds,
+      highlightBounds,
+      startBounds.height
+    );
+    codeRef.current?.scrollBy(scrollToOptions);
   };
 
-  const isStartOfFocusLines = (lineNumber: number) => {
-    if (focusLines === undefined) {
-      return false;
-    }
-    return focusLines?.start === lineNumber;
-  };
-
-  const isFocusLine = (lineNumber: number) => {
-    if (focusLines === undefined) {
-      return false;
-    }
-
-    return focusLines.start <= lineNumber && lineNumber <= focusLines.end;
+  const isHighlightLine = (lineNumber: number) => {
+    return (
+      commentHighlight &&
+      commentHighlight.comment.line_start <= lineNumber &&
+      lineNumber <= commentHighlight.comment.line_end
+    );
   };
 
   const computeBoundingBox = (lineStartNo: number, lineEndNo: number) => {
     const lineStart = document.getElementById(`${lineStartNo}-content`);
     const lineEnd = document.getElementById(`${lineEndNo}-content`);
 
-    const startBox = (
-      lineStart as HTMLElement
-    ).getBoundingClientRect() as DOMRect;
-
-    let box = {
-      topLeft: { x: startBox.x, y: startBox.y },
-      width: startBox.width,
-      height: startBox.height,
-    };
-    if (lineStart !== lineEnd) {
-      const endBox = (
-        lineEnd as HTMLElement
-      ).getBoundingClientRect() as DOMRect;
-      box.width = Math.max(box.width, endBox.width);
-      box.height = endBox.y - startBox.y;
-    }
-    return box;
+    return mergeViewportBounds(
+      getViewportBounds(lineStart as HTMLElement),
+      getViewportBounds(lineEnd as HTMLElement)
+    );
   };
 
   const getShowersProps = () => {
@@ -149,6 +169,9 @@ function Editor({
       className="code-container"
       onClick={() => {
         closeContextMenu();
+        if (commentHighlight) {
+          dehighlight();
+        }
       }}
     >
       <div
@@ -161,8 +184,8 @@ function Editor({
       >
         <CommentCreationMenu
           open={contextMenuProps.shouldOpen}
-          onCancel={cancelLineSelection}
-          onSubmit={addCommentToLineSelection}
+          onCancel={cancelCommentCreation}
+          onSubmit={createComment}
           lines={selectedLines as Lines}
         />
       </div>
@@ -191,49 +214,51 @@ function Editor({
                     />
                   );
                 })}
-                {tokens.map((line, lineIndex) => (
-                  <Line
-                    key={lineIndex}
-                    {...getLineProps({ line, key: lineIndex })}
-                    ref={isStartOfFocusLines(lineIndex) ? focusLineRef : null}
-                  >
-                    <LineNo
-                      onClick={(e) => {
-                        handleLineToggle(e, lineIndex);
-                      }}
+                {tokens.map((line, lineIndex) => {
+                  let lineContentClass;
+                  if (isLineSelected(lineIndex)) {
+                    lineContentClass = "selected-line";
+                  }
+                  if (isHighlightLine(lineIndex)) {
+                    lineContentClass = "comment-highlighted-line";
+                  }
+
+                  return (
+                    <Line
+                      key={lineIndex}
+                      {...getLineProps({ line, key: lineIndex })}
                     >
-                      {lineIndex + 1}
-                    </LineNo>
-                    <LineContent
-                      id={`${lineIndex}-content`}
-                      className={
-                        isLineSelected(lineIndex) || isFocusLine(lineIndex)
-                          ? "selected-line"
-                          : "line"
-                      }
-                      onContextMenu={(event: React.MouseEvent) => {
-                        if (
-                          isLineSelected(lineIndex) ||
-                          isFocusLine(lineIndex)
-                        ) {
-                          event.preventDefault();
-                          setContextMenuProps({
-                            shouldOpen: true,
-                            posX: event.pageX,
-                            posY: event.pageY,
-                          });
-                        }
-                      }}
-                    >
-                      {line.map((token, tokenIndex) => (
-                        <span
-                          key={tokenIndex}
-                          {...getTokenProps({ token, key: tokenIndex })}
-                        />
-                      ))}
-                    </LineContent>
-                  </Line>
-                ))}
+                      <LineNo
+                        onClick={(e) => {
+                          handleLineToggle(e, lineIndex);
+                        }}
+                      >
+                        {lineIndex + 1}
+                      </LineNo>
+                      <LineContent
+                        id={`${lineIndex}-content`}
+                        className={lineContentClass}
+                        onContextMenu={(event: React.MouseEvent) => {
+                          if (isLineSelected(lineIndex)) {
+                            event.preventDefault();
+                            setContextMenuProps({
+                              shouldOpen: true,
+                              posX: event.pageX,
+                              posY: event.pageY,
+                            });
+                          }
+                        }}
+                      >
+                        {line.map((token, tokenIndex) => (
+                          <span
+                            key={tokenIndex}
+                            {...getTokenProps({ token, key: tokenIndex })}
+                          />
+                        ))}
+                      </LineContent>
+                    </Line>
+                  );
+                })}
               </Pre>
             </>
           );
