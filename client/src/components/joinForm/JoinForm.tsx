@@ -25,7 +25,7 @@ function JoinForm({ sessionId }: JoinFormProps) {
   };
 
   const isSessionIdEmpty = () => {
-    return sessionId.length === 0;
+    return joinData.sessionId.length === 0;
   };
   return (
     <>
