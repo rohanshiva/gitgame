@@ -1,0 +1,42 @@
+name: Frontend Builder
+
+on:
+  workflow_dispatch:
+  
+  push:
+    branches: [actions]
+    paths-ignore: 
+      - 'client/build/**'
+    
+jobs:
+  kickoff:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: actions
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install Packages
+      run: |
+        cd client
+        npm install
+
+    - name: Build App
+      run: |
+        cd client
+        CI=false npm run build
+
+    - name: Push Build!
+      run: |
+        git config --global user.name "gitgame.builder"
+        git config --global user.email "gitgame.builder@github.com"
+        git add client/build --force
+        git commit -m "frontend builder pushing build artifacts"
+        git push -f
+    
