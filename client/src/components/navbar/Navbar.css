@@ -1,13 +1,14 @@
 .navbar {
   display: flex;
   flex-direction: row;
+  font-family: 'Space Grotesk', sans-serif;;
   justify-content: space-between;
   align-items: center;
   color: var(--primary);
   max-height: 10vh;
   min-height: 10vh;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: bold;
 }
 
 .logo {

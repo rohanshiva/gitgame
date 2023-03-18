@@ -14,8 +14,9 @@ textarea {
   width: max-content;
   padding: 0.5rem;
   color: var(--primary);
-  background-color: var(--section-bg);
+  background-color: var(--bg);
   font-weight: 400;
+  font-family: 'Space Grotesk', sans-serif;
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
@@ -39,5 +40,6 @@ textarea {
 
 .add-comment-header {
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: bold;
+  font-family: 'Space Grotesk', sans-serif;
 }

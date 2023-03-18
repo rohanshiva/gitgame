@@ -7,9 +7,9 @@
   font-size: 0.8rem;
   padding: 0.5rem 0.5rem;
   font-weight: 500;
-  border: 0.1rem solid var(--secondary-accent);
+  border: 0.1rem solid var(--border);
   border-radius: 0.2rem;
-  background-color: var(--section-bg);
+  background-color: var(--bg);
   align-items: stretch;
   max-width: fit-content;
 }

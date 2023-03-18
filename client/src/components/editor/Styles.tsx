@@ -6,7 +6,6 @@ export const Pre = styled.pre`
   margin: 0rem;
   max-height: calc(75vh - 1.4rem);
   overflow-y: scroll;
-  // border: solid var(--secondary-accent) 0.1rem;
   border-radius: 3px;
   & .token-line {
     line-height: 1.3em;

@@ -24,11 +24,11 @@ html {
 
 :root {
   --bg: white;
-  --primary: #4f566b;
+  --border: rgb(208, 215, 222);
+  --button: #F2F5F6;
+  --primary: black;
   --accent: #0068ff;
-  --secondary: white;
-  --section-bg: #f6f8fa;
-  --secondary-accent: #999;
+
   --line-selection-highlight: #fff8c5;
   --line-selection-border-color: #eed888;
   --border-dark-shade: rgb(101 119 134 / 20%);
@@ -38,11 +38,11 @@ html {
 
 [data-theme="dark"] {
   --bg: #131415;
-  --primary: #fbfbfd;
+  --border: rgb(48, 54, 61);
+  --button: #0D1117;
+  --primary: white;
   --accent: #ff7c7c;
-  --secondary: #131415;
-  --section-bg: #222223;
-  --secondary-accent: #eeeeee;
+
   --line-selection-highlight: #202128;
   --line-selection-border-color: #8f8f8f;
   --border-dark-shade: rgba(255, 255, 255, 0);
@@ -65,6 +65,34 @@ a {
 a:hover {
   color: var(--accent);
 }
+
+button {
+  width: fit-content;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 0.4rem 1.4rem;
+  border-radius: 0.4rem;
+  color: var(--primary);
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+button:hover {
+  transition-duration: 100ms;
+  transform: translateY(-0.2rem);
+}
+
+button:disabled {
+  opacity: 60%;
+}
+
+button:disabled:hover {
+  color: var(--primary);
+}
+
 
 ::-webkit-scrollbar {
   height: 0.25rem;

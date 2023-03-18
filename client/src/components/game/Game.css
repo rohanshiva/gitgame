@@ -26,6 +26,16 @@
   }
 }
 
+@media only screen and (max-width: 878px) {
+  .mid {
+    flex-direction: column;
+  }
+  .players-container {
+    max-width: calc(100% - 2rem);
+    min-width: calc(100% - 2rem);
+  }
+}
+
 .container {
   display: flex;
   flex-direction: row;
@@ -47,7 +57,7 @@
 }
 
 .top > a {
-  font-family: monospace;
+  font-family: 'Space Grotesk', sans-serif;
   color: var(--accent);
   font-weight: bold;
   white-space: nowrap;
@@ -71,29 +81,4 @@
   gap: 1rem;
   min-height: 4rem;
   align-items: flex-end;
-}
-
-.top-btns > button {
-  padding: 0.5rem 0.8rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background-color: var(--bg);
-  color: var(--primary);
-  outline: none;
-  border: 0.2rem solid var(--secondary-accent);
-  height: min-content;
-}
-
-.top-btns > button:hover {
-  cursor: pointer;
-  color: var(--accent);
-  transition: background 0.5s ease;
-}
-
-.top-btns > button:disabled {
-  opacity: 60%;
-}
-
-.top-btns > button:disabled:hover {
-  color: var(--primary);
 }
