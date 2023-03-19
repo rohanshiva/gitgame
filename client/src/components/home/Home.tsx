@@ -1,11 +1,10 @@
-import { useContext, useEffect } from "react";
-import Notification, { LOADING } from "../notifications/Notification";
+import { useContext } from "react";
+import Notification from "../notifications/Notification";
 import "./Home.css";
 import UserContext from "../../context/UserContext";
 import { GitPullRequest } from "react-feather";
 import config from "../../config";
 import MakeForm from "../makeForm";
-import toast from "react-hot-toast";
 
 function Login() {
   return (
@@ -28,7 +27,7 @@ function Form() {
 function Home() {
 
   const { user } = useContext(UserContext);
-
+  
   return (
     <div className="home-container">
       <div className="home-left">

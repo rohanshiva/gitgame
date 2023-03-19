@@ -143,10 +143,7 @@ function CommentSider({ comments }: CommentSiderProps) {
     } else {
       return (
         <HelpComment>
-          <div className="help-card-content">
-            No {commentTypeToEmoji(filter)} comments yet!
-            <div>Click on ℹ for instructions to add a new comment.</div>
-          </div>
+          No {commentTypeToEmoji(filter)} comments yet! Click 🔎 for instructions.
         </HelpComment>
       );
     }
@@ -192,7 +189,7 @@ function CommentSider({ comments }: CommentSiderProps) {
             className={isHelpSelected ? "filter selected-filter" : "filter"}
             onClick={() => setIsHelpSelected(true)}
           >
-            ℹ
+            🔎 
           </div>
         </div>
       </div>

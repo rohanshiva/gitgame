@@ -29,10 +29,14 @@
 @media only screen and (max-width: 878px) {
   .mid {
     flex-direction: column;
+    gap: 2rem
   }
   .players-container {
     max-width: calc(100% - 2rem);
     min-width: calc(100% - 2rem);
+  }
+  .comments-container {
+    padding: 0rem !important;
   }
 }
 

@@ -9,10 +9,14 @@ interface HelpCommentProps {
 export function HelpComment({ children }: HelpCommentProps) {
   return (
     <div className="help-card">
-      <div>
-        <Icon.Info size={"1rem"} />
-      </div>
-      {children}
+      <span>
+        <span>
+          <b>
+            {'Note: '}
+          </b>
+        </span>
+        {children}
+      </span>
     </div>
   );
 }

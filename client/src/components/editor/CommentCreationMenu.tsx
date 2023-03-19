@@ -45,14 +45,17 @@ function CommentCreationMenu({
     <>
       {open && (
         <div className="add-comment-container">
-          <span className="add-comment-header">Let them know!</span>
-          <textarea
-            placeholder="say something here..."
-            onChange={(e) => setCommentMessage(e.target.value)}
-            value={commentMessage}
-            maxLength={250}
-            spellCheck={false}
-          />
+          <div className="add-comment-content">
+            <span className="add-comment-header">Let them know!</span>
+            <textarea
+              placeholder="say something here..."
+              onChange={(e) => setCommentMessage(e.target.value)}
+              value={commentMessage}
+              maxLength={250}
+              spellCheck={false}
+            />
+          </div>
+
           <div className="add-comments-buttons">
             <span className="add-comment-button" onClick={onCancel}>
               ❌
