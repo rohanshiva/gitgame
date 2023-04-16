@@ -89,6 +89,7 @@ abbr {
 }
 
 .player-comment-selected {
+  box-shadow: 0px 0px 0.2rem 0.01rem var(--border);
   transform: translateY(-0.2rem) translateX(-0.2rem);
 }
 

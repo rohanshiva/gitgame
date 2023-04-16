@@ -32,6 +32,8 @@ html {
   --warning: #EF0100;
   --line-selection-highlight: #fff8c5;
   --line-selection-border-color: #eed888;
+  --line-commented: rgb(217, 234, 211);
+  --line-commented-bar: rgb(147, 196, 125);
   --border-dark-shade: rgb(101 119 134 / 20%);
   --border-light-shade: rgb(101 119 134 / 15%);
 
@@ -47,6 +49,8 @@ html {
   --warning: #EF0100;
   --line-selection-highlight: #202128;
   --line-selection-border-color: #8f8f8f;
+  --line-commented: #0f1b2d;
+  --line-commented-bar: #0091ff;
   --border-dark-shade: rgba(255, 255, 255, 0);
   --border-light-shade: rgba(255, 255, 255, 0.075);
 }

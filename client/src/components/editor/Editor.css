@@ -21,8 +21,9 @@
 }
 
 .comment-highlighted-line {
-  background-color: rgb(217, 234, 211);
-  border-left: solid rgb(147, 196, 125);
+  background-color: var(--line-commented);
+  border-left: solid var(--line-commented-bar);
+  
 }
 
 .editor-context-menu {
