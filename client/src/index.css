@@ -24,13 +24,16 @@ html {
 
 :root {
   --bg: white;
-  --primary: #4f566b;
+  --border: rgb(208, 215, 222);
+  --button: #F2F5F6;
+  --primary: black;
+  --secondary: #EAEBEB;
   --accent: #0068ff;
-  --secondary: white;
-  --section-bg: #f6f8fa;
-  --secondary-accent: #999;
+  --warning: #EF0100;
   --line-selection-highlight: #fff8c5;
   --line-selection-border-color: #eed888;
+  --line-commented: rgb(217, 234, 211);
+  --line-commented-bar: rgb(147, 196, 125);
   --border-dark-shade: rgb(101 119 134 / 20%);
   --border-light-shade: rgb(101 119 134 / 15%);
 
@@ -38,13 +41,16 @@ html {
 
 [data-theme="dark"] {
   --bg: #131415;
-  --primary: #fbfbfd;
+  --border: rgb(48, 54, 61);
+  --button: #0D1117;
+  --primary: white;
+  --secondary: #323332;
   --accent: #ff7c7c;
-  --secondary: #131415;
-  --section-bg: #222223;
-  --secondary-accent: #eeeeee;
+  --warning: #EF0100;
   --line-selection-highlight: #202128;
   --line-selection-border-color: #8f8f8f;
+  --line-commented: #0f1b2d;
+  --line-commented-bar: #0091ff;
   --border-dark-shade: rgba(255, 255, 255, 0);
   --border-light-shade: rgba(255, 255, 255, 0.075);
 }
@@ -65,6 +71,34 @@ a {
 a:hover {
   color: var(--accent);
 }
+
+button {
+  width: fit-content;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 0.4rem 1.4rem;
+  border-radius: 0.4rem;
+  color: var(--primary);
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+button:hover {
+  transition-duration: 100ms;
+  transform: translateY(-0.2rem);
+}
+
+button:disabled {
+  opacity: 60%;
+}
+
+button:disabled:hover {
+  color: var(--primary);
+}
+
 
 ::-webkit-scrollbar {
   height: 0.25rem;

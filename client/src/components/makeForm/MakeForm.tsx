@@ -34,10 +34,9 @@ function MakeForm() {
 
   return (
     <>
-      <h2>Make Session </h2>
       <form className="make-form" onSubmit={handleMakeFormSubmit}>
         <div>
-          <input type="submit" value="Make" />
+          <input type="submit" value="Play" />
         </div>
       </form>
     </>

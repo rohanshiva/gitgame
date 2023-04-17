@@ -27,7 +27,7 @@ function App() {
       <ThemeContext.Provider value={{ theme, setTheme } as Theme}>
         <UserContext.Provider value={{ user, setUser } as UserState}>
           <div className="app">
-            <Navbar />
+            <Navbar/>
             <div className="main-section">
               <AppRouter />
             </div>

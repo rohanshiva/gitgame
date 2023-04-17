@@ -12,11 +12,7 @@ function AppRouter() {
 
   if (!user) {
     return (
-      <div>
-        <a href={`${config.baseUri}/${config.login.uri}`}>
-          Login
-        </a>
-      </div>
+      <Home/>
     )
   }
 

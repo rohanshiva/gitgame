@@ -1,8 +1,10 @@
 .code-container {
   max-width: 75%;
   min-width: 75%;
+  height: 100%;
   font-size: 12px;
-  border: 0.2rem solid var(--secondary-accent);
+  border-radius: 0.2rem;
+  border: 0.1rem solid var(--border);
 }
 
 @media only screen and (max-width: 992px) {
@@ -19,13 +21,14 @@
 }
 
 .comment-highlighted-line {
-  background-color: rgb(217, 234, 211);
-  border-left: solid rgb(147, 196, 125);
+  background-color: var(--line-commented);
+  border-left: solid var(--line-commented-bar);
+  
 }
 
 .editor-context-menu {
   position: absolute;
-  border-radius: 5%;
-  background-color: white;
-  box-shadow: 0px 0px 5px 1px darkgrey;
+  border-radius: 0.2rem;
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
 }

@@ -5,7 +5,7 @@
   position: fixed;
   z-index: 9999;
   inset: 0px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.3);
   justify-content: center;
   align-content: center;
 }
@@ -13,6 +13,8 @@
 .disconnection-message-container {
   text-align: center;
   padding: 0.5em;
-  background-color: white;
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
+  border-radius: 0.5rem;
   max-width: 60%;
 }

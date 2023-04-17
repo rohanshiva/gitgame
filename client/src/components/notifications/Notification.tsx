@@ -11,7 +11,6 @@ export const SUCCESS = {
     borderRadius: "3px",
   },
   // Custom Icon
-  icon: "✔",
   // Change colors of success/error/loading icon
   iconTheme: {
     primary: "#000",
@@ -30,7 +29,7 @@ export const LOADING = {
     backgroundColor: "#127DBD",
     color: "white",
     fontWeight: "bold",
-    borderRadius: "3px",
+    borderRadius: "0.2rem",
   },
 };
 
@@ -39,17 +38,10 @@ export const ERROR = {
   position: "bottom-right",
   // Styling
   style: {
-    backgroundColor: "#DA3637",
+    backgroundColor: "#EF0100",
     color: "white",
     fontWeight: "bold",
-    borderRadius: "3px",
-  },
-  // Custom Icon
-  icon: "❌",
-  // Change colors of success/error/loading icon
-  iconTheme: {
-    primary: "#000",
-    secondary: "#fff",
+    borderRadius: "0.2rem",
   },
 };
 

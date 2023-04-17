@@ -1,7 +1,9 @@
 .add-comment-container {
-  padding: 0.5rem 0.5rem;
-  font-size: 0.6rem;
   font-weight: bold;
+}
+
+.add-comment-content {
+  padding: 0.5rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -14,8 +16,11 @@ textarea {
   width: max-content;
   padding: 0.5rem;
   color: var(--primary);
-  background-color: var(--section-bg);
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
+  border-radius: 0.2rem;
   font-weight: 400;
+  font-family: 'Space Grotesk', sans-serif;
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
@@ -25,19 +30,28 @@ textarea {
   flex-direction: row;
   justify-content: flex-end;
   gap: 0.4rem;
+  border-top: 0.1rem solid var(--border);
+  padding: 0.7rem;
 }
 
 .add-comment-button {
-  border: none;
+  border: 0.1rem solid var(--border);
+  border-radius: 50%;
   background-color: var(--bg);
   color: var(--primary);
-  outline: none;
-  height: min-content;
-  font-size: 1.5rem;
+  font-size: 1rem;
   cursor: pointer;
+  padding: 0.2rem;
+  opacity: 90%;
+}
+
+.add-comment-button:hover {
+  opacity: 100%;
+  transform: scale(1.2);
 }
 
 .add-comment-header {
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: bold;
+  font-family: 'Space Grotesk', sans-serif;
 }

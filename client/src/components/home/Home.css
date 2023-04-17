@@ -1,47 +1,69 @@
 input {
-  border: none;
-  outline: none;
-  width: max-content;
-  padding: 0.5rem 0.8rem 0.5rem 0rem;
-  color: var(--primary);
-  background-color: var(--secondary);
+  width: fit-content;
   font-size: 1rem;
-  font-weight: 600;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  margin-right: 0.75rem;
-  border-bottom: 0.2rem solid var(--primary);
+  font-weight: bold;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 0.4rem 1.4rem;
+  border-radius: 0.4rem;
+  color: var(--primary);
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
+  outline: none;
+  cursor: pointer;
 }
 
 input[type="submit"] {
-  font-family: monospace;
-  padding: 0.5rem 0.75rem;
+  width: fit-content;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 0.4rem 1.4rem;
+  border-radius: 0.4rem;
   color: var(--primary);
   background-color: var(--bg);
-  border: 0.3rem solid var(--primary);
+  border: 0.1rem solid var(--border);
+  outline: none;
+  cursor: pointer;
 }
 
 input[type="submit"]:hover {
-  color: var(--accent);
-  transition: background 0.5s ease;
-  cursor: pointer;
+  transition-duration: 100ms;
+  transform: translateY(-0.2rem);
 }
 
-.author-tags {
-  margin-top: 0.5rem;
+.home-container {
   display: flex;
+  flex-direction: row;
   width: 100%;
-  gap: 1rem;
-  overflow-x: auto;
-  padding-bottom: 0.2rem;
+  align-items: center;
 }
 
-.author-tag {
-  font-family: "Inter", sans-serif;
-  font-weight: 600;
-  color: var(--bg);
-  background-color: var(--accent);
-  padding: 0.5rem;
-  cursor: pointer;
-  width: fit-content;
+@media only screen and (max-width: 812px) {
+  .home-container {
+    flex-direction: column;
+    gap: 2rem;
+  }
 }
+
+.home-left {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.headline {
+  display: flex;
+  flex-direction: column;
+}
+
+.tagline {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.home-right {
+  background-color: var(--primary);
+  border-radius: 1rem;
+  width: 100%;
+  height: 512px;
+}
+
