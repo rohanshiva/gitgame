@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   
   push:
-    branches: [actions-test]
+    branches: [actions]
     paths-ignore: 
       - 'client/build/**'
     
@@ -15,7 +15,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: actions-test
+        ref: 'actions'
 
     - name: Setup Node
       uses: actions/setup-node@v3
@@ -34,9 +34,10 @@ jobs:
 
     - name: Push Build!
       run: |
+        git checkout -b actions-test
+        git add client/build --force
         git config --global user.name "gitgame.builder"
         git config --global user.email "gitgame.builder@github.com"
-        git add client/build --force
-        git commit -m "build client of ${{ github.sha }}"
+        git commit -m "promote ${{ github.sha }} to prod"
         git push -f
     
