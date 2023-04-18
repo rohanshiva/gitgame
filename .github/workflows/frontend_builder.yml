@@ -15,7 +15,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: actions
+        ref: actions-test
 
     - name: Setup Node
       uses: actions/setup-node@v3
@@ -37,6 +37,6 @@ jobs:
         git config --global user.name "gitgame.builder"
         git config --global user.email "gitgame.builder@github.com"
         git add client/build --force
-        git commit -m "build client of $${ github.sha }$$"
+        git commit -m "build client of $${{ github.sha }}"
         git push -f
     
