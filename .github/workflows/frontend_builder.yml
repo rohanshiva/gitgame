@@ -1,14 +1,14 @@
 name: Frontend Builder
 
 env:
-  DEVELOPMENT: actions
-  PRODUCTION: actions-test
+  DEVELOPMENT: develop
+  PRODUCTION: production
 
 on:
   workflow_dispatch:
   
   push:
-    branches: [${{ env.DEVELOPMENT }}]
+    branches: [develop]
     paths-ignore: 
       - 'client/build/**'
     
