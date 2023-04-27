@@ -38,7 +38,7 @@ jobs:
 
     - name: Push Build!
       run: |
-        git checkout -b ${{ env.DEVELOPMENT }}
+        git checkout -b ${{ env.PRODUCTION }}
         git add client/build --force
         git config --global user.name "gitgame.builder"
         git config --global user.email "gitgame.builder@github.com"
