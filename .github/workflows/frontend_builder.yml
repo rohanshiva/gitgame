@@ -1,0 +1,47 @@
+name: Frontend Builder
+
+env:
+  DEVELOPMENT: develop
+  PRODUCTION: production
+
+on:
+  workflow_dispatch:
+  
+  push:
+    branches: [develop]
+    paths-ignore: 
+      - 'client/build/**'
+    
+jobs:
+  kickoff:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ env.DEVELOPMENT }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install Packages
+      run: |
+        cd client
+        npm install
+
+    - name: Build App
+      run: |
+        cd client
+        CI=false REACT_APP_HTTP_ENDPOINT=${{ vars.REACT_APP_HTTP_ENDPOINT }} REACT_APP_WS_ENDPOINT=${{ vars.REACT_APP_WS_ENDPOINT }} npm run build
+
+    - name: Push Build!
+      run: |
+        git checkout -b ${{ env.PRODUCTION }}
+        git add client/build --force
+        git config --global user.name "gitgame.builder"
+        git config --global user.email "gitgame.builder@github.com"
+        git commit -m "promote ${{ github.sha }} to prod"
+        git push origin ${{ env.PRODUCTION }} -f
+    
