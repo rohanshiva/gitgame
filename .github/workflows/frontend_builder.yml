@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
   
   push:
-    branches: [actions]
+    branches: [${{ env.DEVELOPMENT }}]
     paths-ignore: 
       - 'client/build/**'
     
