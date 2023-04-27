@@ -1,8 +1,8 @@
 name: Frontend Builder
 
 env:
-  DEVELOPMENT: develop
-  PRODUCTION: production
+  DEVELOPMENT: actions
+  PRODUCTION: actions-test
 
 on:
   workflow_dispatch:
