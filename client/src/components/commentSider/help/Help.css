@@ -24,3 +24,14 @@
   line-height: 1.5rem;
 }
 
+.help-list {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  list-style: square;
+  padding-left: 1.4rem;
+}
+
+.title {
+  font-family: 'Space Grotesk', sans-serif;
+}
+

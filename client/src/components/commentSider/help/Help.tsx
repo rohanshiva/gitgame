@@ -19,27 +19,38 @@ export function HelpComment({ children }: HelpCommentProps) {
 function Help() {
   return (
     <HelpComment>
-      <div className="help-card-content" style={{ gap: "0.5rem" }}>
-        <div>
-          <strong>How to create a comment?</strong>
-        </div>
-        <div>- Click on any line number.</div>
-        <div>
-          - To select multiple lines, hold{" "}
+      <strong>
+        <code className="title">
+        How to create a comment?
+          </code></strong>
+      <ul className="help-list">
+        <li>
+          Click on any line number.
+        </li>
+        <li>
+          To select multiple lines, hold{" "}
           <strong>
             <kbd>shift</kbd>
           </strong>{" "}
           and click on any line number below or above.
-        </div>
-        <div>
-          - Right click within the highlighted region to trigger
+        </li>
+        <li>
+          Right click within the highlighted region to trigger
           the comment creation popup.
-        </div>
-        <div>- Type your comment in the popover texarea.</div>
-        <div>- If you don't like something, submit a 💩 comment.</div>
-        <div>- If you like something, submit a 💎 comment.</div>
-        <div>- Cancel line selection by clicking on ❌.</div>
-      </div>
+        </li>
+        <li>
+          Type your comment in the popover texarea.
+        </li>
+        <li>
+          If you don't like something, submit a 💩 comment.
+        </li>
+        <li>
+          If you like something, submit a 💎 comment.
+        </li>
+        <li>
+          Cancel line selection by clicking on ❌.
+        </li>
+      </ul>
     </HelpComment>
   );
 }
