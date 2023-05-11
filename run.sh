@@ -9,4 +9,5 @@ run_web(){
     npx serve build > website.log
 }
 
+source ~/.nvm/nvm.sh
 run_api & run_web
