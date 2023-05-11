@@ -16,8 +16,7 @@ git fetch origin production
 git checkout production
 
 # setup API
-cd api/
-sudo python3.10 -m pip install -r requirements.txt
+sudo python3.10 -m pip install -r ./api/requirements.txt
 echo "Setup API!"
 
 # setup nodejs
