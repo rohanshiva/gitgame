@@ -50,8 +50,8 @@ function Game() {
   const { isDisconnected, disconnectionMessage } = disconnection;
 
   const copyHandler = async () => {
-    await navigator.clipboard.writeText(sessionId);
-    toast(`Session code copied ${sessionId}!`, SUCCESS as any);
+    await navigator.clipboard.writeText(window.location.href);
+    toast(`Game link copied!`, SUCCESS as any);
   };
 
   const nextHandler = () => {
