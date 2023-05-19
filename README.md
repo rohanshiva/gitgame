@@ -1,1 +1,2 @@
-TODO(ramko9999): fill out the main repository readme.
+Roast each other's code by visiting [GitGame](https://gitgame.live)
+
