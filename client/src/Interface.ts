@@ -111,17 +111,7 @@ export interface AckNewComment extends GameStateDispatchEvent {
 export interface GameState {
   players: Player[];
   host: string;
-  source_code: Code;
+  source_code: Code | null;
   comments: Comment[];
   new_comments: Comment[];
 }
-
-export const lobbyCode: Code = {
-  id: "",
-  author: "",
-  content: "Waiting for players...",
-  file_name: "lobby_waiting_for_players",
-  file_extension: "markdown",
-  file_visit_url: "https://github.com/rohanshiva/gitgame",
-  file_display_path: "rohanshiva/gitgame",
-};

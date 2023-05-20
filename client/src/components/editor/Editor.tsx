@@ -51,7 +51,7 @@ function getPrismExtension(extension: string): Language {
   return extension as Language;
 }
 
-function Editor({
+export function Editor({
   code,
   newComments,
   onNewCommentAck,
@@ -178,7 +178,6 @@ function Editor({
         className="editor-context-menu"
         onClick={(event: React.MouseEvent) => {
           event.stopPropagation();
-          console.log("Editor Context Menu Triggered");
         }}
         style={{ top: contextMenuProps.posY, left: contextMenuProps.posX }}
       >
@@ -249,6 +248,52 @@ function Editor({
                           }
                         }}
                       >
+                        {line.map((token, tokenIndex) => (
+                          <span
+                            key={tokenIndex}
+                            {...getTokenProps({ token, key: tokenIndex })}
+                          />
+                        ))}
+                      </LineContent>
+                    </Line>
+                  );
+                })}
+              </Pre>
+            </>
+          );
+        }}
+      </Highlight>
+    </div>
+  );
+}
+
+interface TextDisplayProps {
+  text: string;
+}
+
+export function TextDisplay({ text }: TextDisplayProps) {
+  const { theme } = useContext(ThemeContext);
+
+  return (
+    <div className="code-container">
+      <Highlight
+        {...defaultProps}
+        theme={isDark(theme) ? darkTheme : lightTheme}
+        code={text}
+        language={"markdown"}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => {
+          return (
+            <>
+              <Pre>
+                {tokens.map((line, lineIndex) => {
+                  return (
+                    <Line
+                      key={lineIndex}
+                      {...getLineProps({ line, key: lineIndex })}
+                    >
+                      <LineNo>{lineIndex + 1}</LineNo>
+                      <LineContent id={`${lineIndex}-content`}>
                         {line.map((token, tokenIndex) => (
                           <span
                             key={tokenIndex}
