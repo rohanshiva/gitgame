@@ -117,11 +117,10 @@ function useGameConnection(
     disconnectionMessage: disconnectionMessage,
   };
 
-  const isConnecting = ws == null || ws.readyState === ws.CONNECTING;
   const isConnected = state.players.length > 0; // hacky way of checking whether a WS response has been recieved after joining
   const isInGame = state.source_code != null;
 
-  return { state, actions, disconnection, isConnected, isConnecting, isInGame };
+  return { state, actions, disconnection, isConnected, isInGame };
 }
 
 export default useGameConnection;

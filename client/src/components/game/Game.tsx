@@ -56,7 +56,7 @@ function Game() {
     toast(alert, SUCCESS as any);
   }, []);
 
-  const { state, actions, disconnection, isConnecting, isConnected, isInGame } =
+  const { state, actions, disconnection, isConnected, isInGame } =
     useGameConnection(sessionId, onAlert);
 
   const { source_code, players, new_comments, comments } = state;
@@ -81,20 +81,21 @@ function Game() {
   };
 
   const renderEditor = () => {
-    if (isConnecting) {
-      return <TextDisplay text={"Connecting..."} />;
+    if(isInGame){
+      return (
+        <Editor
+          code={source_code as Code}
+          newComments={new_comments}
+          onNewCommentAck={actions.ackNewComment}
+          addComment={addCommentHandler}
+        />
+      );
     }
-    if (isConnected) {
-      return <TextDisplay text={getWelcomeText(state, username)} />;
+    if (isConnected){
+      return (<TextDisplay text={getWelcomeText(state, username)} />);
     }
-    return (
-      <Editor
-        code={source_code as Code}
-        newComments={new_comments}
-        onNewCommentAck={actions.ackNewComment}
-        addComment={addCommentHandler}
-      />
-    );
+    
+    return <TextDisplay text={"Connecting..."} />;
   };
 
   const visitUrl = isInGame
