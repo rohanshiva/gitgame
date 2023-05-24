@@ -1,6 +1,7 @@
 from fastapi import status
 from fastapi.websockets import WebSocket
 from starlette.websockets import WebSocketState
+from metrics import WS_CONNECTIONS
 import anyio
 import logging
 
@@ -12,6 +13,10 @@ class Connection:
         self.__id = id
         self.__group = group
         self.__websocket = websocket
+
+    async def accept(self):
+        await self.__websocket.accept()
+        WS_CONNECTIONS.inc()
 
     async def send(self, data: dict):
         if self.__websocket.client_state == WebSocketState.CONNECTED:
@@ -36,6 +41,7 @@ class Connection:
             code=code,
             reason=reason,
         )
+        WS_CONNECTIONS.dec()
 
     def __eq__(self, other: "Connection"):
         return self.__id == other.__id and self.__group == other.__group

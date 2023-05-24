@@ -2,16 +2,13 @@ import logging
 from httpx import AsyncClient
 from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import RedirectResponse
-from urllib.parse import (
-    urlencode, 
-    urlparse
-)
+from urllib.parse import urlencode, urlparse
 from config import (
     GITHUB_LOGIN_ENDPOINT,
     GITHUB_ACCESS_TOKEN_ENDPOINT,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
-    CLIENT_URL
+    CLIENT_URL,
 )
 from services.github_client import (
     GithubClient,

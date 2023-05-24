@@ -15,6 +15,8 @@ from enum import IntEnum
 from uuid import UUID
 from pydantic import BaseModel
 from pathlib import PurePosixPath
+from metrics import instrument
+
 
 import logging
 
@@ -219,9 +221,9 @@ async def on_websocket_event(
     gh_client: GithubClient = Depends(get_gh_client),
 ):
     username = context["username"]
-    await websocket.accept()
-    session = await Session.filter(id=session_id).first()
     connection = Connection(username, session_id, websocket)
+    await connection.accept()
+    session = await Session.filter(id=session_id).first()
     if session is None:
         await connection.close(
             code=WSAppStatusCodes.SESSION_NOT_FOUND,
@@ -231,17 +233,16 @@ async def on_websocket_event(
 
     manager = ConnectionManager.instance()
 
+    @instrument
     async def on_leave():
-        # LOGGER.info(f"{username} attempting to leave {session.id}")
         await session.leave(username)
         manager.remove_connection(connection)
         lobby = await get_lobby(session)
         alert = get_alert(f"{username} has left")
         await manager.broadcast(session.id, get_batch(lobby, alert).dict())
-        # LOGGER.info(f"{username} left {session.id}")
 
+    @instrument
     async def on_join():
-        # LOGGER.info(f"{username} attemping to join {session.id}")
         try:
             await session.join(username, gh_client)
         except PlayerNotInGithubError as e:
@@ -269,9 +270,9 @@ async def on_websocket_event(
         await manager.broadcast(
             session.id, get_batch(lobby, alert, source_code, comments).dict()
         )
-        # LOGGER.info(f"{username} joined {session.id}")
         # todo: figure out how to ensure session is a consistent state when there are errors raised from broadcast_lobby and broadcast_alert
 
+    @instrument
     async def on_pick():
         await session.refresh_from_db()
         if session.host is not None:
@@ -295,6 +296,7 @@ async def on_websocket_event(
                     reason=f"{username} cannot pick since they are not host",
                 )
 
+    @instrument
     async def on_add_comment(add_comment_body: AddCommentBody):
         try:
             db_comment = await session.add_comment(
@@ -321,6 +323,7 @@ async def on_websocket_event(
                 reason=f"{username} tried to make a comment when there doesn't exist any active source code",
             )
 
+    # todo(Ramko9999): deletion is not supported atm
     async def on_delete_comment(delete_comment_body: DeleteCommentBody):
         comment_id = delete_comment_body.comment_id
         comment = await DBComment.filter(id=comment_id).first()
