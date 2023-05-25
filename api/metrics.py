@@ -1,4 +1,4 @@
-from prometheus_client import Summary, Counter, Gauge
+from prometheus_client import Histogram, Counter, Gauge
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI
 from functools import wraps
@@ -8,7 +8,7 @@ import inspect
 NAMESPACE = "gitgame"
 SERVICE = "api"
 
-MISC_FUNCTION_LATENCY = Summary(
+MISC_FUNCTION_LATENCY = Histogram(
     "misc_function_latency",
     "Function latency (s)",
     ["name"],
