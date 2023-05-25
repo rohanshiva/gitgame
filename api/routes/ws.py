@@ -15,7 +15,7 @@ from enum import IntEnum
 from uuid import UUID
 from pydantic import BaseModel
 from pathlib import PurePosixPath
-from metrics import instrument
+from metrics import instrument, WS_CONNECTIONS
 
 
 import logging
@@ -232,6 +232,7 @@ async def on_websocket_event(
         return
 
     manager = ConnectionManager.instance()
+    WS_CONNECTIONS.inc()
 
     @instrument
     async def on_leave():
@@ -376,9 +377,11 @@ async def on_websocket_event(
         LOGGER.info(f"Client disconnection: {e.code} {e.reason}")
         if e.code != WSAppStatusCodes.SWITCHING_CONNECTIONS:
             await on_leave()
+        WS_CONNECTIONS.dec()
     except WSAppPolicyViolation as e:
         # Calling websocket.close in the same event loop which processes the websocket does not seem to throw a WebSocketDisconnect error
         # Hence this custom exception was created
         LOGGER.info(f"Server disconnection: {e.code} {e.reason}")
         await connection.close(code=e.code, reason=e.reason)
         await on_leave()
+        WS_CONNECTIONS.dec()
