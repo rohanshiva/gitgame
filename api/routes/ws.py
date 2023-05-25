@@ -232,7 +232,6 @@ async def on_websocket_event(
         return
 
     manager = ConnectionManager.instance()
-    WS_CONNECTIONS.inc()
 
     @instrument
     async def on_leave():
@@ -355,6 +354,7 @@ async def on_websocket_event(
         return
 
     try:
+        WS_CONNECTIONS.inc()
         while True:
             try:
                 data = await websocket.receive_json()
