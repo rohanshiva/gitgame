@@ -105,7 +105,7 @@ function CommentList({ comments, commentType }: CommentListProps) {
         return (
           <div className="comments-section" key={index}>
             <div className="comments-section-header">
-              <pre>{`L${lines.start + 1}-L${lines.end + 1}`}</pre>
+              <span>{`L${lines.start + 1}-L${lines.end + 1}`}</span>
               <abbr title={authors.join(", ")}>
                 <span className="emoji-reactions">
                   {commentTypeToEmoji(commentType)} {comments.length}
