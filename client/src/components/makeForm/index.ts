@@ -1,3 +1,3 @@
-import HomeForm from "./MakeForm";
+import MakeForm from "./MakeForm";
 
-export default HomeForm;
+export default MakeForm;
