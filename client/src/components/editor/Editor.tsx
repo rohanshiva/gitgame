@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useRef, useEffect } from "react";
 import "./Editor.css";
 import darkTheme from "./EditorDarkTheme";
 import lightTheme from "prism-react-renderer/themes/github";
@@ -13,7 +13,7 @@ import {
 import ThemeContext, { isDark } from "../../context/ThemeContext";
 import { Pre, Line, LineNo, LineContent } from "./Styles";
 import Highlight, { defaultProps, Language } from "prism-react-renderer";
-import useLineSelection from "./hooks/lineSelection/UseLineSelection";
+import useLineSelection from "./hooks/UseLineSelection";
 import CommentCreationMenu from "./CommentCreationMenu";
 import EmojiShower from "./animation/EmojiAnimation";
 import CommentHighlightContext from "../../context/CommentHighlightContext";
@@ -22,18 +22,13 @@ import {
   getViewportBounds,
   mergeViewportBounds,
 } from "./Util";
+import useContextMenu from "./hooks/UseContextMenu";
 
 interface EditorProps {
   code: Code;
   newComments: Comment[];
   onNewCommentAck: (comment_id: string) => void;
   addComment?: (comment: AddComment) => void;
-}
-
-interface EditorContextMenu {
-  shouldOpen: boolean;
-  posX: number;
-  posY: number;
 }
 
 // todo: fill this out for supported languages
@@ -51,7 +46,7 @@ function getPrismExtension(extension: string): Language {
   return extension as Language;
 }
 
-function Editor({
+export function Editor({
   code,
   newComments,
   onNewCommentAck,
@@ -66,15 +61,10 @@ function Editor({
     isLineSelected,
   } = useLineSelection();
 
-  // todo(ramko9999): abstract the context menu state to a hook
-  const [contextMenuProps, setContextMenuProps] = useState<EditorContextMenu>({
-    shouldOpen: false,
-    posX: -1,
-    posY: -1,
-  });
+  const { isOpen, anchor, anchorAt, close } = useContextMenu();
 
   const cancelCommentCreation = () => {
-    closeContextMenu();
+    close();
     clearLineSelection();
   };
 
@@ -91,15 +81,6 @@ function Editor({
     }
   }, [commentHighlight]);
 
-  const closeContextMenu = () => {
-    setContextMenuProps((props) => {
-      return {
-        ...props,
-        shouldOpen: false,
-      };
-    });
-  };
-
   const createComment = (comment: AddComment) => {
     if (addComment !== undefined) {
       addComment(comment);
@@ -108,6 +89,7 @@ function Editor({
   };
 
   const codeRef = useRef<HTMLPreElement | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToHighlight = () => {
     const lineStart = document.getElementById(
@@ -168,7 +150,7 @@ function Editor({
     <div
       className="code-container"
       onClick={() => {
-        closeContextMenu();
+        close();
         if (commentHighlight) {
           dehighlight();
         }
@@ -176,14 +158,17 @@ function Editor({
     >
       <div
         className="editor-context-menu"
+        ref={contextMenuRef}
         onClick={(event: React.MouseEvent) => {
           event.stopPropagation();
-          console.log("Editor Context Menu Triggered");
         }}
-        style={{ top: contextMenuProps.posY, left: contextMenuProps.posX }}
+        style={{
+          top: anchor.y,
+          left: anchor.x,
+          display: isOpen ? "initial" : "none",
+        }}
       >
         <CommentCreationMenu
-          open={contextMenuProps.shouldOpen}
           onCancel={cancelCommentCreation}
           onSubmit={createComment}
           lines={selectedLines as Lines}
@@ -241,14 +226,59 @@ function Editor({
                         onContextMenu={(event: React.MouseEvent) => {
                           if (isLineSelected(lineIndex)) {
                             event.preventDefault();
-                            setContextMenuProps({
-                              shouldOpen: true,
-                              posX: event.pageX,
-                              posY: event.pageY,
-                            });
+                            anchorAt(
+                              { x: event.pageX, y: event.pageY },
+                              contextMenuRef.current as HTMLElement
+                            );
                           }
                         }}
                       >
+                        {line.map((token, tokenIndex) => (
+                          <span
+                            key={tokenIndex}
+                            {...getTokenProps({ token, key: tokenIndex })}
+                          />
+                        ))}
+                      </LineContent>
+                    </Line>
+                  );
+                })}
+              </Pre>
+            </>
+          );
+        }}
+      </Highlight>
+    </div>
+  );
+}
+
+interface TextDisplayProps {
+  text: string;
+}
+
+export function TextDisplay({ text }: TextDisplayProps) {
+  const { theme } = useContext(ThemeContext);
+
+  return (
+    <div className="code-container">
+      <Highlight
+        {...defaultProps}
+        theme={isDark(theme) ? darkTheme : lightTheme}
+        code={text}
+        language={"markdown"}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => {
+          return (
+            <>
+              <Pre>
+                {tokens.map((line, lineIndex) => {
+                  return (
+                    <Line
+                      key={lineIndex}
+                      {...getLineProps({ line, key: lineIndex })}
+                    >
+                      <LineNo>{lineIndex + 1}</LineNo>
+                      <LineContent id={`${lineIndex}-content`}>
                         {line.map((token, tokenIndex) => (
                           <span
                             key={tokenIndex}

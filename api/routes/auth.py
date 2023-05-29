@@ -2,12 +2,13 @@ import logging
 from httpx import AsyncClient
 from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import RedirectResponse
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from config import (
     GITHUB_LOGIN_ENDPOINT,
     GITHUB_ACCESS_TOKEN_ENDPOINT,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
+    CLIENT_URL,
 )
 from services.github_client import (
     GithubClient,
@@ -22,8 +23,8 @@ logger = logging.getLogger()
 
 def build_protected_response(url: str, token: str):
     response = RedirectResponse(url)
-    # todo(rohan) : extract domain from url
-    response.set_cookie(key="token", value=token, httponly=True, domain="127.0.0.1")
+    domain = urlparse(url).hostname
+    response.set_cookie(key="token", value=token, httponly=True, domain=domain)
     return response
 
 
@@ -66,7 +67,7 @@ async def authenticate_gh_user(code: str):
             user = await gh_client.get_user()
             username = user["username"]
             token = Auth.encode(username)
-            return build_protected_response("http://127.0.0.1:3000/", token)
+            return build_protected_response(CLIENT_URL, token)
         except GithubUserNotFound:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -2,7 +2,9 @@
 venv/
 .pytest_cache
 package-lock.json
+*.pem
 *.log
 __pycache__/
 .vscode/
 *-venv
+*.out

@@ -5,7 +5,6 @@ import {
   BatchPayload,
   GameStateDispatchEvent,
   GameStateDispatchEventType,
-  lobbyCode,
   RequestType,
   ResponsePayload,
   ResponseType,
@@ -28,7 +27,7 @@ function useGameConnection(
   const [state, dispatch] = useReducer(gameReducer, {
     players: [],
     host: "",
-    source_code: lobbyCode,
+    source_code: null,
     comments: [],
     new_comments: [],
   });
@@ -118,7 +117,10 @@ function useGameConnection(
     disconnectionMessage: disconnectionMessage,
   };
 
-  return { state, actions, disconnection };
+  const isConnected = state.players.length > 0; // hacky way of checking whether a WS response has been recieved after joining
+  const isInGame = state.source_code != null;
+
+  return { state, actions, disconnection, isConnected, isInGame };
 }
 
 export default useGameConnection;

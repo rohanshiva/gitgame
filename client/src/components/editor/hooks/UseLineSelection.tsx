@@ -5,7 +5,7 @@ export interface SelectedLines {
   end: number | undefined;
 }
 
-interface useLineSelectionResult {
+interface UseLineSelectionResult {
   selectedLines: SelectedLines;
   clearLineSelection: () => void;
   handleLineToggle: (e: any, lineNumber: number) => void;
@@ -13,7 +13,7 @@ interface useLineSelectionResult {
   isStartOfSelection: (lineNumber: number) => boolean;
 }
 
-function useLineSelection(): useLineSelectionResult {
+function useLineSelection(): UseLineSelectionResult {
   const [selectedLines, setSelectedLines] = useState<SelectedLines>({
     start: undefined,
     end: undefined,

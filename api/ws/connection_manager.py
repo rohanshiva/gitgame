@@ -13,6 +13,9 @@ class Connection:
         self.__group = group
         self.__websocket = websocket
 
+    async def accept(self):
+        await self.__websocket.accept()
+
     async def send(self, data: dict):
         if self.__websocket.client_state == WebSocketState.CONNECTED:
             await self.__websocket.send_json(data)
