@@ -37,7 +37,7 @@ function getWelcomeText({ players }: GameState, deviceUser: string) {
     })
     .join(", ");
 
-  const debriefText = `A code file will be picked among your public Github repositories.\n\nRoast it with a 💩 comment or celebrate it with a 💎 comment.\n\nClick 🔎 if you ever need any help.\n\nTo start, ${host.username} (Host) needs to click 'Start'`;
+  const debriefText = `A code file will be picked among your public Github repositories.\n\nRoast it with a 💩 comment or celebrate it with a 💎 comment.\n\nClick 🔎 if you ever need any help.\n\nTo start reviewing, ${host.username} (Host) needs to click 'Next'`;
 
   return `Players: ${playerText}\n\n${debriefText}`;
 }
@@ -107,7 +107,6 @@ function Game() {
 
   const isYouHost = username === state.host;
 
-  //todo(Ramko9999): disable any interaction on the lobby chunk
   return (
     <>
       <div className="top">

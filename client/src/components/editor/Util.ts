@@ -1,12 +1,11 @@
+export interface ViewportPoint {
+  x: number;
+  y: number;
+}
+
 export interface ViewportBounds {
-  topLeft: {
-    x: number;
-    y: number;
-  };
-  bottomRight: {
-    x: number;
-    y: number;
-  };
+  topLeft: ViewportPoint;
+  bottomRight: ViewportPoint;
   width: number;
   height: number;
 }

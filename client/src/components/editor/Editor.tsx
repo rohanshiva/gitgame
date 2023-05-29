@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useRef, useEffect } from "react";
 import "./Editor.css";
 import darkTheme from "./EditorDarkTheme";
 import lightTheme from "prism-react-renderer/themes/github";
@@ -22,18 +22,13 @@ import {
   getViewportBounds,
   mergeViewportBounds,
 } from "./Util";
+import useContextMenu from "./hooks/contextMenu/UseContextMenu";
 
 interface EditorProps {
   code: Code;
   newComments: Comment[];
   onNewCommentAck: (comment_id: string) => void;
   addComment?: (comment: AddComment) => void;
-}
-
-interface EditorContextMenu {
-  shouldOpen: boolean;
-  posX: number;
-  posY: number;
 }
 
 // todo: fill this out for supported languages
@@ -66,15 +61,10 @@ export function Editor({
     isLineSelected,
   } = useLineSelection();
 
-  // todo(ramko9999): abstract the context menu state to a hook
-  const [contextMenuProps, setContextMenuProps] = useState<EditorContextMenu>({
-    shouldOpen: false,
-    posX: -1,
-    posY: -1,
-  });
+  const { isOpen, anchor, anchorAt, close } = useContextMenu();
 
   const cancelCommentCreation = () => {
-    closeContextMenu();
+    close();
     clearLineSelection();
   };
 
@@ -91,15 +81,6 @@ export function Editor({
     }
   }, [commentHighlight]);
 
-  const closeContextMenu = () => {
-    setContextMenuProps((props) => {
-      return {
-        ...props,
-        shouldOpen: false,
-      };
-    });
-  };
-
   const createComment = (comment: AddComment) => {
     if (addComment !== undefined) {
       addComment(comment);
@@ -108,6 +89,7 @@ export function Editor({
   };
 
   const codeRef = useRef<HTMLPreElement | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToHighlight = () => {
     const lineStart = document.getElementById(
@@ -168,7 +150,7 @@ export function Editor({
     <div
       className="code-container"
       onClick={() => {
-        closeContextMenu();
+        close();
         if (commentHighlight) {
           dehighlight();
         }
@@ -176,13 +158,17 @@ export function Editor({
     >
       <div
         className="editor-context-menu"
+        ref={contextMenuRef}
         onClick={(event: React.MouseEvent) => {
           event.stopPropagation();
         }}
-        style={{ top: contextMenuProps.posY, left: contextMenuProps.posX }}
+        style={{
+          top: anchor.y,
+          left: anchor.x,
+          display: isOpen ? "initial" : "none",
+        }}
       >
         <CommentCreationMenu
-          open={contextMenuProps.shouldOpen}
           onCancel={cancelCommentCreation}
           onSubmit={createComment}
           lines={selectedLines as Lines}
@@ -240,11 +226,10 @@ export function Editor({
                         onContextMenu={(event: React.MouseEvent) => {
                           if (isLineSelected(lineIndex)) {
                             event.preventDefault();
-                            setContextMenuProps({
-                              shouldOpen: true,
-                              posX: event.pageX,
-                              posY: event.pageY,
-                            });
+                            anchorAt(
+                              { x: event.pageX, y: event.pageY },
+                              contextMenuRef.current as HTMLElement
+                            );
                           }
                         }}
                       >

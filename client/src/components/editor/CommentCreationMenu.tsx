@@ -3,76 +3,67 @@ import { CommentType, AddComment, Lines } from "../../Interface";
 import "./CommentCreationMenu.css";
 
 interface CommentCreationMenuProps {
-  open: boolean;
   onSubmit: (comment: AddComment) => void;
   onCancel: () => void;
   lines: Lines;
 }
 
 function CommentCreationMenu({
-  open,
   onCancel,
   onSubmit,
   lines,
 }: CommentCreationMenuProps) {
   const [commentMessage, setCommentMessage] = useState<string>("");
 
-  const onDiamond = () => {
-    if (commentMessage.trim() !== "") {
-      onSubmit({
-        line_start: lines.start,
-        line_end: lines.end,
-        type: CommentType.DIAMOND,
-        content: commentMessage,
-      });
-      setCommentMessage("");
-    }
+  const clear = () => {
+    setCommentMessage("");
   };
 
-  const onPoop = () => {
+  const submit = (commentType: CommentType) => {
     if (commentMessage.trim() !== "") {
       onSubmit({
         line_start: lines.start,
         line_end: lines.end,
-        type: CommentType.POOP,
+        type: commentType,
         content: commentMessage,
       });
-      setCommentMessage("");
+      clear();
     }
   };
 
   return (
     <>
-      {open && (
-        <div className="add-comment-container">
-          <div className="add-comment-content">
-            <span className="add-comment-header">Let them know!</span>
-            <textarea
-              placeholder="say something here..."
-              onChange={(e) => setCommentMessage(e.target.value)}
-              value={commentMessage}
-              maxLength={250}
-              spellCheck={false}
-            />
-          </div>
-
-          <div className="add-comments-buttons">
-            <span className="add-comment-button" onClick={onCancel}>
-              ❌
-            </span>
-            <span className="add-comment-button" onClick={onDiamond}>
-              💎
-            </span>
-            <span
-              className="add-comment-button"
-              onClick={onPoop}
-              id="poop-button"
-            >
-              💩
-            </span>
-          </div>
+      <div className="add-comment-container">
+        <div className="add-comment-content">
+          <span className="add-comment-header">Let them know!</span>
+          <textarea
+            placeholder="say something here..."
+            onChange={(e) => setCommentMessage(e.target.value)}
+            value={commentMessage}
+            maxLength={250}
+            spellCheck={false}
+          />
         </div>
-      )}
+
+        <div className="add-comments-buttons">
+          <span className="add-comment-button" onClick={onCancel}>
+            ❌
+          </span>
+          <span
+            className="add-comment-button"
+            onClick={() => submit(CommentType.DIAMOND)}
+          >
+            💎
+          </span>
+          <span
+            className="add-comment-button"
+            onClick={() => submit(CommentType.POOP)}
+            id="poop-button"
+          >
+            💩
+          </span>
+        </div>
+      </div>
     </>
   );
 }
