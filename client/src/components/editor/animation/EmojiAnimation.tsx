@@ -58,25 +58,26 @@ function EmojiAnimation({
   updateEmoji,
   onFinish,
 }: EmojiAnimationProps) {
-  const emojiShower = useRef<HTMLDivElement | null>(null);
+
+  const animationContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const showerGround = emojiShower.current as HTMLDivElement;
-    const showerGroundBounds = getViewportBounds(showerGround);
+    const animationContainer = animationContainerRef.current as HTMLDivElement;
+    const animationContainerBounds = getViewportBounds(animationContainer);
 
     let currentEmojis: EmojiSprite[] = [];
     for (let i = 0; i < count; i++) {
-      currentEmojis.push(createInitialEmoji(showerGroundBounds));
+      currentEmojis.push(createInitialEmoji(animationContainerBounds));
     }
 
     const update = () => {
       currentEmojis = currentEmojis
         .map((emoji) => {
-          return updateEmoji(emoji, showerGroundBounds);
+          return updateEmoji(emoji, animationContainerBounds);
         })
         .flat();
 
-      updateEmojisDisplay(currentEmojis, showerGround);
+      updateEmojisDisplay(currentEmojis, animationContainer);
       if (currentEmojis.length === 0) {
         onFinish();
       } else {
@@ -89,29 +90,29 @@ function EmojiAnimation({
 
   const updateEmojisDisplay = (
     emojiSprites: EmojiSprite[],
-    showerGround: HTMLDivElement
+    animationContainer: HTMLDivElement
   ) => {
-    const elementsLength = showerGround.getElementsByClassName("emoji").length;
+    const elementsLength = animationContainer.getElementsByClassName("emoji").length;
     const emojisLength = emojiSprites.length;
 
     for (let i = elementsLength; i < emojisLength; i++) {
       const element = document.createElement("span");
       element.className = "emoji";
-      showerGround.insertBefore(
+      animationContainer.insertBefore(
         element,
-        showerGround.firstChild as HTMLElement
+        animationContainer.firstChild as HTMLElement
       );
     }
 
     for (let i = emojisLength; i < elementsLength; i++) {
-      if (showerGround.getElementsByClassName("emoji").length > 0) {
-        showerGround.removeChild(
-          showerGround.getElementsByClassName("emoji").item(0) as Element
+      if (animationContainer.getElementsByClassName("emoji").length > 0) {
+        animationContainer.removeChild(
+          animationContainer.getElementsByClassName("emoji").item(0) as Element
         );
       }
     }
 
-    const elements = showerGround.getElementsByClassName("emoji");
+    const elements = animationContainer.getElementsByClassName("emoji");
     for (let i = 0; i < emojiSprites.length; i++) {
       const spriteEl = elements[i] as HTMLSpanElement;
       const { transform, fontSize, opacity } = getEmojiStyle(emojiSprites[i]);
@@ -119,7 +120,7 @@ function EmojiAnimation({
       spriteEl.style.fontSize = fontSize;
       spriteEl.style.transform = transform;
       spriteEl.style.opacity = opacity;
-      showerGround.insertBefore(spriteEl, showerGround.firstChild);
+      animationContainer.insertBefore(spriteEl, animationContainer.firstChild);
     }
   };
 
@@ -131,7 +132,7 @@ function EmojiAnimation({
     };
   };
 
-  return <div className="emoji-shower" ref={emojiShower}></div>;
+  return <div className="emoji-animation-container" ref={animationContainerRef}></div>;
 }
 
 interface EmojiShowerProps {

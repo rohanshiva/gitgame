@@ -13,7 +13,7 @@ import {
 import ThemeContext, { isDark } from "../../context/ThemeContext";
 import { Pre, Line, LineNo, LineContent } from "./Styles";
 import Highlight, { defaultProps, Language } from "prism-react-renderer";
-import useLineSelection from "./hooks/lineSelection/UseLineSelection";
+import useLineSelection from "./hooks/UseLineSelection";
 import CommentCreationMenu from "./CommentCreationMenu";
 import EmojiShower from "./animation/EmojiAnimation";
 import CommentHighlightContext from "../../context/CommentHighlightContext";
@@ -22,7 +22,7 @@ import {
   getViewportBounds,
   mergeViewportBounds,
 } from "./Util";
-import useContextMenu from "./hooks/contextMenu/UseContextMenu";
+import useContextMenu from "./hooks/UseContextMenu";
 
 interface EditorProps {
   code: Code;
