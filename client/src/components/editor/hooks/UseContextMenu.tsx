@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {ViewportPoint, getViewportBounds} from "../../Util";
+import {ViewportPoint, getViewportBounds} from "../Util";
 
 
 interface UseContextMenuResult {
