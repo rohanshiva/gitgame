@@ -1,3 +1,25 @@
+import { Language, Prism } from "prism-react-renderer";
+
+// the out-of-box languages attach themselves to a global Prism when imported
+// @ts-ignore
+(typeof global !== "undefined" ? global : window).Prism = Prism;
+require("prismjs/components/prism-java");
+require("prismjs/components/prism-dart");
+require("prismjs/components/prism-swift");
+
+
+const EXT_TO_PRISM_LANGUAGE: {[index: string]: string} = {
+  "py": "python",
+  "cc": "cpp",
+}
+
+export function getPrismLanguage(extension: string): Language {
+  if (extension in EXT_TO_PRISM_LANGUAGE) {
+    return EXT_TO_PRISM_LANGUAGE[extension] as Language;
+  }
+  return extension as Language;
+}
+
 export interface ViewportPoint {
   x: number;
   y: number;
