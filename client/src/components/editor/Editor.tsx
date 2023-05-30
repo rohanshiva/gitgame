@@ -1,7 +1,7 @@
 import { useContext, useRef, useEffect } from "react";
 import "./Editor.css";
-import darkTheme from "./EditorDarkTheme";
 import lightTheme from "prism-react-renderer/themes/github";
+import darkTheme from "prism-react-renderer/themes/vsDark";
 import "./Editor.css";
 import {
   Code,
@@ -12,7 +12,7 @@ import {
 } from "../../Interface";
 import ThemeContext, { isDark } from "../../context/ThemeContext";
 import { Pre, Line, LineNo, LineContent } from "./Styles";
-import Highlight, { defaultProps, Language } from "prism-react-renderer";
+import Highlight, { defaultProps } from "prism-react-renderer";
 import useLineSelection from "./hooks/UseLineSelection";
 import CommentCreationMenu from "./CommentCreationMenu";
 import EmojiShower from "./animation/EmojiAnimation";
@@ -21,6 +21,7 @@ import {
   computeLazyScrollYAxisOptions,
   getViewportBounds,
   mergeViewportBounds,
+  getPrismLanguage
 } from "./Util";
 import useContextMenu from "./hooks/UseContextMenu";
 
@@ -29,21 +30,6 @@ interface EditorProps {
   newComments: Comment[];
   onNewCommentAck: (comment_id: string) => void;
   addComment?: (comment: AddComment) => void;
-}
-
-// todo: fill this out for supported languages
-const prismExtensionMapping: { [index: string]: string } = {
-  dart: "clike",
-  java: "clike",
-  py: "python",
-  swift: "typescript", // dummy value to get prism to highlight swift code
-};
-
-function getPrismExtension(extension: string): Language {
-  if (extension in prismExtensionMapping) {
-    return prismExtensionMapping[extension] as Language;
-  }
-  return extension as Language;
 }
 
 export function Editor({
@@ -178,7 +164,7 @@ export function Editor({
         {...defaultProps}
         theme={isDark(theme) ? darkTheme : lightTheme}
         code={code.content}
-        language={getPrismExtension(code.file_extension)}
+        language={getPrismLanguage(code.file_extension)}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => {
           return (

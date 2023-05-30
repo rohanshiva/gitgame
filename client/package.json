@@ -6,6 +6,7 @@
     "axios": "^0.24.0",
     "http-status-codes": "^2.1.4",
     "prism-react-renderer": "^1.2.1",
+    "prismjs": "^1.29.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-feather": "^2.0.9",
@@ -42,9 +43,6 @@
     ]
   },
   "devDependencies": {
-    "@types/react-router-dom": "^5.3.2",
-    "@types/react-test-renderer": "^17.0.1",
-    "@types/styled-components": "^5.1.19",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -52,6 +50,9 @@
     "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0"
+    "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.3.2",
+    "@types/react-test-renderer": "^17.0.1",
+    "@types/styled-components": "^5.1.19"
   }
 }
