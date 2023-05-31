@@ -68,3 +68,10 @@ export const AckNewCommentAction = (
     new_comments: state.new_comments.filter(({ id }) => comment_id !== id),
   };
 };
+
+export const GameFinishedAction = (state: GameState): GameState => {
+  return {
+    ...state,
+    is_finished: true,
+  };
+};

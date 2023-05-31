@@ -3,14 +3,14 @@ import {
   AddComment,
   AlertPayload,
   BatchPayload,
-  GameStateDispatchEvent,
-  GameStateDispatchEventType,
+  GameStateEvent,
+  GameStateEventType,
   RequestType,
   ResponsePayload,
   ResponseType,
-} from "../../../../Interface";
-import gameReducer from "../../reducers/GameReducer";
-import config from "../../../../config/Config";
+} from "../../../Interface";
+import gameReducer from "../reducers/GameReducer";
+import config from "../../../config/Config";
 
 function getWebSocketAddress(sessionId: string) {
   return `${config.wsUri}/${config.socket.uri.replace(
@@ -30,6 +30,7 @@ function useGameConnection(
     source_code: null,
     comments: [],
     new_comments: [],
+    is_finished: false,
   });
 
   const [disconnectionMessage, setDisconnectionMessage] = useState<
@@ -55,7 +56,7 @@ function useGameConnection(
       // AlertPayloads are ignored in the reducer
       dispatch({
         ...payload,
-        event_type: GameStateDispatchEventType.WS_RESPONSE,
+        event_type: GameStateEventType.WS_RESPONSE,
       });
     };
 
@@ -101,9 +102,9 @@ function useGameConnection(
 
   const ackNewComment = (comment_id: string) => {
     dispatch({
-      event_type: GameStateDispatchEventType.ACK_NEW_COMMENT,
+      event_type: GameStateEventType.ACK_NEW_COMMENT,
       comment_id: comment_id,
-    } as GameStateDispatchEvent);
+    } as GameStateEvent);
   };
 
   const actions = {
@@ -118,9 +119,9 @@ function useGameConnection(
   };
 
   const isConnected = state.players.length > 0; // hacky way of checking whether a WS response has been recieved after joining
-  const isInGame = state.source_code != null;
+  const hasGameStarted = state.source_code != null;
 
-  return { state, actions, disconnection, isConnected, isInGame };
+  return { state, actions, disconnection, isConnected, hasGameStarted };
 }
 
 export default useGameConnection;
