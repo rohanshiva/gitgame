@@ -1,6 +1,7 @@
 import {
   AckNewCommentAction,
   CommentsAction,
+  GameFinishedAction,
   LobbyAction,
   NewCommentAction,
   SourceCodeAction,
@@ -14,8 +15,8 @@ import {
   CommentsPayload,
   BatchPayload,
   NewCommentPayload,
-  GameStateDispatchEvent,
-  GameStateDispatchEventType,
+  GameStateEvent,
+  GameStateEventType,
   AckNewComment,
 } from "../../../Interface";
 
@@ -29,6 +30,8 @@ function getNewStateFromWSResponse(state: GameState, payload: ResponsePayload) {
       return CommentsAction(state, payload as CommentsPayload);
     case ResponseType.NEW_COMMENT:
       return NewCommentAction(state, payload as NewCommentPayload);
+    case ResponseType.GAME_FINISHED:
+      return GameFinishedAction(state);
     default:
       return state;
   }
@@ -46,14 +49,11 @@ function reduceWsResponse(state: GameState, payload: ResponsePayload) {
   return newState;
 }
 
-export default function gameReducer(
-  state: GameState,
-  event: GameStateDispatchEvent
-) {
+export default function gameReducer(state: GameState, event: GameStateEvent) {
   switch (event.event_type) {
-    case GameStateDispatchEventType.WS_RESPONSE:
+    case GameStateEventType.WS_RESPONSE:
       return reduceWsResponse(state, event as ResponsePayload);
-    case GameStateDispatchEventType.ACK_NEW_COMMENT:
+    case GameStateEventType.ACK_NEW_COMMENT:
       return AckNewCommentAction(state, (event as AckNewComment).comment_id);
   }
 }

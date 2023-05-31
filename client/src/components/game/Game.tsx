@@ -13,7 +13,7 @@ import "./Game.css";
 import { AddComment, Code, GameState } from "../../Interface";
 import CommentSider from "../commentSider";
 import DisconnectionModal from "./disconnection/DisconnectionModal";
-import useGameConnection from "./hooks/gameConnection/UseGameConnection";
+import useGameConnection from "./hooks/UseGameConnection";
 import Lobby from "./lobby/Lobby";
 import UserContext from "../../context/UserContext";
 import CommentHighlightContext, {
@@ -56,7 +56,7 @@ function Game() {
     toast(alert, SUCCESS as any);
   }, []);
 
-  const { state, actions, disconnection, isConnected, isInGame } =
+  const { state, actions, disconnection, isConnected, hasGameStarted } =
     useGameConnection(sessionId, onAlert);
 
   const { source_code, players, new_comments, comments } = state;
@@ -81,7 +81,15 @@ function Game() {
   };
 
   const renderEditor = () => {
-    if(isInGame){
+    if (state.is_finished) {
+      return (
+        <TextDisplay
+          text={"We ran out of code files for you play on! Thanks for playing!"}
+        />
+      );
+    }
+
+    if (hasGameStarted) {
       return (
         <Editor
           code={source_code as Code}
@@ -91,21 +99,24 @@ function Game() {
         />
       );
     }
-    if (isConnected){
-      return (<TextDisplay text={getWelcomeText(state, username)} />);
+    if (isConnected) {
+      return <TextDisplay text={getWelcomeText(state, username)} />;
     }
-    
+
     return <TextDisplay text={"Connecting..."} />;
   };
 
-  const visitUrl = isInGame
-    ? source_code?.file_visit_url
-    : "https://github.com/rohanshiva/gitgame";
-  const displayPath = isInGame
-    ? source_code?.file_display_path
-    : "rohanshiva/gitgame";
+  const visitUrl =
+    hasGameStarted && !state.is_finished
+      ? source_code?.file_visit_url
+      : "https://github.com/rohanshiva/gitgame";
+  const displayPath =
+    hasGameStarted && !state.is_finished
+      ? source_code?.file_display_path
+      : "rohanshiva/gitgame";
 
   const isYouHost = username === state.host;
+  const canPickNext = isYouHost && !state.is_finished;
 
   return (
     <>
@@ -116,7 +127,7 @@ function Game() {
         <div className="top-right">
           <Lobby players={players} locationUser={username} />
           <div className="top-btns">
-            <button onClick={nextHandler} disabled={!isYouHost}>
+            <button onClick={nextHandler} disabled={!canPickNext}>
               Next
             </button>
             <button onClick={copyHandler}>Copy</button>

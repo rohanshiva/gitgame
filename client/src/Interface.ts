@@ -53,7 +53,7 @@ export interface Code {
 export enum ResponseType {
   ALERT = 0,
   ERROR = 1,
-  OUT_OF_FILES_TO_PICK = 2,
+  GAME_FINISHED = 2,
   LOBBY = 3,
   SOURCE_CODE = 4,
   COMMENTS = 5,
@@ -67,16 +67,16 @@ export enum RequestType {
   DELETE_COMMENT = 3,
 }
 
-export enum GameStateDispatchEventType {
+export enum GameStateEventType {
   WS_RESPONSE = 1,
   ACK_NEW_COMMENT = 2,
 }
 
-export interface GameStateDispatchEvent {
-  event_type: GameStateDispatchEventType;
+export interface GameStateEvent {
+  event_type: GameStateEventType;
 }
 
-export interface ResponsePayload extends GameStateDispatchEvent {
+export interface ResponsePayload extends GameStateEvent {
   message_type: ResponseType;
 }
 
@@ -104,7 +104,7 @@ export interface BatchPayload extends ResponsePayload {
   messages: ResponsePayload[];
 }
 
-export interface AckNewComment extends GameStateDispatchEvent {
+export interface AckNewComment extends GameStateEvent {
   comment_id: string;
 }
 
@@ -114,4 +114,5 @@ export interface GameState {
   source_code: Code | null;
   comments: Comment[];
   new_comments: Comment[];
+  is_finished: boolean;
 }

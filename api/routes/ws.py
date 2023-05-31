@@ -41,7 +41,7 @@ class WSRequestType(IntEnum):
 class WSResponseType(IntEnum):
     ALERT = 0
     ERROR = 1
-    OUT_OF_FILES_TO_PICK = 2
+    GAME_FINISHED = 2
     LOBBY = 3
     SOURCE_CODE = 4
     COMMENTS = 5
@@ -116,12 +116,17 @@ class NewCommentResponse(BaseModel):
     comment: Comment
 
 
+class GameFinishedResponse(BaseModel):
+    message_type: WSResponseType = WSResponseType.GAME_FINISHED
+
+
 Response = (
     LobbyResponse
     | AlertResponse
     | CodeResponse
     | CommentsResponse
     | NewCommentResponse
+    | GameFinishedResponse
     | None
 )
 
@@ -286,10 +291,7 @@ async def on_websocket_event(
                     source_code = await get_source_code(session)
                     await manager.broadcast(session.id, source_code.dict())
                 except OutOfFilesError:
-                    await manager.broadcast(
-                        session_id,
-                        {"message_type": WSResponseType.OUT_OF_FILES_TO_PICK},
-                    )
+                    await manager.broadcast(session_id, GameFinishedResponse().dict())
             else:
                 raise WSAppPolicyViolation(
                     code=WSAppStatusCodes.NOT_ALLOWED,
