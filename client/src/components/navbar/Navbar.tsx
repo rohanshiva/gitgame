@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 
 import * as Icon from "react-feather";
 import ThemeContext, {
@@ -7,6 +7,9 @@ import ThemeContext, {
   ThemeType,
 } from "../../context/ThemeContext";
 import "./Navbar.css";
+import UserContext from "../../context/UserContext";
+import useContextMenu from "../editor/hooks/UseContextMenu";
+import FeedbackCreationMenu from "./FeedbackCreationMenu";
 
 const switchTheme = (setTheme: any) => {
   if (document.documentElement.getAttribute("data-theme") === "dark") {
@@ -18,7 +21,11 @@ const switchTheme = (setTheme: any) => {
   }
 };
 function Navbar() {
+  const { user } = useContext(UserContext);
   const { theme, setTheme } = useContext(ThemeContext);
+
+  const { isOpen, anchor, anchorAt, close } = useContextMenu();
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <nav className="navbar">
@@ -32,7 +39,32 @@ function Navbar() {
         <div className="title-header">{"git_game"}</div>
       </div>
 
+
       <div className="links">
+        <div
+          className="context-menu"
+          ref={contextMenuRef}
+          onClick={(event: React.MouseEvent) => {
+            event.stopPropagation();
+          }}
+          style={{
+            top: anchor.y,
+            left: anchor.x,
+            display: isOpen ? "initial" : "none",
+          }}
+        >
+          <FeedbackCreationMenu onCancel={close} />
+        </div>
+        {user && (
+          <Icon.MessageSquare className="icon" onClick={(event: React.MouseEvent) => {
+            event.preventDefault();
+            anchorAt(
+              { x: event.pageX, y: event.pageY },
+              contextMenuRef.current as HTMLElement
+            );
+          }} />
+        )}
+
         {isDark(theme) && (
           <Icon.Sun onClick={() => switchTheme(setTheme)} className="icon" />
         )}

@@ -1,6 +1,5 @@
 import { useContext } from "react";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
-import config from "../config/index";
 import Home from "../components/home";
 import Game from "../components/game";
 import CommonRoute from "./CommonRoute";
@@ -12,7 +11,7 @@ function AppRouter() {
 
   if (!user) {
     return (
-      <Home/>
+      <Home />
     )
   }
 

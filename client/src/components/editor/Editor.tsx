@@ -143,7 +143,7 @@ export function Editor({
       }}
     >
       <div
-        className="editor-context-menu"
+        className="context-menu"
         ref={contextMenuRef}
         onClick={(event: React.MouseEvent) => {
           event.stopPropagation();
