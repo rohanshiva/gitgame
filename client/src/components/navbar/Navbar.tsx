@@ -1,5 +1,5 @@
-import React, { useContext, useRef } from "react";
-
+import React, { useContext } from "react";
+import Popover, { usePopover } from "../popover/Popover";
 import * as Icon from "react-feather";
 import ThemeContext, {
   isDark,
@@ -8,7 +8,6 @@ import ThemeContext, {
 } from "../../context/ThemeContext";
 import "./Navbar.css";
 import UserContext from "../../context/UserContext";
-import useContextMenu from "../editor/hooks/UseContextMenu";
 import FeedbackCreationMenu from "./FeedbackCreationMenu";
 
 const switchTheme = (setTheme: any) => {
@@ -20,12 +19,12 @@ const switchTheme = (setTheme: any) => {
     document.documentElement.setAttribute("data-theme", "dark");
   }
 };
+
 function Navbar() {
   const { user } = useContext(UserContext);
   const { theme, setTheme } = useContext(ThemeContext);
 
-  const { isOpen, anchor, anchorAt, close } = useContextMenu();
-  const contextMenuRef = useRef<HTMLDivElement | null>(null);
+  const { anchor, anchorAt, close } = usePopover();
 
   return (
     <nav className="navbar">
@@ -38,31 +37,18 @@ function Navbar() {
         <Icon.GitPullRequest />
         <div className="title-header">{"git_game"}</div>
       </div>
-
-
       <div className="links">
-        <div
-          className="context-menu"
-          ref={contextMenuRef}
-          onClick={(event: React.MouseEvent) => {
-            event.stopPropagation();
-          }}
-          style={{
-            top: anchor.y,
-            left: anchor.x,
-            display: isOpen ? "initial" : "none",
-          }}
-        >
+        <Popover baseAnchor={anchor}>
           <FeedbackCreationMenu onCancel={close} />
-        </div>
+        </Popover>
         {user && (
-          <Icon.MessageSquare className="icon" onClick={(event: React.MouseEvent) => {
-            event.preventDefault();
-            anchorAt(
-              { x: event.pageX, y: event.pageY },
-              contextMenuRef.current as HTMLElement
-            );
-          }} />
+          <Icon.MessageSquare
+            className="icon"
+            onClick={(event: React.MouseEvent) => {
+              event.preventDefault();
+              anchorAt({ x: event.pageX, y: event.pageY });
+            }}
+          />
         )}
 
         {isDark(theme) && (
