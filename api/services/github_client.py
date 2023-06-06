@@ -1,6 +1,6 @@
 import logging
 from typing import TypedDict, Optional
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
 from fastapi import status
 from pathlib import Path
 from datetime import datetime
@@ -37,20 +37,30 @@ class UserDict(TypedDict):
     node_id: str
 
 
-class GithubUserNotFound(Exception):
+class GithubApiException(Exception):
     pass
 
 
-class GithubRepositoryFileLoadingError(Exception):
+class GithubUserNotFound(GithubApiException):
     pass
 
 
-class GithubFileDownloadError(Exception):
+class GithubRepositoryFileLoadingError(GithubApiException):
     pass
 
 
-class GithubUserLoadingError(Exception):
+class GithubFileDownloadError(GithubApiException):
     pass
+
+
+class GithubUserLoadingError(GithubApiException):
+    pass
+
+
+def log_gh_api_response(response: Response):
+    logger.info(
+        f"Github API request to {response.url} resulted in {response.status_code}: {response.text}"
+    )
 
 
 class GithubClient:
@@ -92,6 +102,9 @@ class GithubClient:
                 )
                 if response.status_code == status.HTTP_404_NOT_FOUND:
                     raise GithubUserNotFound()
+                if response.status_code != status.HTTP_200_OK:
+                    log_gh_api_response(response)
+                    raise GithubApiException()
                 for repo in response.json():
                     if not repo["fork"] and repo["size"] > 0:
                         repo_dicts.append(
@@ -140,9 +153,8 @@ class GithubClient:
         async with AsyncClient() as client:
             response = await client.get(endpoint, headers=self.HEADERS, params=params)
             if response.status_code != status.HTTP_200_OK:
-                logger.warn(
-                    f"Unable to load files from {full_repo_name}: {response.json()['message']}"
-                )
+                logger.warn(f"Unable to load files from {full_repo_name}")
+                log_gh_api_response(response)
                 raise GithubRepositoryFileLoadingError()
 
             for entity in response.json()["tree"]:
@@ -163,8 +175,18 @@ class GithubClient:
         async with AsyncClient() as client:
             response = await client.get(gh_download_url)
             if response.status_code != status.HTTP_200_OK:
+                log_gh_api_response(response)
                 raise GithubFileDownloadError()
-            return str(response.content, encoding="utf-8")
+            return response.text
+
+    async def create_issue(self, title: str, body: str, labels: list[str]):
+        endpoint = "https://api.github.com/repos/rohanshiva/gitgame/issues"
+        payload = {"title": title, "body": body, "labels": labels}
+        async with AsyncClient() as client:
+            response = await client.post(endpoint, json=payload, headers=self.HEADERS)
+            if response.status_code != status.HTTP_201_CREATED:
+                log_gh_api_response(response)
+                raise GithubApiException()
 
     async def get_user(self):
         endpoint = "https://api.github.com/user"
@@ -173,9 +195,7 @@ class GithubClient:
             if response.status_code == status.HTTP_404_NOT_FOUND:
                 raise GithubUserNotFound()
             if response.status_code != status.HTTP_200_OK:
-                logger.warn(
-                    f"Unable to load user information: {response.json()['message']}"
-                )
+                log_gh_api_response(response)
                 raise GithubUserLoadingError()
             user = response.json()
             return UserDict(
