@@ -83,7 +83,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:enabled:hover {
   transition-duration: 100ms;
   transform: translateY(-0.2rem);
 }
@@ -158,14 +158,17 @@ textarea {
   background-color: var(--bg);
   color: var(--primary);
   font-size: 1rem;
-  cursor: pointer;
   padding: 0.2rem;
+}
+
+.context-menu-button:enabled {
   opacity: 90%;
 }
 
-.context-menu-button:hover {
+.context-menu-button:enabled:hover {
   opacity: 100%;
   transform: scale(1.2);
+  cursor: pointer;
 }
 
 .context-menu-header {

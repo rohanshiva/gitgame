@@ -8,7 +8,7 @@ import ThemeContext, {
 } from "../../context/ThemeContext";
 import "./Navbar.css";
 import UserContext from "../../context/UserContext";
-import FeedbackCreationMenu from "./FeedbackCreationMenu";
+import Feedback from "./Feedback";
 
 const switchTheme = (setTheme: any) => {
   if (document.documentElement.getAttribute("data-theme") === "dark") {
@@ -39,7 +39,7 @@ function Navbar() {
       </div>
       <div className="links">
         <Popover baseAnchor={anchor}>
-          <FeedbackCreationMenu onCancel={close} />
+          <Feedback onCancel={close} postSubmit={close} />
         </Popover>
         {user && (
           <Icon.MessageSquare

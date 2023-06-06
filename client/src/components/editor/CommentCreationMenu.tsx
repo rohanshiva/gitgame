@@ -45,22 +45,22 @@ function CommentCreationMenu({
         </div>
 
         <div className="context-menu-buttons">
-          <span className="context-menu-button" onClick={onCancel}>
+          <button className="context-menu-button" onClick={onCancel}>
             ❌
-          </span>
-          <span
+          </button>
+          <button
             className="context-menu-button"
             onClick={() => submit(CommentType.DIAMOND)}
           >
             💎
-          </span>
-          <span
+          </button>
+          <button
             className="context-menu-button"
             onClick={() => submit(CommentType.POOP)}
             id="poop-button"
           >
             💩
-          </span>
+          </button>
         </div>
       </div>
     </>
