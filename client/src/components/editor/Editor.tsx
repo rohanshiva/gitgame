@@ -202,7 +202,6 @@ export function Editor({
                             event.preventDefault();
                             anchorAt(
                               { x: event.pageX, y: event.pageY }
-                              //contextMenuRef.current as HTMLElement
                             );
                           }
                         }}
