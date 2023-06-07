@@ -24,7 +24,7 @@ async def create_feedback(
     title = feedback.message[:60]
     if len(feedback.message) > 60:
         title = f"{title}..."
-    body = f"User Agent: {user_agent}\n{feedback.message}"
+    body = f"User Agent: {user_agent}\n\n{feedback.message}"
     try:
         await gh_client.create_issue(title, body, ["feedback"])
     except GithubApiException:

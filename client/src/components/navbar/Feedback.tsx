@@ -48,10 +48,10 @@ function Feedback({ onCancel, postSubmit }: FeedbackProps) {
       <div className="context-menu-container">
         <div className="context-menu-content">
           <span className="context-menu-header">
-            Please provide any feedback!
+            Report an issue or feedback!
           </span>
           <textarea
-            placeholder="...."
+            placeholder="We would appreciate it!"
             onChange={(e) => setMessage(e.target.value)}
             value={message}
             maxLength={250}
