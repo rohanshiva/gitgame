@@ -1,11 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
 
 /* Define minimum font size */
 html {
   font-size: 12px;
 }
-
 
 /* Fluid typography formula */
 @media (min-width: 640px) and (max-width: 1439px) {
@@ -21,32 +20,30 @@ html {
   }
 }
 
-
 :root {
   --bg: white;
   --border: rgb(208, 215, 222);
-  --button: #F2F5F6;
+  --button: #f2f5f6;
   --primary: black;
-  --secondary: #EAEBEB;
+  --secondary: #eaebeb;
   --accent: #0068ff;
-  --warning: #EF0100;
+  --warning: #ef0100;
   --line-selection-highlight: #fff8c5;
   --line-selection-border-color: #eed888;
   --line-commented: rgb(217, 234, 211);
   --line-commented-bar: rgb(147, 196, 125);
   --border-dark-shade: rgb(101 119 134 / 20%);
   --border-light-shade: rgb(101 119 134 / 15%);
-
 }
 
 [data-theme="dark"] {
   --bg: #131415;
   --border: rgb(48, 54, 61);
-  --button: #0D1117;
+  --button: #0d1117;
   --primary: white;
   --secondary: #323332;
   --accent: #ff7c7c;
-  --warning: #EF0100;
+  --warning: #ef0100;
   --line-selection-highlight: #202128;
   --line-selection-border-color: #8f8f8f;
   --line-commented: #0f1b2d;
@@ -76,7 +73,7 @@ button {
   width: fit-content;
   font-size: 1rem;
   font-weight: bold;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   padding: 0.4rem 1.4rem;
   border-radius: 0.4rem;
   color: var(--primary);
@@ -86,7 +83,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:enabled:hover {
   transition-duration: 100ms;
   transform: translateY(-0.2rem);
 }
@@ -99,6 +96,21 @@ button:disabled:hover {
   color: var(--primary);
 }
 
+textarea {
+  border: none;
+  border-radius: 0.3rem;
+  outline: none;
+  width: max-content;
+  padding: 0.5rem;
+  color: var(--primary);
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
+  border-radius: 0.2rem;
+  font-weight: 400;
+  font-family: "Space Grotesk", sans-serif;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
 
 ::-webkit-scrollbar {
   height: 0.25rem;
@@ -111,4 +123,56 @@ button:disabled:hover {
 
 ::-webkit-scrollbar-thumb {
   background: var(--primary);
+}
+
+.context-menu {
+  position: absolute;
+  border-radius: 0.2rem;
+  background-color: var(--bg);
+  border: 0.1rem solid var(--border);
+}
+
+.context-menu-container {
+  font-weight: bold;
+}
+
+.context-menu-content {
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.context-menu-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  border-top: 0.1rem solid var(--border);
+  padding: 0.2rem 0.4rem;
+}
+
+.context-menu-button {
+  border: 0.1rem solid var(--border);
+  border-radius: 0.4rem;
+  background-color: var(--bg);
+  color: var(--primary);
+  font-size: 1rem;
+  padding: 0.2rem;
+}
+
+.context-menu-button:enabled {
+  opacity: 90%;
+}
+
+.context-menu-button:enabled:hover {
+  opacity: 100%;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.context-menu-header {
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: "Space Grotesk", sans-serif;
 }

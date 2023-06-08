@@ -23,12 +23,4 @@
 .comment-highlighted-line {
   background-color: var(--line-commented);
   border-left: solid var(--line-commented-bar);
-  
-}
-
-.editor-context-menu {
-  position: absolute;
-  border-radius: 0.2rem;
-  background-color: var(--bg);
-  border: 0.1rem solid var(--border);
 }

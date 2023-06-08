@@ -76,5 +76,5 @@ async def authenticate_gh_user(code: str):
         except GithubUserLoadingError:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Something happened. Try again here `/auth/login`",
+                detail="Something unexpected went wrong. Try again here `/auth/login`",
             )

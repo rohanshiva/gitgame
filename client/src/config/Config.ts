@@ -12,6 +12,9 @@ const config = {
   },
   login: {
     uri: "auth/login"
+  },
+  feedback: {
+    uri: "misc/feedback"
   }
 };
 

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { CommentType, AddComment, Lines } from "../../Interface";
-import "./CommentCreationMenu.css";
 
 interface CommentCreationMenuProps {
   onSubmit: (comment: AddComment) => void;
@@ -33,9 +32,9 @@ function CommentCreationMenu({
 
   return (
     <>
-      <div className="add-comment-container">
-        <div className="add-comment-content">
-          <span className="add-comment-header">Let them know!</span>
+      <div className="context-menu-container">
+        <div className="context-menu-content">
+          <span className="context-menu-header">Let them know!</span>
           <textarea
             placeholder="say something here..."
             onChange={(e) => setCommentMessage(e.target.value)}
@@ -45,23 +44,23 @@ function CommentCreationMenu({
           />
         </div>
 
-        <div className="add-comments-buttons">
-          <span className="add-comment-button" onClick={onCancel}>
+        <div className="context-menu-buttons">
+          <button className="context-menu-button" onClick={onCancel}>
             ❌
-          </span>
-          <span
-            className="add-comment-button"
+          </button>
+          <button
+            className="context-menu-button"
             onClick={() => submit(CommentType.DIAMOND)}
           >
             💎
-          </span>
-          <span
-            className="add-comment-button"
+          </button>
+          <button
+            className="context-menu-button"
             onClick={() => submit(CommentType.POOP)}
             id="poop-button"
           >
             💩
-          </span>
+          </button>
         </div>
       </div>
     </>
