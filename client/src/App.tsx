@@ -3,23 +3,16 @@ import { useEffect, useState } from "react";
 import AppRouter from "./routers/Router";
 import Navbar from "./components/navbar";
 import ThemeContext, { Theme } from "./context/ThemeContext";
-import UserContext, { User, UserState } from "./context/UserContext";
-import UserService from "./services/User";
+import UserContext, { UserState } from "./context/UserContext";
+import { User } from "./Interface";
+import Api from "./services/HttpApi";
 
 function App() {
   const [theme, setTheme] = useState("light");
-
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    const getUser = async () => {
-      try {
-        setUser(await UserService.getUser());
-      } catch {
-        setUser(undefined);
-      }
-    };
-    getUser();
+    Api.getUser().then(setUser);
   }, []);
 
   return (
@@ -27,7 +20,7 @@ function App() {
       <ThemeContext.Provider value={{ theme, setTheme } as Theme}>
         <UserContext.Provider value={{ user, setUser } as UserState}>
           <div className="app">
-            <Navbar/>
+            <Navbar />
             <div className="main-section">
               <AppRouter />
             </div>

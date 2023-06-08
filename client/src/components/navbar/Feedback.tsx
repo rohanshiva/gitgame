@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./Feedback.css";
-import FeedbackService from "../../services/Feedback";
+import Api from "../../services/HttpApi";
 
 interface FeedbackProps {
   onCancel: () => void;
@@ -24,7 +24,7 @@ function Feedback({ onCancel, postSubmit }: FeedbackProps) {
 
   const submit = () => {
     setStatus(FeedbackStatus.SENDING);
-    FeedbackService.makeFeedback(message)
+    Api.makeFeedback(message)
       .then(() => {
         reset();
         postSubmit();
