@@ -116,3 +116,7 @@ export interface GameState {
   new_comments: Comment[];
   is_finished: boolean;
 }
+
+export interface User {
+  username: string;
+}

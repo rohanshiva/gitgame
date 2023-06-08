@@ -1,16 +1,13 @@
 import React from "react";
-
-export interface User {
-    username: string;
-}
+import { User } from "../Interface";
 
 export interface UserState {
-    user?: User;
-    setUser: () => void;
+  user?: User;
+  setUser: () => void;
 }
 
 const UserContext = React.createContext<UserState>({
-    setUser: () => { },
-})
+  setUser: () => {},
+});
 
 export default UserContext;
