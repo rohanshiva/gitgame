@@ -21,9 +21,9 @@ import {
   computeLazyScrollYAxisOptions,
   getViewportBounds,
   mergeViewportBounds,
-  getPrismLanguage
+  getPrismLanguage,
 } from "./Util";
-import useContextMenu from "./hooks/UseContextMenu";
+import Popover, { usePopover } from "../popover/Popover";
 
 interface EditorProps {
   code: Code;
@@ -47,7 +47,7 @@ export function Editor({
     isLineSelected,
   } = useLineSelection();
 
-  const { isOpen, anchor, anchorAt, close } = useContextMenu();
+  const { anchor, anchorAt, close } = usePopover();
 
   const cancelCommentCreation = () => {
     close();
@@ -75,7 +75,6 @@ export function Editor({
   };
 
   const codeRef = useRef<HTMLPreElement | null>(null);
-  const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToHighlight = () => {
     const lineStart = document.getElementById(
@@ -142,24 +141,13 @@ export function Editor({
         }
       }}
     >
-      <div
-        className="context-menu"
-        ref={contextMenuRef}
-        onClick={(event: React.MouseEvent) => {
-          event.stopPropagation();
-        }}
-        style={{
-          top: anchor.y,
-          left: anchor.x,
-          display: isOpen ? "initial" : "none",
-        }}
-      >
+      <Popover baseAnchor={anchor}>
         <CommentCreationMenu
           onCancel={cancelCommentCreation}
           onSubmit={createComment}
           lines={selectedLines as Lines}
         />
-      </div>
+      </Popover>
       <Highlight
         {...defaultProps}
         theme={isDark(theme) ? darkTheme : lightTheme}
@@ -213,8 +201,7 @@ export function Editor({
                           if (isLineSelected(lineIndex)) {
                             event.preventDefault();
                             anchorAt(
-                              { x: event.pageX, y: event.pageY },
-                              contextMenuRef.current as HTMLElement
+                              { x: event.pageX, y: event.pageY }
                             );
                           }
                         }}

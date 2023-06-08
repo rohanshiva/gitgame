@@ -8,7 +8,6 @@ from datetime import datetime
 from uuid import uuid4, UUID
 from services.github_client import (
     GithubClient,
-    GithubUserNotFound,
     GithubRepositoryFileLoadingError,
 )
 from pathlib import Path
@@ -17,10 +16,6 @@ LOGGER = logging.getLogger()
 
 
 class AlreadyConnectedPlayerError(Exception):
-    pass
-
-
-class PlayerNotInGithubError(Exception):
     pass
 
 
@@ -68,11 +63,7 @@ class Session(models.Model):
                     connection_state=Player.ConnectionState.CONNECTED,
                 )
                 await player.save()
-
-                try:
-                    await player.load_repos(gh_client)
-                except GithubUserNotFound:
-                    raise PlayerNotInGithubError()
+                await player.load_repos(gh_client)
                 await player.load_files(gh_client)
 
             update_fields = ["version"]

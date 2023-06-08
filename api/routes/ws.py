@@ -3,11 +3,11 @@ from models import Session, File, Repository, Player as DBPlayer, Comment as DBC
 from services.github_client import GithubClient
 from models import (
     AlreadyConnectedPlayerError,
-    PlayerNotInGithubError,
     OutOfFilesError,
     NoSelectedSourceCodeError,
 )
 from services.auth import Context
+from services.github_client import GithubApiException
 from deps.auth import get_context
 from deps.github import get_gh_client
 from ws.connection_manager import Connection, ConnectionManager
@@ -250,10 +250,10 @@ async def on_websocket_event(
     async def on_join():
         try:
             await session.join(username, gh_client)
-        except PlayerNotInGithubError as e:
+        except GithubApiException as e:
             await connection.close(
                 code=WSAppStatusCodes.PLAYER_NOT_IN_GITHUB,
-                reason=f"{username} is not a valid Github user",
+                reason=f"{username} can't join due to Github API erroring",
             )
             raise e
         except AlreadyConnectedPlayerError:
