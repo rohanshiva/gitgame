@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./Feedback.css";
 import Api from "../../services/HttpApi";
+import { redirectToLoginUrl } from "../../constants/Route";
 
 interface FeedbackProps {
   onCancel: () => void;
@@ -30,6 +31,12 @@ function Feedback({ onCancel, postSubmit }: FeedbackProps) {
         postSubmit();
       })
       .catch((error) => {
+
+        const { response } = error;
+        if (response.status === 401) {
+          redirectToLoginUrl();
+        }
+
         setStatus(FeedbackStatus.ERROR);
       });
   };

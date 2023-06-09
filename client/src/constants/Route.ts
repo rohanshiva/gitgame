@@ -1,3 +1,5 @@
+import config from "../config";
+
 export const baseRoutes_ = {
     root: "/",
     game: "/game/:sessionId"
@@ -8,6 +10,8 @@ const routes_ = {
     game: (sessionId: string) => baseRoutes_.game.replace(":sessionId", sessionId)
 };
 
-
+export const redirectToLoginUrl = () => {
+    window.location.replace(`${config.baseUri}/${config.login.uri}`);
+}
 
 export default routes_;
