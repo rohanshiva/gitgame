@@ -1,5 +1,6 @@
 import toast from "react-hot-toast";
 import { useHistory } from "react-router-dom";
+import { StatusCodes } from "http-status-codes";
 import routes_, { redirectToLoginUrl } from "../../constants/Route";
 import Api from "../../services/HttpApi";
 import { SUCCESS, LOADING, ERROR } from "../notifications/Notification";
@@ -22,7 +23,7 @@ function MakeForm() {
         toast.dismiss(loadingToast);
 
         const { response } = error;
-        if (response.status === 401) {
+        if (response.status === StatusCodes.UNAUTHORIZED) {
           redirectToLoginUrl();
         }
 

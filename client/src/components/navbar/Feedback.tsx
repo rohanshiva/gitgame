@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { StatusCodes } from "http-status-codes";
 import "./Feedback.css";
 import Api from "../../services/HttpApi";
 import { redirectToLoginUrl } from "../../constants/Route";
@@ -33,7 +34,7 @@ function Feedback({ onCancel, postSubmit }: FeedbackProps) {
       .catch((error) => {
 
         const { response } = error;
-        if (response.status === 401) {
+        if (response.status === StatusCodes.UNAUTHORIZED) {
           redirectToLoginUrl();
         }
 
