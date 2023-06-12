@@ -200,18 +200,23 @@ export function Editor({
                         onContextMenu={(event: React.MouseEvent) => {
                           if (isLineSelected(lineIndex)) {
                             event.preventDefault();
-                            anchorAt(
-                              { x: event.pageX, y: event.pageY }
-                            );
+                            anchorAt({ x: event.pageX, y: event.pageY });
                           }
                         }}
                       >
-                        {line.map((token, tokenIndex) => (
-                          <span
-                            key={tokenIndex}
-                            {...getTokenProps({ token, key: tokenIndex })}
-                          />
-                        ))}
+                        {line.map((token, tokenIndex) => {
+                          const tokenProps = getTokenProps({
+                            token,
+                            key: tokenIndex,
+                          });
+
+                          tokenProps.style = {
+                            ...tokenProps.style,
+                            opacity: 1.0,
+                          };
+
+                          return <span key={tokenIndex} {...tokenProps} />;
+                        })}
                       </LineContent>
                     </Line>
                   );
