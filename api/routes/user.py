@@ -4,7 +4,7 @@ from config import DISABLE_AUTH
 from services.auth import Auth, Context
 from fastapi import APIRouter, Depends, HTTPException, status
 from .auth import build_protected_response
-from deps.auth import get_context
+from deps import get_context
 
 router = APIRouter(prefix="/user", tags=["User"])
 logger = logging.getLogger()
