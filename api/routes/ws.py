@@ -8,8 +8,7 @@ from models import (
 )
 from services.auth import Context
 from services.github_client import GithubApiException
-from deps.auth import get_context
-from deps.github import get_gh_client
+from deps import get_context, get_gh_client
 from ws.connection_manager import Connection, ConnectionManager
 from enum import IntEnum
 from uuid import UUID
