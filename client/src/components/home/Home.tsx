@@ -27,7 +27,7 @@ function Form() {
 function Home() {
 
   const { user } = useContext(UserContext);
-  
+
   return (
     <div className="home-container">
       <div className="home-left">
@@ -47,7 +47,9 @@ function Home() {
         {user ? <Form /> : <Login />}
       </div>
       <div className="home-right">
-
+        <video autoPlay loop muted>
+          <source src={config.demoUri} type="video/mp4" />
+        </video>
       </div>
       <Notification />
     </div>

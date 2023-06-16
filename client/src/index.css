@@ -112,6 +112,12 @@ textarea {
   margin-bottom: 0.25rem;
 }
 
+video {
+  height: 100%;
+  object-fit: fill;
+  border-radius: 1rem;
+}
+
 ::-webkit-scrollbar {
   height: 0.25rem;
   width: 0.25rem;
