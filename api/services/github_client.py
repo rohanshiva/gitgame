@@ -4,7 +4,6 @@ from httpx import AsyncClient, Response
 from fastapi import status
 from pathlib import Path
 from datetime import datetime
-
 logger = logging.getLogger()
 
 
@@ -85,6 +84,16 @@ class GithubClient:
     async def get_non_forked_repos(
         self, username: str, min_repos: int = 100, page: int = 1
     ):
+        return [RepositoryDict(
+                name="Amazing-Code",
+                pushed_at=datetime.utcnow().isoformat(),
+                url="",
+                stars=100,
+                default_branch="main",
+                description="Amazing code (at least in the opinion of its owner)",
+                language="Python",
+        )], None
+
         endpoint = f"https://api.github.com/users/{username}/repos"
         repo_dicts: list[RepositoryDict] = []
         can_get_next_page = True
@@ -144,6 +153,13 @@ class GithubClient:
                 f"https://github.com/{full_repo_name}/blob/{default_branch}/{file_path}"
             )
 
+        return [FileDict(
+                    name="fizzbuzz.py",
+                    path="fizzbuzz.py",
+                    download_url="",
+                    visit_url="",
+            )]
+
         endpoint = (
             f"https://api.github.com/repos/{full_repo_name}/git/trees/{default_branch}"
         )
@@ -172,6 +188,8 @@ class GithubClient:
         return file_dicts
 
     async def download_file_from_url(self, gh_download_url: str):
+        with open("../demo/fizzbuzz.py", "r") as f:
+            return f.read()
         async with AsyncClient() as client:
             response = await client.get(gh_download_url)
             if response.status_code != status.HTTP_200_OK:
