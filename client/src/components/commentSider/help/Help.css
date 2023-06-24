@@ -28,6 +28,10 @@
   padding-left: 1.4rem;
 }
 
+.help-video-container video {
+  max-height: 512px;
+}
+
 .title {
   font-family: 'Space Grotesk', sans-serif;
 }
