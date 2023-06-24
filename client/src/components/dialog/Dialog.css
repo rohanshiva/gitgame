@@ -1,0 +1,13 @@
+.dialog-overlay {
+  position: fixed;
+  inset: 0px;
+  backdrop-filter: blur(0.2rem);
+}
+
+dialog {
+  background-color: var(--bg);
+  outline: none;
+  border: 0.1rem solid var(--border);
+  border-radius: 0.4rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}

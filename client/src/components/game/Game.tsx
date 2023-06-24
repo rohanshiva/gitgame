@@ -20,6 +20,8 @@ import CommentHighlightContext, {
   CommentHighlight,
 } from "../../context/CommentHighlightContext";
 import { applyPlayerDisplayOrder } from "./Util";
+import Dialog, { useDialog } from "../dialog/Dialog";
+import Help from "../commentSider/help/Help";
 
 interface GameParams {
   sessionId: string
@@ -60,6 +62,8 @@ function Game() {
   const { source_code, players, new_comments, comments } = state;
 
   const { isDisconnected, disconnectionMessage } = disconnection;
+
+  const { isOpen: isDialogOpen, open: openDialog, close: closeDialog } = useDialog();
 
   const copyHandler = async () => {
     await navigator.clipboard.writeText(window.location.href);
@@ -131,6 +135,11 @@ function Game() {
             <abbr title="Invite your friends!">
               <button onClick={copyHandler}>Copy Invite Link</button>
             </abbr>
+            <abbr title="How to add a comment?">
+              <button onClick={() => openDialog()}>
+                Help
+              </button>
+            </abbr>
           </div>
         </div>
       </div>
@@ -151,8 +160,11 @@ function Game() {
         shouldOpen={isDisconnected}
         message={disconnectionMessage as string}
       />
+      <Dialog isOpen={isDialogOpen} onClose={closeDialog} children={<Help />} />
     </>
   );
 }
+
+
 
 export default Game;

@@ -18,9 +18,6 @@
 .help-card {
   width: fit-content;
   display: flex;
-  border-radius: 0.2rem;
-  border: 0.1rem solid var(--border);
-  padding: 0.4rem 1rem;
   line-height: 1.5rem;
 }
 
