@@ -1,8 +1,7 @@
+import jwt
 import logging
 from typing import TypedDict
 from datetime import datetime, timedelta, timezone
-
-import jwt
 from config import AUTH_SECRET
 
 logger = logging.getLogger()

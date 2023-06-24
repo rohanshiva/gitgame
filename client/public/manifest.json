@@ -1,6 +1,6 @@
 {
-  "short_name": "GitGame",
-  "name": "GitGame",
+  "short_name": "git_game",
+  "name": "git_game",
   "icons": [
     {
       "src": "favicon.ico",

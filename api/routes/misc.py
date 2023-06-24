@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel
-from deps.github import get_gh_client
-from deps.auth import get_context
+from deps import get_context, get_gh_client
 from services.github_client import GithubClient, GithubApiException
 
 router = APIRouter(prefix="/misc")
