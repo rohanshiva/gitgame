@@ -136,6 +136,7 @@ video {
   border-radius: 0.2rem;
   background-color: var(--bg);
   border: 0.1rem solid var(--border);
+  z-index: 100;
 }
 
 .context-menu-container {
