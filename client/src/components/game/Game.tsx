@@ -65,7 +65,7 @@ function Game() {
 
   const copyHandler = async () => {
     await navigator.clipboard.writeText(window.location.href);
-    toast(`Game link copied!`, SUCCESS as any);
+    toast(`Invite link copied!`, SUCCESS as any);
   };
 
   const nextHandler = () => {
@@ -130,7 +130,9 @@ function Game() {
             <button onClick={nextHandler} disabled={!canPickNext}>
               Next
             </button>
-            <button onClick={copyHandler}>Copy</button>
+            <abbr title="Invite your friends!">
+              <button onClick={copyHandler}>Copy Invite Link</button>
+            </abbr>
           </div>
         </div>
       </div>
