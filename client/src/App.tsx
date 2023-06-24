@@ -9,11 +9,19 @@ import Api from "./services/HttpApi";
 
 function App() {
   const [theme, setTheme] = useState("light");
+  const [hasFinishedLoadingUser, setHasFinishedLoadingUser] = useState(false);
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    Api.getUser().then(setUser);
+    Api.getUser().then(setUser).finally(() => {
+      setHasFinishedLoadingUser(true);
+    })
   }, []);
+
+  
+  if(!hasFinishedLoadingUser){
+    return null; //render a loading screen
+  }
 
   return (
     <>
