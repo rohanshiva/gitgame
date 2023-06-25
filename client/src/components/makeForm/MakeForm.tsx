@@ -21,16 +21,15 @@ function MakeForm() {
       })
       .catch((error) => {
         toast.dismiss(loadingToast);
-
         const { response } = error;
         if (response.status === StatusCodes.UNAUTHORIZED) {
-          redirectToLoginUrl();
+          redirectToLoginUrl({ didCookieExpirePostAuth: true });
+        } else {
+          toast(
+            `Failed to create session with error: ${error.message}`,
+            ERROR as any
+          );
         }
-
-        toast(
-          `Failed to create session with error: ${error.message}`,
-          ERROR as any
-        );
       })
       .finally(() => {
         toast.dismiss(loadingToast);

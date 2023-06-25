@@ -1,6 +1,6 @@
 import { useCallback, useContext, useState } from "react";
 
-import { useHistory } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Notification, {
   SUCCESS,
   LOADING,
@@ -21,9 +21,8 @@ import CommentHighlightContext, {
 } from "../../context/CommentHighlightContext";
 import { applyPlayerDisplayOrder } from "./Util";
 
-function getSessionId(path: string) {
-  const pathParts = path.split("/");
-  return pathParts[pathParts.length - 1];
+interface GameParams {
+  sessionId: string
 }
 
 function getWelcomeText({ players }: GameState, deviceUser: string) {
@@ -43,8 +42,7 @@ function getWelcomeText({ players }: GameState, deviceUser: string) {
 }
 
 function Game() {
-  const history = useHistory();
-  const sessionId = getSessionId(history.location.pathname);
+  const {sessionId} = useParams<GameParams>();
   const { user } = useContext(UserContext);
   const username = user?.username as string;
 
