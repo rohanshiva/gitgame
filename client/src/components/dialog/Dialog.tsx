@@ -26,7 +26,7 @@ export function useDialog(): UseDialogResult {
 
 interface DialogProps {
     isOpen: boolean;
-    onClose: () => void;
+    onClose?: () => void;
     children: ReactNode;
 }
 
@@ -37,7 +37,9 @@ function Dialog({ isOpen, onClose, children }: DialogProps) {
     const handleOutsideClick = useCallback(
         (event: MouseEvent) => {
             if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
-                onClose();
+                if (onClose) {
+                    onClose();
+                }
             }
         },
         [onClose]

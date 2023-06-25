@@ -12,7 +12,6 @@ import toast from "react-hot-toast";
 import "./Game.css";
 import { AddComment, Code, GameState } from "../../Interface";
 import CommentSider from "../commentSider";
-import DisconnectionModal from "./disconnection/DisconnectionModal";
 import useGameConnection from "./hooks/UseGameConnection";
 import Lobby from "./lobby/Lobby";
 import UserContext from "../../context/UserContext";
@@ -156,10 +155,11 @@ function Game() {
         </CommentHighlightContext.Provider>
       </div>
       <Notification />
-      <DisconnectionModal
-        shouldOpen={isDisconnected}
-        message={disconnectionMessage as string}
-      />
+      <Dialog
+        isOpen={isDisconnected}
+      >
+        {disconnectionMessage as string}
+      </Dialog>
       <Dialog isOpen={isDialogOpen} onClose={closeDialog}>
         <Help />
       </Dialog>
