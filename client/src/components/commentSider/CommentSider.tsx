@@ -164,7 +164,7 @@ function CommentSider({ comments }: CommentSiderProps) {
               setFilter(CommentType.POOP);
             }}
           >
-            Poops
+            Roasts
             💩
           </div>
           <div
@@ -177,7 +177,7 @@ function CommentSider({ comments }: CommentSiderProps) {
               setFilter(CommentType.DIAMOND);
             }}
           >
-            Diamonds
+            Kudos
             💎
           </div>
         </div>

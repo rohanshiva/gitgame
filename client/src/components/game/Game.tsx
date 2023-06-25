@@ -62,7 +62,7 @@ function Game() {
 
   const { isDisconnected, disconnectionMessage } = disconnection;
 
-  const { isOpen: isDialogOpen, open: openDialog, close: closeDialog } = useDialog();
+  const { isOpen: isHelpOpen, open: openHelp, close: closeHelp } = useDialog();
 
   const copyHandler = async () => {
     await navigator.clipboard.writeText(window.location.href);
@@ -135,7 +135,7 @@ function Game() {
               <button onClick={copyHandler}>Copy Invite Link</button>
             </abbr>
             <abbr title="How to add a comment?">
-              <button onClick={openDialog}>
+              <button onClick={openHelp}>
                 Help
               </button>
             </abbr>
@@ -160,7 +160,7 @@ function Game() {
       >
         {disconnectionMessage as string}
       </Dialog>
-      <Dialog isOpen={isDialogOpen} onClose={closeDialog}>
+      <Dialog isOpen={isHelpOpen} onClose={closeHelp}>
         <Help />
       </Dialog>
     </>
