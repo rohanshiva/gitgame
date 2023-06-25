@@ -26,7 +26,8 @@ function useLoginParams(): LoginParams {
 
 function Login() {
   const loginParams = useLoginParams();
-  const loginUrl = new URL(config.login.uri, config.baseUri);
+
+  const loginUrl = new URL(`${config.baseUri}/${config.login.uri}`);
   if (loginParams.referrer) {
     loginUrl.searchParams.append("referrer", loginParams.referrer);
   }
