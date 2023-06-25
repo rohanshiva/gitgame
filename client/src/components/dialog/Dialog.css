@@ -9,9 +9,10 @@ dialog {
   outline: none;
   border: 0.1rem solid var(--border);
   border-radius: 0.4rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0rem 2rem 4rem -1rem rgb(0 0 0 / 0.25);
   overflow-y: scroll;
   max-height: 640px;
   position: absolute;
   inset: 0px;
+  padding: 1rem 2rem;
 }

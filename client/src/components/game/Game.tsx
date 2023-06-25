@@ -136,7 +136,7 @@ function Game() {
               <button onClick={copyHandler}>Copy Invite Link</button>
             </abbr>
             <abbr title="How to add a comment?">
-              <button onClick={() => openDialog()}>
+              <button onClick={openDialog}>
                 Help
               </button>
             </abbr>
@@ -160,7 +160,9 @@ function Game() {
         shouldOpen={isDisconnected}
         message={disconnectionMessage as string}
       />
-      <Dialog isOpen={isDialogOpen} onClose={closeDialog} children={<Help />} />
+      <Dialog isOpen={isDialogOpen} onClose={closeDialog}>
+        <Help />
+      </Dialog>
     </>
   );
 }

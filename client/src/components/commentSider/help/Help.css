@@ -1,20 +1,3 @@
-/* .help-card {
-  width: fit-content;
-  display: flex;
-  flex-direction: row;
-  gap: 0.3rem;
-  color: var(--primary);
-  font-size: 0.8rem;
-  padding: 0.5rem 0.5rem;
-  font-weight: 500;
-  border: 0.1rem solid var(--border);
-  border-radius: 0.2rem;
-  background-color: var(--bg);
-  align-items: stretch;
-  max-width: fit-content;
-} */
-
-
 .help-card {
   width: fit-content;
   display: flex;

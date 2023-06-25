@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import "./Dialog.css";
 
@@ -34,11 +34,14 @@ function Dialog({ isOpen, onClose, children }: DialogProps) {
 
     const dialogRef = useRef<HTMLDialogElement>(null);
 
-    const handleOutsideClick = (event: MouseEvent) => {
-        if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
-            onClose();
-        }
-    };
+    const handleOutsideClick = useCallback(
+        (event: MouseEvent) => {
+            if (dialogRef.current && !dialogRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        },
+        [onClose]
+    );
 
     useEffect(() => {
         if (isOpen) {
