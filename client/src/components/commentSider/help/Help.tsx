@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import * as Icon from "react-feather";
 import "./Help.css";
+import config from "../../../config";
 
 interface HelpCommentProps {
   children: ReactNode;
@@ -21,8 +21,10 @@ function Help() {
     <HelpComment>
       <strong>
         <code className="title">
-        How to create a comment?
-          </code></strong>
+          <h2>
+          How to create a comment?
+          </h2>
+        </code></strong>
       <ul className="help-list">
         <li>
           Click on any line number.
@@ -51,6 +53,11 @@ function Help() {
           Cancel line selection by clicking on ❌.
         </li>
       </ul>
+      <div className="help-video-container">
+        <video muted controls>
+          <source src={config.helpVideoUri} type="video/mp4" />
+        </video>
+      </div>
     </HelpComment>
   );
 }

@@ -78,7 +78,7 @@ function Home() {
       </div>
       <div className="home-right">
         <video autoPlay loop muted>
-          <source src={config.demoUri} type="video/mp4" />
+          <source src={config.demoVideoUri} type="video/mp4" />
         </video>
       </div>
       <Notification />

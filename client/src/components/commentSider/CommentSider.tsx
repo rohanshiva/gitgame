@@ -6,7 +6,6 @@ import {
 } from "../../Interface";
 import "./CommentSider.css";
 import "./help/Help.css";
-import Help from "./help/Help";
 import { HelpComment } from "./help/Help";
 import { getColor } from "../../utils";
 import CommentHighlightContext from "../../context/CommentHighlightContext";
@@ -130,20 +129,16 @@ interface CommentSiderProps {
 
 function CommentSider({ comments }: CommentSiderProps) {
   const [filter, setFilter] = useState<CommentType>(CommentType.POOP);
-  const [isHelpSelected, setIsHelpSelected] = useState<boolean>(false);
   const { dehighlight } = useContext(CommentHighlightContext);
 
   const getCommentsDisplay = () => {
-    if (isHelpSelected) {
-      return <Help />;
-    }
     if (hasCommentsForType(filter)) {
       const filteredComments = comments.filter(({ type }) => type === filter);
       return <CommentList comments={filteredComments} commentType={filter} />;
     } else {
       return (
         <HelpComment>
-          No {commentTypeToEmoji(filter)} comments yet! Click 🔎 for instructions.
+          No {commentTypeToEmoji(filter)} comments yet! Click <kbd>Help</kbd> for instructions.
         </HelpComment>
       );
     }
@@ -161,35 +156,29 @@ function CommentSider({ comments }: CommentSiderProps) {
         <div className="filters">
           <div
             className={
-              filter === CommentType.POOP && !isHelpSelected
+              filter === CommentType.POOP
                 ? "filter selected-filter"
                 : "filter"
             }
             onClick={() => {
               setFilter(CommentType.POOP);
-              setIsHelpSelected(false);
             }}
           >
+            Roasts
             💩
           </div>
           <div
             className={
-              filter === CommentType.DIAMOND && !isHelpSelected
+              filter === CommentType.DIAMOND
                 ? "filter selected-filter"
                 : "filter"
             }
             onClick={() => {
               setFilter(CommentType.DIAMOND);
-              setIsHelpSelected(false);
             }}
           >
+            Kudos
             💎
-          </div>
-          <div
-            className={isHelpSelected ? "filter selected-filter" : "filter"}
-            onClick={() => setIsHelpSelected(true)}
-          >
-            🔎 
           </div>
         </div>
       </div>

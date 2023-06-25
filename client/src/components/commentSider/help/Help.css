@@ -1,26 +1,6 @@
-/* .help-card {
-  width: fit-content;
-  display: flex;
-  flex-direction: row;
-  gap: 0.3rem;
-  color: var(--primary);
-  font-size: 0.8rem;
-  padding: 0.5rem 0.5rem;
-  font-weight: 500;
-  border: 0.1rem solid var(--border);
-  border-radius: 0.2rem;
-  background-color: var(--bg);
-  align-items: stretch;
-  max-width: fit-content;
-} */
-
-
 .help-card {
   width: fit-content;
   display: flex;
-  border-radius: 0.2rem;
-  border: 0.1rem solid var(--border);
-  padding: 0.4rem 1rem;
   line-height: 1.5rem;
 }
 
@@ -29,6 +9,10 @@
   font-size: 0.8rem;
   list-style: square;
   padding-left: 1.4rem;
+}
+
+.help-video-container video {
+  max-height: 512px;
 }
 
 .title {

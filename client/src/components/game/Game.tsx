@@ -12,7 +12,6 @@ import toast from "react-hot-toast";
 import "./Game.css";
 import { AddComment, Code, GameState } from "../../Interface";
 import CommentSider from "../commentSider";
-import DisconnectionModal from "./disconnection/DisconnectionModal";
 import useGameConnection from "./hooks/UseGameConnection";
 import Lobby from "./lobby/Lobby";
 import UserContext from "../../context/UserContext";
@@ -20,6 +19,8 @@ import CommentHighlightContext, {
   CommentHighlight,
 } from "../../context/CommentHighlightContext";
 import { applyPlayerDisplayOrder } from "./Util";
+import Dialog, { useDialog } from "../dialog/Dialog";
+import Help from "../commentSider/help/Help";
 
 interface GameParams {
   sessionId: string
@@ -60,6 +61,8 @@ function Game() {
   const { source_code, players, new_comments, comments } = state;
 
   const { isDisconnected, disconnectionMessage } = disconnection;
+
+  const { isOpen: isHelpOpen, open: openHelp, close: closeHelp } = useDialog();
 
   const copyHandler = async () => {
     await navigator.clipboard.writeText(window.location.href);
@@ -131,6 +134,11 @@ function Game() {
             <abbr title="Invite your friends!">
               <button onClick={copyHandler}>Copy Invite Link</button>
             </abbr>
+            <abbr title="How to add a comment?">
+              <button onClick={openHelp}>
+                Help
+              </button>
+            </abbr>
           </div>
         </div>
       </div>
@@ -147,12 +155,18 @@ function Game() {
         </CommentHighlightContext.Provider>
       </div>
       <Notification />
-      <DisconnectionModal
-        shouldOpen={isDisconnected}
-        message={disconnectionMessage as string}
-      />
+      <Dialog
+        isOpen={isDisconnected}
+      >
+        {disconnectionMessage as string}
+      </Dialog>
+      <Dialog isOpen={isHelpOpen} onClose={closeHelp}>
+        <Help />
+      </Dialog>
     </>
   );
 }
+
+
 
 export default Game;

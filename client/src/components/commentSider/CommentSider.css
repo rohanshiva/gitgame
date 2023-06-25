@@ -10,12 +10,14 @@
   padding: 0.2rem;
   font-size: 1rem;
   align-items: center;
-  width: fit-content;
+  width: 100%;
 }
 
 .filter {
   cursor: pointer;
   padding: 0.4rem 1rem;
+  width: 100%;
+  text-align: center;
 }
 
 .selected-filter {
