@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import "./Feedback.css";
 import Api from "../../services/HttpApi";
 import { redirectToLoginUrl } from "../../constants/Route";
+import { useLocation } from "react-router-dom";
 
 interface FeedbackProps {
   onCancel: () => void;
@@ -18,6 +19,7 @@ enum FeedbackStatus {
 function Feedback({ onCancel, postSubmit }: FeedbackProps) {
   const [status, setStatus] = useState<FeedbackStatus>(FeedbackStatus.DRAFT);
   const [message, setMessage] = useState<string>("");
+  const { pathname } = useLocation();
 
   const reset = () => {
     setMessage("");
@@ -32,10 +34,12 @@ function Feedback({ onCancel, postSubmit }: FeedbackProps) {
         postSubmit();
       })
       .catch((error) => {
-
         const { response } = error;
         if (response.status === StatusCodes.UNAUTHORIZED) {
-          redirectToLoginUrl();
+          redirectToLoginUrl({
+            referrer: pathname,
+            didCookieExpirePostAuth: true,
+          });
         }
 
         setStatus(FeedbackStatus.ERROR);

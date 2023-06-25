@@ -1,3 +1,4 @@
+import "../App.css";
 import { useContext } from "react";
 import {
   BrowserRouter as Router,
@@ -10,12 +11,8 @@ import {
 import Home from "../components/home";
 import Game from "../components/game";
 import UserContext from "../context/UserContext";
-import { baseRoutes_ } from "../constants/Route";
-
-function constructRedirectToLoginPath(referrer: string) {
-  const params = new URLSearchParams({ referrer });
-  return `${baseRoutes_.root}?${params.toString()}`;
-}
+import { baseRoutes_, constructRedirectToLoginUrl } from "../constants/Route";
+import Navbar from "../components/navbar";
 
 function ProtectedRoute({ children, ...routeProps }: RouteProps) {
   const { pathname } = useLocation();
@@ -26,7 +23,11 @@ function ProtectedRoute({ children, ...routeProps }: RouteProps) {
       {user ? (
         children
       ) : (
-        <Redirect to={constructRedirectToLoginPath(pathname)} />
+        <Redirect
+          to={constructRedirectToLoginUrl({
+            referrer: pathname,
+          })}
+        />
       )}
     </Route>
   );
@@ -35,17 +36,20 @@ function ProtectedRoute({ children, ...routeProps }: RouteProps) {
 function AppRouter() {
   return (
     <Router>
-      <Switch>
-        <ProtectedRoute path={baseRoutes_.game} exact={true}>
-          <Game />
-        </ProtectedRoute>
-        <Route path={baseRoutes_.root} exact={true}>
-          <Home />
-        </Route>
-        <Route path="*">
-          <Redirect to={baseRoutes_.root} />
-        </Route>
-      </Switch>
+      <Navbar />
+      <div className="main-section">
+        <Switch>
+          <ProtectedRoute path={baseRoutes_.game} exact={true}>
+            <Game />
+          </ProtectedRoute>
+          <Route path={baseRoutes_.root} exact={true}>
+            <Home />
+          </Route>
+          <Route path="*">
+            <Redirect to={baseRoutes_.root} />
+          </Route>
+        </Switch>
+      </div>
     </Router>
   );
 }

@@ -1,29 +1,34 @@
-import { useContext } from "react";
+import toast from "react-hot-toast";
+import { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Notification from "../notifications/Notification";
+import Notification, { ERROR } from "../notifications/Notification";
 import "./Home.css";
 import UserContext from "../../context/UserContext";
 import { GitPullRequest } from "react-feather";
 import config from "../../config";
 import MakeForm from "../makeForm";
+import { LoginParams } from "../../constants/Route";
 
-function useReferrer() {
+function useLoginParams(): LoginParams {
   const { search } = useLocation();
   const params = new URLSearchParams(search);
-  let referrer;
+  let loginParams = {};
   if (params.has("referrer")) {
-    referrer = params.get("referrer") as string;
+    loginParams = { referrer: params.get("referrer") as string };
   }
-  return {
-    referrer,
-  };
+  if (params.has("didCookieExpirePostAuth")) {
+    const didCookieExpirePostAuth =
+      (params.get("didCookieExpirePostAuth") as string) === "true";
+    loginParams = { ...loginParams, didCookieExpirePostAuth };
+  }
+  return loginParams;
 }
 
 function Login() {
-  const { referrer } = useReferrer();
+  const loginParams = useLoginParams();
   const loginUrl = new URL(config.login.uri, config.baseUri);
-  if (referrer) {
-    loginUrl.searchParams.append("referrer", referrer);
+  if (loginParams.referrer) {
+    loginUrl.searchParams.append("referrer", loginParams.referrer);
   }
 
   return (
@@ -45,6 +50,16 @@ function Form() {
 
 function Home() {
   const { user } = useContext(UserContext);
+  const loginParams = useLoginParams();
+
+  useEffect(() => {
+    if (loginParams.didCookieExpirePostAuth) {
+      toast(
+        "Your cookie expired. Please login again to resume from where you left off.",
+        ERROR as any
+      );
+    }
+  }, [loginParams.didCookieExpirePostAuth]);
 
   return (
     <div className="home-container">
