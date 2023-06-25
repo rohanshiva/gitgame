@@ -5,6 +5,7 @@
 }
 
 dialog {
+  color: var(--primary);
   background-color: var(--bg);
   outline: none;
   border: 0.1rem solid var(--border);
