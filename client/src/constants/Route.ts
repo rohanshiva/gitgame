@@ -14,17 +14,20 @@ export interface LoginParams {
   didCookieExpirePostAuth?: boolean;
 }
 
-export function redirectToLoginUrl(params: LoginParams){
+export function redirectToLoginUrl(params: LoginParams) {
   window.location.replace(constructRedirectToLoginUrl(params));
 }
 
-export function constructRedirectToLoginUrl(params: LoginParams) {
+export function constructRedirectToLoginUrl({
+  referrer,
+  didCookieExpirePostAuth,
+}: LoginParams) {
   const queryParams = new URLSearchParams();
-  if (params.didCookieExpirePostAuth) {
+  if (didCookieExpirePostAuth) {
     queryParams.append("didCookieExpirePostAuth", "true");
   }
-  if (params.referrer) {
-    queryParams.append("referrer", params.referrer);
+  if (referrer) {
+    queryParams.append("referrer", referrer);
   }
   const paramString = queryParams.toString();
   if (paramString.length > 0) {

@@ -25,11 +25,11 @@ function useLoginParams(): LoginParams {
 }
 
 function Login() {
-  const loginParams = useLoginParams();
+  const { referrer } = useLoginParams();
 
   const loginUrl = new URL(`${config.baseUri}/${config.login.uri}`);
-  if (loginParams.referrer) {
-    loginUrl.searchParams.append("referrer", loginParams.referrer);
+  if (referrer) {
+    loginUrl.searchParams.append("referrer", referrer);
   }
 
   return (
@@ -51,16 +51,16 @@ function Form() {
 
 function Home() {
   const { user } = useContext(UserContext);
-  const loginParams = useLoginParams();
+  const { didCookieExpirePostAuth } = useLoginParams();
 
   useEffect(() => {
-    if (loginParams.didCookieExpirePostAuth) {
+    if (didCookieExpirePostAuth) {
       toast(
         "Your cookie expired. Please login again to resume from where you left off.",
         ERROR as any
       );
     }
-  }, [loginParams.didCookieExpirePostAuth]);
+  }, [didCookieExpirePostAuth]);
 
   return (
     <div className="home-container">
