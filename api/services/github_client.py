@@ -63,6 +63,8 @@ def log_gh_api_response(response: Response):
     )
 
 
+MAX_FILE_SIZE = 15000 # in bytes
+
 class GithubClient:
     def __init__(self, access_token: str):
         self.access_token = access_token
@@ -134,7 +136,7 @@ class GithubClient:
         full_repo_name: str,
         default_branch: str,
         supported_extensions: set[str],
-        max_file_size: int = 1000000,
+        max_file_size: int = MAX_FILE_SIZE,
     ):
         def get_download_url(file_path: str):
             return f"https://raw.githubusercontent.com/{full_repo_name}/{default_branch}/{file_path}"
