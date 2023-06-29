@@ -58,7 +58,7 @@ function Navbar() {
           <Icon.Moon onClick={() => switchTheme(setTheme)} className="icon" />
         )}
 
-        <a href="https://github.com/rohanshiva/gitgame">
+        <a href="https://github.com/rohanshiva/gitgame" target="_blank">
           <Icon.GitHub />
         </a>
       </div>
