@@ -3,7 +3,7 @@ import logging
 from config import DISABLE_AUTH
 from services.auth import Auth, Context
 from fastapi import APIRouter, Depends, HTTPException, status
-from .auth import build_protected_response
+from .auth import redirect_with_token
 from deps import get_context
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -31,4 +31,4 @@ async def impersonate(username: str):
         )
 
     token = Auth.encode(username)
-    return build_protected_response("http://127.0.0.1:3000/", token)
+    return redirect_with_token(token)

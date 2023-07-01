@@ -63,7 +63,8 @@ def log_gh_api_response(response: Response):
     )
 
 
-MAX_FILE_SIZE = 15000 # in bytes
+MAX_FILE_SIZE = 15000  # in bytes
+
 
 class GithubClient:
     def __init__(self, access_token: str):

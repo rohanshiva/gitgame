@@ -34,9 +34,7 @@ class Auth:
     def decode(token: str):
         try:
             payload = jwt.decode(token, AUTH_SECRET, algorithms=["HS256"])
-
             res = Context(username=payload["sub"], is_expiring=False)
-
             exp = datetime.fromtimestamp(payload["exp"], timezone.utc)
             now = datetime.now(timezone.utc)
             delta = exp - now
