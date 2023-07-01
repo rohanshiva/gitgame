@@ -120,3 +120,9 @@ export interface GameState {
 export interface User {
   username: string;
 }
+
+export enum RedirectionToLoginReason {
+  UNEXPECTED_AUTH_FAILURE = 0,
+  USER_DENIED_GITHUB_AUTH = 1,
+  COOKIE_EXPIRATION = 2,
+}

@@ -8,6 +8,17 @@ import { GitPullRequest } from "react-feather";
 import config from "../../config";
 import MakeForm from "../makeForm";
 import { LoginParams } from "../../constants/Route";
+import { RedirectionToLoginReason } from "../../Interface";
+
+function explainRedirectionToLogin(reason: RedirectionToLoginReason) {
+  if (reason === RedirectionToLoginReason.COOKIE_EXPIRATION) {
+    return "Your cookie has expired. Please login in again to resume where you left off.";
+  } else if (reason === RedirectionToLoginReason.USER_DENIED_GITHUB_AUTH) {
+    return "Please ensure to authorize the application. We promise we won't steal your data!";
+  } else {
+    return "Something unexpected went wrong! Please try again.";
+  }
+}
 
 function useLoginParams(): LoginParams {
   const { search } = useLocation();
@@ -16,10 +27,13 @@ function useLoginParams(): LoginParams {
   if (params.has("referrer")) {
     loginParams = { referrer: params.get("referrer") as string };
   }
-  if (params.has("didCookieExpirePostAuth")) {
-    const didCookieExpirePostAuth =
-      (params.get("didCookieExpirePostAuth") as string) === "true";
-    loginParams = { ...loginParams, didCookieExpirePostAuth };
+  if (params.has("redirection_reason")) {
+    loginParams = {
+      ...loginParams,
+      redirectionToLoginReason: parseInt(
+        params.get("redirection_reason") as string
+      ),
+    };
   }
   return loginParams;
 }
@@ -51,16 +65,13 @@ function Form() {
 
 function Home() {
   const { user } = useContext(UserContext);
-  const { didCookieExpirePostAuth } = useLoginParams();
+  const { redirectionToLoginReason } = useLoginParams();
 
   useEffect(() => {
-    if (didCookieExpirePostAuth) {
-      toast(
-        "Your cookie expired. Please login again to resume from where you left off.",
-        ERROR as any
-      );
+    if (redirectionToLoginReason != undefined) {
+      toast(explainRedirectionToLogin(redirectionToLoginReason), ERROR as any);
     }
-  }, [didCookieExpirePostAuth]);
+  }, [redirectionToLoginReason]);
 
   return (
     <div className="home-container">
