@@ -123,6 +123,7 @@ function Game() {
     status === GameStatus.PLAYING ? source_code?.file_visit_url : undefined;
   const isYouHost = username === state.host;
   const canPickNext = isYouHost && status !== GameStatus.FINISHED;
+  const isInLobby = status === GameStatus.IN_LOBBY;
 
   return (
     <>
@@ -162,7 +163,7 @@ function Game() {
       <Dialog isOpen={isHelpOpen} onClose={closeHelp}>
         <Help />
       </Dialog>
-      {status === GameStatus.IN_LOBBY && (
+      {isInLobby && (
         <Dialog isOpen={isInviteDialogOpen} onClose={closeInviteDialog}>
           <InviteDialogContent />
         </Dialog>
