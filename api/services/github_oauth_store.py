@@ -19,14 +19,13 @@ class GithubOauthStore:
     def has(self, key: str):
         return key in self.__store
 
-    def get(self, key: str) -> GithubOauthRecord:
-        return self.__store[key]
+    def pop(self, key: str) -> GithubOauthRecord:
+        record = self.__store[key]
+        del self.__store[key]
+        return record
 
     def put(self, key: str, record: GithubOauthRecord):
         self.__store[key] = record
-
-    def delete(self, key: str):
-        del self.__store[key]
 
     @classmethod
     def instance(cls):

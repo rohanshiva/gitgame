@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import routes_, { redirectToLoginUrl } from "../../constants/Route";
 import Api from "../../services/HttpApi";
 import { SUCCESS, LOADING, ERROR } from "../notifications/Notification";
+import { RedirectionToLoginReason } from "../../Interface";
 
 function MakeForm() {
   const history = useHistory();
@@ -23,7 +24,10 @@ function MakeForm() {
         toast.dismiss(loadingToast);
         const { response } = error;
         if (response.status === StatusCodes.UNAUTHORIZED) {
-          redirectToLoginUrl({ didCookieExpirePostAuth: true });
+          redirectToLoginUrl({
+            redirectionToLoginReason:
+              RedirectionToLoginReason.COOKIE_EXPIRATION,
+          });
         } else {
           toast(
             `Failed to create session with error: ${error.message}`,

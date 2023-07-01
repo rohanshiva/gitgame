@@ -1,3 +1,5 @@
+import { RedirectionToLoginReason } from "../Interface";
+
 export const baseRoutes_ = {
   root: "/",
   game: "/game/:sessionId",
@@ -11,7 +13,7 @@ const routes_ = {
 
 export interface LoginParams {
   referrer?: string;
-  didCookieExpirePostAuth?: boolean;
+  redirectionToLoginReason?: RedirectionToLoginReason;
 }
 
 export function redirectToLoginUrl(params: LoginParams) {
@@ -20,11 +22,14 @@ export function redirectToLoginUrl(params: LoginParams) {
 
 export function constructRedirectToLoginUrl({
   referrer,
-  didCookieExpirePostAuth,
+  redirectionToLoginReason,
 }: LoginParams) {
   const queryParams = new URLSearchParams();
-  if (didCookieExpirePostAuth) {
-    queryParams.append("didCookieExpirePostAuth", "true");
+  if (redirectionToLoginReason) {
+    queryParams.append(
+      "redirection_reason",
+      redirectionToLoginReason.toString()
+    );
   }
   if (referrer) {
     queryParams.append("referrer", referrer);

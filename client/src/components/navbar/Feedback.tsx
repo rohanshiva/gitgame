@@ -4,6 +4,7 @@ import "./Feedback.css";
 import Api from "../../services/HttpApi";
 import { redirectToLoginUrl } from "../../constants/Route";
 import { useLocation } from "react-router-dom";
+import { RedirectionToLoginReason } from "../../Interface";
 
 interface FeedbackProps {
   onCancel: () => void;
@@ -38,7 +39,8 @@ function Feedback({ onCancel, postSubmit }: FeedbackProps) {
         if (response.status === StatusCodes.UNAUTHORIZED) {
           redirectToLoginUrl({
             referrer: pathname,
-            didCookieExpirePostAuth: true,
+            redirectionToLoginReason:
+              RedirectionToLoginReason.COOKIE_EXPIRATION,
           });
         }
 
