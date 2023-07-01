@@ -8,6 +8,7 @@ import {
   RequestType,
   ResponsePayload,
   ResponseType,
+  GameStatus,
 } from "../../../Interface";
 import gameReducer from "../reducers/GameReducer";
 import config from "../../../config/Config";
@@ -19,19 +20,21 @@ function getWebSocketAddress(sessionId: string) {
   )}`;
 }
 
+const INITIAL_GAME_STATE = {
+  players: [],
+  host: "",
+  source_code: null,
+  comments: [],
+  new_comments: [],
+  status: GameStatus.CONNECTING,
+};
+
 function useGameConnection(
   sessionId: string,
   onAlert: (alert: string) => void
 ) {
-  const [ws, setWs] = useState<WebSocket>(null as unknown as WebSocket);
-  const [state, dispatch] = useReducer(gameReducer, {
-    players: [],
-    host: "",
-    source_code: null,
-    comments: [],
-    new_comments: [],
-    is_finished: false,
-  });
+  const [ws, setWs] = useState<WebSocket>();
+  const [state, dispatch] = useReducer(gameReducer, { ...INITIAL_GAME_STATE });
 
   const [disconnectionMessage, setDisconnectionMessage] = useState<
     string | null
@@ -89,7 +92,9 @@ function useGameConnection(
   }, []);
 
   const sendMessage = (data: any) => {
-    ws.send(JSON.stringify(data));
+    if (ws) {
+      ws.send(JSON.stringify(data));
+    }
   };
 
   const pickSourceCode = () => {
@@ -100,10 +105,10 @@ function useGameConnection(
     sendMessage({ message_type: RequestType.ADD_COMMENT, ...comment });
   };
 
-  const ackNewComment = (comment_id: string) => {
+  const ackNewComment = (commentId: string) => {
     dispatch({
       event_type: GameStateEventType.ACK_NEW_COMMENT,
-      comment_id: comment_id,
+      comment_id: commentId,
     } as GameStateEvent);
   };
 
@@ -118,10 +123,7 @@ function useGameConnection(
     disconnectionMessage: disconnectionMessage,
   };
 
-  const isConnected = state.players.length > 0; // hacky way of checking whether a WS response has been recieved after joining
-  const hasGameStarted = state.source_code != null;
-
-  return { state, actions, disconnection, isConnected, hasGameStarted };
+  return { state, actions, disconnection };
 }
 
 export default useGameConnection;

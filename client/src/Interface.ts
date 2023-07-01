@@ -108,13 +108,20 @@ export interface AckNewComment extends GameStateEvent {
   comment_id: string;
 }
 
+export enum GameStatus {
+  CONNECTING,
+  IN_LOBBY,
+  PLAYING,
+  FINISHED,
+}
+
 export interface GameState {
   players: Player[];
   host: string;
   source_code: Code | null;
   comments: Comment[];
   new_comments: Comment[];
-  is_finished: boolean;
+  status: GameStatus;
 }
 
 export interface User {

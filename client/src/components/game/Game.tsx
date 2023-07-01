@@ -10,7 +10,7 @@ import Notification, {
 import { Editor, TextDisplay } from "../editor";
 import toast from "react-hot-toast";
 import "./Game.css";
-import { AddComment, Code, GameState } from "../../Interface";
+import { AddComment, Code, GameState, GameStatus } from "../../Interface";
 import CommentSider from "../commentSider";
 import useGameConnection from "./hooks/UseGameConnection";
 import Lobby from "./lobby/Lobby";
@@ -23,7 +23,7 @@ import Dialog, { useDialog } from "../dialog/Dialog";
 import Help from "../commentSider/help/Help";
 
 interface GameParams {
-  sessionId: string
+  sessionId: string;
 }
 
 function getWelcomeText({ players }: GameState, deviceUser: string) {
@@ -43,7 +43,7 @@ function getWelcomeText({ players }: GameState, deviceUser: string) {
 }
 
 function Game() {
-  const {sessionId} = useParams<GameParams>();
+  const { sessionId } = useParams<GameParams>();
   const { user } = useContext(UserContext);
   const username = user?.username as string;
 
@@ -55,10 +55,12 @@ function Game() {
     toast(alert, SUCCESS as any);
   }, []);
 
-  const { state, actions, disconnection, isConnected, hasGameStarted } =
-    useGameConnection(sessionId, onAlert);
+  const { state, actions, disconnection } = useGameConnection(
+    sessionId,
+    onAlert
+  );
 
-  const { source_code, players, new_comments, comments } = state;
+  const { source_code, players, new_comments, comments, status } = state;
 
   const { isDisconnected, disconnectionMessage } = disconnection;
 
@@ -82,7 +84,7 @@ function Game() {
   };
 
   const renderEditor = () => {
-    if (state.is_finished) {
+    if (status === GameStatus.FINISHED) {
       return (
         <TextDisplay
           text={"We ran out of code files for you play on! Thanks for playing!"}
@@ -90,7 +92,7 @@ function Game() {
       );
     }
 
-    if (hasGameStarted) {
+    if (status === GameStatus.PLAYING) {
       return (
         <Editor
           code={source_code as Code}
@@ -100,44 +102,47 @@ function Game() {
         />
       );
     }
-    if (isConnected) {
+    if (status === GameStatus.IN_LOBBY) {
       return <TextDisplay text={getWelcomeText(state, username)} />;
     }
 
     return <TextDisplay text={"Connecting..."} />;
   };
 
-  const visitUrl =
-    hasGameStarted && !state.is_finished
-      ? source_code?.file_visit_url
-      : "https://github.com/rohanshiva/gitgame";
-  const displayPath =
-    hasGameStarted && !state.is_finished
-      ? source_code?.file_display_path
-      : "rohanshiva/gitgame";
+  const getCodePath = () => {
+    if (status === GameStatus.FINISHED) {
+      return "GameOver.txt";
+    } else if (status === GameStatus.IN_LOBBY) {
+      return "Welcome.txt";
+    } else if (status === GameStatus.PLAYING) {
+      return source_code?.file_display_path;
+    } else {
+      return "Connecting.txt";
+    }
+  };
 
+  const codeLink =
+    status === GameStatus.PLAYING ? source_code?.file_visit_url : undefined;
   const isYouHost = username === state.host;
-  const canPickNext = isYouHost && !state.is_finished;
+  const canPickNext = isYouHost && status !== GameStatus.FINISHED;
 
   return (
     <>
       <div className="top">
-        <a href={visitUrl} target="_blank">
-          {displayPath}
+        <a href={codeLink} target="_blank">
+          {getCodePath()}
         </a>
         <div className="top-right">
           <Lobby players={players} locationUser={username} />
           <div className="top-btns">
             <button onClick={nextHandler} disabled={!canPickNext}>
-              Next
+              {status === GameStatus.IN_LOBBY ? "Start" : "Next"}
             </button>
             <abbr title="Invite your friends!">
               <button onClick={copyHandler}>Copy Invite Link</button>
             </abbr>
             <abbr title="How to add a comment?">
-              <button onClick={openHelp}>
-                Help
-              </button>
+              <button onClick={openHelp}>Help</button>
             </abbr>
           </div>
         </div>
@@ -155,18 +160,12 @@ function Game() {
         </CommentHighlightContext.Provider>
       </div>
       <Notification />
-      <Dialog
-        isOpen={isDisconnected}
-      >
-        {disconnectionMessage as string}
-      </Dialog>
+      <Dialog isOpen={isDisconnected}>{disconnectionMessage as string}</Dialog>
       <Dialog isOpen={isHelpOpen} onClose={closeHelp}>
         <Help />
       </Dialog>
     </>
   );
 }
-
-
 
 export default Game;
