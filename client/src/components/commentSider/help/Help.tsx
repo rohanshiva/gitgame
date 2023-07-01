@@ -19,12 +19,9 @@ export function HelpComment({ children }: HelpCommentProps) {
 function Help() {
   return (
     <HelpComment>
-      <strong>
-        <code className="title">
-          <h2>
-          How to create a comment?
-          </h2>
-        </code></strong>
+      <h2>
+        How to create a comment?
+      </h2>
       <ul className="help-list">
         <li>
           Click on any line number.
@@ -54,7 +51,7 @@ function Help() {
         </li>
       </ul>
       <div className="help-video-container">
-        <video muted controls>
+        <video preload="auto" muted controls>
           <source src={config.helpVideoUri} type="video/mp4" />
         </video>
       </div>

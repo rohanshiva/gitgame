@@ -21,6 +21,7 @@ import CommentHighlightContext, {
 import { applyPlayerDisplayOrder } from "./Util";
 import Dialog, { useDialog } from "../dialog/Dialog";
 import Help from "../commentSider/help/Help";
+import InviteDialogContent, { copyInviteLink } from "./iniviteDialogContent/InviteDialogContent";
 
 interface GameParams {
   sessionId: string;
@@ -66,10 +67,7 @@ function Game() {
 
   const { isOpen: isHelpOpen, open: openHelp, close: closeHelp } = useDialog();
 
-  const copyHandler = async () => {
-    await navigator.clipboard.writeText(window.location.href);
-    toast(`Invite link copied!`, SUCCESS as any);
-  };
+  const { isOpen: isInviteDialogOpen, close: closeInviteDialog } = useDialog({ initialIsOpen: true });
 
   const nextHandler = () => {
     toast(
@@ -139,7 +137,7 @@ function Game() {
               {status === GameStatus.IN_LOBBY ? "Start" : "Next"}
             </button>
             <abbr title="Invite your friends!">
-              <button onClick={copyHandler}>Copy Invite Link</button>
+              <button onClick={copyInviteLink}>Copy Invite Link</button>
             </abbr>
             <abbr title="How to add a comment?">
               <button onClick={openHelp}>Help</button>
@@ -164,6 +162,11 @@ function Game() {
       <Dialog isOpen={isHelpOpen} onClose={closeHelp}>
         <Help />
       </Dialog>
+      {status === GameStatus.IN_LOBBY && (
+        <Dialog isOpen={isInviteDialogOpen} onClose={closeInviteDialog}>
+          <InviteDialogContent />
+        </Dialog>
+      )}
     </>
   );
 }

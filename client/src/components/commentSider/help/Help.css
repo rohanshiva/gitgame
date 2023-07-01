@@ -5,17 +5,10 @@
 }
 
 .help-list {
-  margin-top: 0.5rem;
   font-size: 0.8rem;
   list-style: square;
-  padding-left: 1.4rem;
 }
 
 .help-video-container video {
   max-height: 512px;
 }
-
-.title {
-  font-family: 'Space Grotesk', sans-serif;
-}
-

@@ -2,6 +2,9 @@ import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import "./Dialog.css";
 
+interface UseDialogProps {
+    initialIsOpen?: boolean;
+}
 
 interface UseDialogResult {
     isOpen: boolean;
@@ -9,8 +12,8 @@ interface UseDialogResult {
     open: () => void;
 }
 
-export function useDialog(): UseDialogResult {
-    const [isOpen, setIsOpen] = useState<boolean>(false);
+export function useDialog({ initialIsOpen = false }: UseDialogProps = {}): UseDialogResult {
+    const [isOpen, setIsOpen] = useState<boolean>(initialIsOpen);
 
     const open = () => {
         setIsOpen(true);
