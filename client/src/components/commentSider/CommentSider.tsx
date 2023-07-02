@@ -5,8 +5,6 @@ import {
   commentTypeToEmoji,
 } from "../../Interface";
 import "./CommentSider.css";
-import "./help/Help.css";
-import { HelpComment } from "./help/Help";
 import { getColor } from "../../utils";
 import CommentHighlightContext from "../../context/CommentHighlightContext";
 
@@ -137,9 +135,9 @@ function CommentSider({ comments }: CommentSiderProps) {
       return <CommentList comments={filteredComments} commentType={filter} />;
     } else {
       return (
-        <HelpComment>
+        <div>
           No {commentTypeToEmoji(filter)} comments yet! Click <kbd>Help</kbd> for instructions.
-        </HelpComment>
+        </div>
       );
     }
   };
