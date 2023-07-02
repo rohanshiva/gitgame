@@ -20,8 +20,8 @@ import CommentHighlightContext, {
 } from "../../context/CommentHighlightContext";
 import { applyPlayerDisplayOrder } from "./Util";
 import Dialog, { useDialog } from "../dialog/Dialog";
-import Help from "../commentSider/help/Help";
-import InviteDialogContent, { copyInviteLink } from "./iniviteDialogContent/InviteDialogContent";
+import InviteDialog, { copyInviteLink } from "./iniviteDialog/InviteDialog";
+import HelpDialog from "./helpDialog/HelpDialog";
 
 interface GameParams {
   sessionId: string;
@@ -65,7 +65,7 @@ function Game() {
 
   const { isDisconnected, disconnectionMessage } = disconnection;
 
-  const { isOpen: isHelpOpen, open: openHelp, close: closeHelp } = useDialog();
+  const { isOpen: isHelpDialogOpen, open: openHelpDialog, close: closeHelpDialog } = useDialog();
 
   const { isOpen: isInviteDialogOpen, close: closeInviteDialog } = useDialog({ initialIsOpen: true });
 
@@ -141,7 +141,7 @@ function Game() {
               <button onClick={copyInviteLink}>Copy Invite Link</button>
             </abbr>
             <abbr title="How to add a comment?">
-              <button onClick={openHelp}>Help</button>
+              <button onClick={openHelpDialog}>Help</button>
             </abbr>
           </div>
         </div>
@@ -160,13 +160,9 @@ function Game() {
       </div>
       <Notification />
       <Dialog isOpen={isDisconnected}>{disconnectionMessage as string}</Dialog>
-      <Dialog isOpen={isHelpOpen} onClose={closeHelp}>
-        <Help />
-      </Dialog>
+      <HelpDialog isOpen={isHelpDialogOpen} onClose={closeHelpDialog} />
       {isInLobby && (
-        <Dialog isOpen={isInviteDialogOpen} onClose={closeInviteDialog}>
-          <InviteDialogContent />
-        </Dialog>
+        <InviteDialog isOpen={isInviteDialogOpen} onClose={closeInviteDialog} />
       )}
     </>
   );

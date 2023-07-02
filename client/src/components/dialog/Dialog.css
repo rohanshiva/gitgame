@@ -4,6 +4,17 @@
   backdrop-filter: blur(0.2rem);
 }
 
+.dialog-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dialog-close {
+  cursor: pointer;
+}
+
 dialog {
   color: var(--primary);
   background-color: var(--bg);
