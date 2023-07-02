@@ -1,13 +1,12 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from models import Session, File, Repository, Player as DBPlayer, Comment as DBComment
-from services.github_client import GithubClient
+from services.github.client import GithubClient, GithubApiException
 from models import (
     AlreadyConnectedPlayerError,
     OutOfFilesError,
     NoSelectedSourceCodeError,
 )
 from services.auth import Context
-from services.github_client import GithubApiException
 from deps import get_context, get_gh_client
 from ws.connection_manager import Connection, ConnectionManager
 from enum import IntEnum
@@ -27,7 +26,7 @@ socket_app = FastAPI()
 class WSAppStatusCodes(IntEnum):
     SWITCHING_CONNECTIONS = 4001
     SESSION_NOT_FOUND = 4002
-    PLAYER_NOT_IN_GITHUB = 4003
+    GITHUB_API_ERRORED = 4003
     NOT_ALLOWED = 4004
 
 
@@ -250,9 +249,10 @@ async def on_websocket_event(
         try:
             await session.join(username, gh_client)
         except GithubApiException as e:
+            LOGGER.exception(e)
             await connection.close(
-                code=WSAppStatusCodes.PLAYER_NOT_IN_GITHUB,
-                reason=f"{username} can't join due to Github API erroring",
+                code=WSAppStatusCodes.GITHUB_API_ERRORED,
+                reason=f"{username} is unable to join due to Github API errors",
             )
             raise e
         except AlreadyConnectedPlayerError:
@@ -279,23 +279,22 @@ async def on_websocket_event(
     @instrument
     async def on_pick():
         await session.refresh_from_db()
-        if session.host is not None:
-            acting_player = session.get_player_id(username)
-            LOGGER.info(
-                f"{acting_player} attempting to pick while host is: {session.host} for {session.id}"
+        acting_player = session.get_player_id(username)
+        LOGGER.info(
+            f"{acting_player} attempting to pick while host is: {session.host} for {session.id}"
+        )
+        if session.host is not None and session.host == acting_player:
+            try:
+                await session.pick_source_code(gh_client)
+                source_code = await get_source_code(session)
+                await manager.broadcast(session.id, source_code.dict())
+            except OutOfFilesError:
+                await manager.broadcast(session_id, GameFinishedResponse().dict())
+        else:
+            raise WSAppPolicyViolation(
+                code=WSAppStatusCodes.NOT_ALLOWED,
+                reason=f"{username} cannot pick since they are not host",
             )
-            if session.host == acting_player:
-                try:
-                    await session.pick_source_code(gh_client)
-                    source_code = await get_source_code(session)
-                    await manager.broadcast(session.id, source_code.dict())
-                except OutOfFilesError:
-                    await manager.broadcast(session_id, GameFinishedResponse().dict())
-            else:
-                raise WSAppPolicyViolation(
-                    code=WSAppStatusCodes.NOT_ALLOWED,
-                    reason=f"{username} cannot pick since they are not host",
-                )
 
     @instrument
     async def on_add_comment(add_comment_body: AddCommentBody):
@@ -307,6 +306,7 @@ async def on_websocket_event(
                 add_comment_body.type,
                 username,
             )
+            # todo(Ramko9999): unefficient and nasty
             comments_resp = await get_comments(session)
             comment = list(
                 filter(

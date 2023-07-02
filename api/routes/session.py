@@ -1,11 +1,9 @@
-import logging
 from fastapi import APIRouter, Depends, status
 from nanoid import generate
 from models import Session
 from deps import get_context
 
 router = APIRouter(prefix="/session", tags=["Session"])
-logger = logging.getLogger()
 
 
 @router.post(
