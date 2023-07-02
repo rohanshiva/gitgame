@@ -11,8 +11,6 @@ GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET")
 AUTH_SECRET = os.environ.get("AUTH_SECRET")
 CLIENT_URL = os.environ.get("CLIENT_URL")
-GITHUB_ACCESS_TOKEN_ENDPOINT = "https://github.com/login/oauth/access_token"
-GITHUB_LOGIN_ENDPOINT = "https://github.com/login/oauth/authorize"
 
 """
 Added this bit here to make local testing easy. Run `python main.py -d`

@@ -6,10 +6,7 @@ from collections import defaultdict
 from enum import Enum
 from datetime import datetime
 from uuid import uuid4, UUID
-from services.github_client import (
-    GithubClient,
-    GithubRepositoryFileLoadingError,
-)
+from services.github.client import GithubClient, GithubApiException
 from pathlib import Path
 
 LOGGER = logging.getLogger()
@@ -41,16 +38,21 @@ class Session(models.Model):
 
     async def join(self, username: str, gh_client: GithubClient):
         player_id = self.get_player_id(username)
-        LOGGER.info(f"{player_id} is trying to join")
+        LOGGER.info(
+            f"{username} is attempting to join {self.id} (version: {self.version})"
+        )
         async with in_transaction():
             await self.select_for_update()
             await self.refresh_from_db()
             player = await Player.get_or_none(id=player_id)
             if player and player.connection_state == Player.ConnectionState.CONNECTED:
+                LOGGER.info(
+                    f"{username} is already a player in {self.id} (version: {self.version})"
+                )
                 raise AlreadyConnectedPlayerError()
 
             LOGGER.info(
-                f"{player_id} is joining with host {self.host}, version: {self.version}"
+                f"{username} is joining {self.id} with host {self.host} (version: {self.version})"
             )
             if player:
                 player.connection_state = Player.ConnectionState.CONNECTED
@@ -70,16 +72,19 @@ class Session(models.Model):
             if self.host is None:
                 self.host = player.id
                 update_fields.append("host")
+                LOGGER.info(
+                    f"{username} is assuming host for {self.id} (version: {self.version})"
+                )
 
             self.version += 1
             await self.save(update_fields=update_fields)
-            LOGGER.info(
-                f"{player_id} is joining update complete, version: {self.version}"
-            )
+            LOGGER.info(f"{username} joined {self.id} (version: {self.version})")
 
     async def leave(self, username: str):
         player_id = self.get_player_id(username)
-        LOGGER.info(f"{player_id} is trying to leave")
+        LOGGER.info(
+            f"{username} is attempting to leave {self.id} (version: {self.version})"
+        )
         async with in_transaction():
             await self.select_for_update()
             await self.refresh_from_db()
@@ -87,26 +92,25 @@ class Session(models.Model):
             player.connection_state = Player.ConnectionState.DISCONNECTED
             await player.save(update_fields=["connection_state"])
             LOGGER.info(
-                f"{player_id} is leaving with host {self.host}, version: {self.version}"
+                f"{username} is leaving with host {self.host} (version: {self.version})"
             )
             update_fields = ["version"]
             if self.host == player_id:
                 connected_players = await self.players.filter(
                     connection_state=Player.ConnectionState.CONNECTED
                 )
-                # todo(ramko9999): How should we handle the clean up of a session and other rows referencing it in the DB if all players leave
                 if len(connected_players) > 0:
                     new_host = random.choice(connected_players)
                     self.host = new_host.id
-                    LOGGER.info(f"Host changing to {new_host.id} for {self.id}")
+                    LOGGER.info(
+                        f"{new_host.username} is assuming host for {self.id} (version: {self.version})"
+                    )
                 else:
                     self.host = None
                 update_fields.append("host")
             self.version += 1
             await self.save(update_fields=update_fields)
-            LOGGER.info(
-                f"{username} leaving update has been applied to {self.id}, version: {self.version}"
-            )
+            LOGGER.info(f"{username} has left {self.id} (version: {self.version})")
 
     async def pick_source_code(self, gh_client: GithubClient):
         async with in_transaction():
@@ -136,7 +140,6 @@ class Session(models.Model):
             picked_repo = random.choice(list(repos_in_pool_for_picked_author))
             picked_author_repo = (picked_author, picked_repo)
             picked_file = random.choice(files_by_author_repo[picked_author_repo])
-            # todo: catch error when file download is not possible
             file_content = await gh_client.download_file_from_url(
                 picked_file.download_url
             )
@@ -246,9 +249,7 @@ class Player(models.Model):
             )
 
         await Repository.bulk_create(repo_models)
-        LOGGER.info(
-            f"Found {len(repo_models)} available repos for author {self.username}"
-        )
+        LOGGER.info(f"Found {len(repo_models)} available repos for {self.username}")
 
     async def load_files(self, gh_client: GithubClient):
         async with in_transaction():
@@ -283,12 +284,13 @@ class Player(models.Model):
                                 session_id=self.session_id,
                             )
                         )
-                    loaded_repo_ids.append(repo.id)
-                    repo_index += 1
                     if len(files) > 0:
                         non_empty_repo_count += 1
-                except GithubRepositoryFileLoadingError:
-                    pass
+                except GithubApiException as e:
+                    LOGGER.exception(e)
+                finally:
+                    loaded_repo_ids.append(repo.id)
+                    repo_index += 1
 
             if len(loaded_repo_ids) > 0:
                 await Repository.filter(id__in=loaded_repo_ids).update(load_status=True)

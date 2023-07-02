@@ -1,9 +1,11 @@
+import logging
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel
 from deps import get_context, get_gh_client
-from services.github_client import GithubClient, GithubApiException
+from services.github.client import GithubClient, GithubApiException
 
 router = APIRouter(prefix="/misc")
+LOGGER = logging.getLogger()
 
 
 class Feedback(BaseModel):
@@ -26,7 +28,8 @@ async def create_feedback(
     body = f"User Agent: {user_agent}\n\n{feedback.message}"
     try:
         await gh_client.create_issue(title, body, ["feedback"])
-    except GithubApiException:
+    except GithubApiException as e:
+        LOGGER.exception(e)
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Unable to create feedback at this time",

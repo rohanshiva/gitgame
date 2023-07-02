@@ -1,11 +1,11 @@
 import logging
 from typing import TypedDict, Optional
-from httpx import AsyncClient, Response
+from httpx import AsyncClient
 from fastapi import status
 from pathlib import Path
 from datetime import datetime
 
-logger = logging.getLogger()
+LOGGER = logging.getLogger()
 
 
 class RepositoryDict(TypedDict):
@@ -38,32 +38,16 @@ class UserDict(TypedDict):
 
 
 class GithubApiException(Exception):
-    pass
+    def __init__(self, gh_endpoint: str, status_code: int, text: str):
+        self.gh_endpoint = gh_endpoint
+        self.status_code = status_code
+        self.text = text
+
+    def __str__(self):
+        return f"Github API request to '{self.gh_endpoint}' resulted in '{self.status_code}': '{self.text}'"
 
 
-class GithubUserNotFound(GithubApiException):
-    pass
-
-
-class GithubRepositoryFileLoadingError(GithubApiException):
-    pass
-
-
-class GithubFileDownloadError(GithubApiException):
-    pass
-
-
-class GithubUserLoadingError(GithubApiException):
-    pass
-
-
-def log_gh_api_response(response: Response):
-    logger.info(
-        f"Github API request to {response.url} resulted in {response.status_code}: {response.text}"
-    )
-
-
-MAX_FILE_SIZE = 15000  # in bytes
+MAX_FILE_SIZE = 15000  # 15kb
 
 
 class GithubClient:
@@ -103,11 +87,10 @@ class GithubClient:
                 response = await client.get(
                     endpoint, params=params, headers=self.HEADERS
                 )
-                if response.status_code == status.HTTP_404_NOT_FOUND:
-                    raise GithubUserNotFound()
                 if response.status_code != status.HTTP_200_OK:
-                    log_gh_api_response(response)
-                    raise GithubApiException()
+                    raise GithubApiException(
+                        response.request.url, response.status_code, response.text
+                    )
                 for repo in response.json():
                     if not repo["fork"] and repo["size"] > 0:
                         repo_dicts.append(
@@ -156,9 +139,7 @@ class GithubClient:
         async with AsyncClient() as client:
             response = await client.get(endpoint, headers=self.HEADERS, params=params)
             if response.status_code != status.HTTP_200_OK:
-                logger.warn(f"Unable to load files from {full_repo_name}")
-                log_gh_api_response(response)
-                raise GithubRepositoryFileLoadingError()
+                raise GithubApiException(response.request.url, response.status_code, response.text)
 
             for entity in response.json()["tree"]:
                 if entity["type"] == "blob" and entity["size"] <= max_file_size:
@@ -178,8 +159,9 @@ class GithubClient:
         async with AsyncClient() as client:
             response = await client.get(gh_download_url)
             if response.status_code != status.HTTP_200_OK:
-                log_gh_api_response(response)
-                raise GithubFileDownloadError()
+                raise GithubApiException(
+                    response.request.url, response.status_code, response.text
+                )
             return response.text
 
     async def create_issue(self, title: str, body: str, labels: list[str]):
@@ -188,18 +170,14 @@ class GithubClient:
         async with AsyncClient() as client:
             response = await client.post(endpoint, json=payload, headers=self.HEADERS)
             if response.status_code != status.HTTP_201_CREATED:
-                log_gh_api_response(response)
-                raise GithubApiException()
+                raise GithubApiException(response.request.url, response.status_code, response.text)
 
     async def get_user(self):
         endpoint = "https://api.github.com/user"
         async with AsyncClient() as client:
             response = await client.get(endpoint, headers=self.HEADERS)
-            if response.status_code == status.HTTP_404_NOT_FOUND:
-                raise GithubUserNotFound()
             if response.status_code != status.HTTP_200_OK:
-                log_gh_api_response(response)
-                raise GithubUserLoadingError()
+                raise GithubApiException(response.request.url, response.status_code, response.text)
             user = response.json()
             return UserDict(
                 username=user["login"], name=user["name"], node_id=user["node_id"]
