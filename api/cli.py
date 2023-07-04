@@ -2,7 +2,7 @@ import argparse
 import sys
 import anyio
 import asyncpg
-from services.github_client import GithubClient
+from services.github.client import GithubClient
 from config import DB_URI, GITHUB_ACCESS_TOKEN
 
 

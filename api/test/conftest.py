@@ -6,7 +6,7 @@ from main import app
 from typing import Callable
 from models import Session, Player, Repository, File, SourceCode
 from unittest.mock import patch, Mock, AsyncMock
-from services.github_client import (
+from services.github.client import (
     GithubClient,
     RepositoryDict,
     FileDict,
