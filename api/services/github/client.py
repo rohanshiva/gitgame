@@ -139,7 +139,9 @@ class GithubClient:
         async with AsyncClient() as client:
             response = await client.get(endpoint, headers=self.HEADERS, params=params)
             if response.status_code != status.HTTP_200_OK:
-                raise GithubApiException(response.request.url, response.status_code, response.text)
+                raise GithubApiException(
+                    response.request.url, response.status_code, response.text
+                )
 
             for entity in response.json()["tree"]:
                 if entity["type"] == "blob" and entity["size"] <= max_file_size:
@@ -170,14 +172,18 @@ class GithubClient:
         async with AsyncClient() as client:
             response = await client.post(endpoint, json=payload, headers=self.HEADERS)
             if response.status_code != status.HTTP_201_CREATED:
-                raise GithubApiException(response.request.url, response.status_code, response.text)
+                raise GithubApiException(
+                    response.request.url, response.status_code, response.text
+                )
 
     async def get_user(self):
         endpoint = "https://api.github.com/user"
         async with AsyncClient() as client:
             response = await client.get(endpoint, headers=self.HEADERS)
             if response.status_code != status.HTTP_200_OK:
-                raise GithubApiException(response.request.url, response.status_code, response.text)
+                raise GithubApiException(
+                    response.request.url, response.status_code, response.text
+                )
             user = response.json()
             return UserDict(
                 username=user["login"], name=user["name"], node_id=user["node_id"]
