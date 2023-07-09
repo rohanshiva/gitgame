@@ -18,7 +18,8 @@ function Comment({ comment }: CommentProps) {
   );
   const profileBorderColor = getColor(author.username);
 
-  const className = `player-comment ${(commentHighlight && commentHighlight.comment.id === id) && "player-comment-selected"}`
+  const isHighlighted = commentHighlight && commentHighlight.comment.id === id;
+  const className = `player-comment ${isHighlighted && "player-comment-selected"}`
 
   const onCommentClick = (ev: React.MouseEvent) => {
     ev.stopPropagation();
