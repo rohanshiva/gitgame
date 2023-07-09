@@ -1,7 +1,6 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import {
   Comment as IComment,
-  CommentType,
   commentTypeToEmoji,
 } from "../../Interface";
 import "./CommentSider.css";
@@ -13,16 +12,14 @@ interface CommentProps {
 }
 
 function Comment({ comment }: CommentProps) {
-  const { id, author, content } = comment;
+  const { id, author, content, type, line_start: lineStart, line_end: lineEnd } = comment;
   const { commentHighlight, highlightComment } = useContext(
     CommentHighlightContext
   );
   const profileBorderColor = getColor(author.username);
 
-  let className = "player-comment";
-  if (commentHighlight && commentHighlight.comment.id === id) {
-    className += " player-comment-selected";
-  }
+  const isHighlighted = commentHighlight && commentHighlight.comment.id === id;
+  const className = `player-comment ${isHighlighted && "player-comment-selected"}`
 
   const onCommentClick = (ev: React.MouseEvent) => {
     ev.stopPropagation();
@@ -34,13 +31,24 @@ function Comment({ comment }: CommentProps) {
   return (
     <div className={className} onClick={onCommentClick}>
       <div className="player-comment-header">
-        <img
-          alt={`https://github.com/${author.username}`}
-          className="player-comment-avatar"
-          style={{ borderColor: profileBorderColor }}
-          src={author.profile_url}
-        />
-        <div>{author.username}</div>
+        <div className="player-comment-author">
+          <img
+            alt={`https://github.com/${author.username}`}
+            className="player-comment-avatar"
+            style={{ borderColor: profileBorderColor }}
+            src={author.profile_url}
+          />
+          <div>{author.username}</div>
+        </div>
+        <div className="player-comment-info">
+          <div className="player-comment-line-tag">
+            {`L${lineStart}-L${lineEnd}`}
+          </div>
+          <div className="player-comment-emoji-tag">
+            {commentTypeToEmoji(type)}
+          </div>
+        </div>
+
       </div>
       <div className="player-comment-content">{content}</div>
     </div>
@@ -49,74 +57,19 @@ function Comment({ comment }: CommentProps) {
 
 interface CommentListProps {
   comments: IComment[];
-  commentType: CommentType;
 }
 
-function CommentList({ comments, commentType }: CommentListProps) {
-  const groupCommentsByLines = () => {
-    const map = new Map<string, IComment[]>();
-    for (const comment of comments) {
-      const { line_start, line_end } = comment;
-      const key = `${line_start}-${line_end}`;
-      if (!map.has(key)) {
-        map.set(key, []);
-      }
-      map.set(key, (map.get(key) as IComment[]).concat(comment));
-    }
-
-    const groupedComments = Array.from(map.values()).map((comments) => {
-      const uniqueAuthors = Array.from(
-        new Set(comments.map(({ author }) => author.username))
-      );
-      uniqueAuthors.sort();
-
-      return {
-        comments,
-        lines: {
-          start: comments[0].line_start,
-          end: comments[0].line_end,
-        },
-        authors: uniqueAuthors,
-      };
-    });
-
-    groupedComments.sort((a, b) => {
-      if (a.lines.start < b.lines.start) {
-        return -1;
-      }
-      if (b.lines.start < a.lines.start) {
-        return 1;
-      }
-      if (a.lines.end < b.lines.end) {
-        return -1;
-      }
-      return 1;
-    });
-
-    return groupedComments;
-  };
+function CommentList({ comments }: CommentListProps) {
 
   return (
     <div className="comments-container-content">
-      {groupCommentsByLines().map(({ lines, comments, authors }, index) => {
-        return (
-          <div className="comments-section" key={index}>
-            <div className="comments-section-header">
-              <span>{`L${lines.start + 1}-L${lines.end + 1}`}</span>
-              <abbr title={authors.join(", ")}>
-                <span className="emoji-reactions">
-                  {commentTypeToEmoji(commentType)} {comments.length}
-                </span>
-              </abbr>
-            </div>
-            <div className="comments-section-content">
-              {comments.map((comment) => (
-                <Comment key={comment.id} comment={comment} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      <div className="comments-section">
+        <div className="comments-section-content">
+          {comments.map((comment) => (
+            <Comment key={comment.id} comment={comment} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -126,23 +79,18 @@ interface CommentSiderProps {
 }
 
 function CommentSider({ comments }: CommentSiderProps) {
-  const [filter, setFilter] = useState<CommentType>(CommentType.POOP);
   const { dehighlight } = useContext(CommentHighlightContext);
 
   const getCommentsDisplay = () => {
-    if (hasCommentsForType(filter)) {
-      const filteredComments = comments.filter(({ type }) => type === filter);
-      return <CommentList comments={filteredComments} commentType={filter} />;
+    if (comments.length) {
+      return <CommentList comments={comments} />;
     } else {
       return (
         <div>
-          No {commentTypeToEmoji(filter)} comments yet! Click <kbd>Help</kbd> for instructions.
+          No comments yet! Click <kbd>Help</kbd> for instructions.
         </div>
       );
     }
-  };
-  const hasCommentsForType = (commentType: CommentType) => {
-    return comments.filter(({ type }) => type === commentType).length > 0;
   };
 
   return (
@@ -151,33 +99,10 @@ function CommentSider({ comments }: CommentSiderProps) {
         className="comments-container-header"
         onClick={(ev) => ev.stopPropagation()}
       >
-        <div className="filters">
-          <div
-            className={
-              filter === CommentType.POOP
-                ? "filter selected-filter"
-                : "filter"
-            }
-            onClick={() => {
-              setFilter(CommentType.POOP);
-            }}
-          >
-            Roasts
-            💩
-          </div>
-          <div
-            className={
-              filter === CommentType.DIAMOND
-                ? "filter selected-filter"
-                : "filter"
-            }
-            onClick={() => {
-              setFilter(CommentType.DIAMOND);
-            }}
-          >
-            Kudos
-            💎
-          </div>
+        <div className="comments-container-header-title">
+          <span>
+            Kudos 💎 / Roasts 💩
+          </span>
         </div>
       </div>
       {getCommentsDisplay()}

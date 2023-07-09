@@ -1,34 +1,14 @@
-.comments-container-header {
-  font-weight: 500;
-}
-
-.filters {
+.comments-container-header-title {
   display: flex;
   flex-direction: row;
+  justify-content: space-evenly;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
   border: 0.1rem solid var(--border);
   border-radius: 0.2rem;
-  padding: 0.2rem;
-  font-size: 1rem;
-  align-items: center;
-  width: 100%;
-}
-
-.filter {
-  cursor: pointer;
-  padding: 0.4rem 1rem;
-  width: 100%;
   text-align: center;
-}
-
-.selected-filter {
-  border-radius: 0.2rem;
-  background-color: var(--secondary);
-}
-
-.emoji-reactions {
-  border: 0.1rem solid var(--border);
-  border-radius: 0.8rem;
-  padding: 0.1rem 0.5rem;
+  font-weight: 500;
+  width: 100%;
 }
 
 abbr {
@@ -73,7 +53,6 @@ abbr {
 }
 
 .player-comment {
-  position: relative;
   border: 0.1rem solid var(--border);
   border-radius: 0.4rem;
   padding: 0.4rem;
@@ -83,7 +62,7 @@ abbr {
   cursor: pointer;
   box-shadow: none;
   transition-duration: 150ms;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .player-comment:hover {
@@ -98,9 +77,16 @@ abbr {
 .player-comment-header {
   display: flex;
   flex-direction: row;
-  gap: 0.2rem;
   align-items: center;
   font-weight: bold;
+  justify-content: space-between;
+}
+
+.player-comment-author {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .player-comment-avatar {
@@ -112,5 +98,22 @@ abbr {
 
 .player-comment-content {
   text-overflow: ellipsis;
-  font-size: 0.9rem;
+}
+
+.player-comment-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.player-comment-emoji-tag {
+  border: 0.1rem solid var(--border);
+  border-radius: 0.8rem;
+  padding: 0.1rem 0.5rem;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.player-comment-line-tag {
+  font-weight: normal;
 }
