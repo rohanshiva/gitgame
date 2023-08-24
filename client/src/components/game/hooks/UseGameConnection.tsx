@@ -22,7 +22,6 @@ function getWebSocketAddress(sessionId: string) {
 
 const INITIAL_GAME_STATE = {
   players: [],
-  host: "",
   source_code: null,
   comments: [],
   new_comments: [],
@@ -97,12 +96,16 @@ function useGameConnection(
     }
   };
 
-  const pickSourceCode = () => {
-    sendMessage({ message_type: RequestType.PICK_SOURCE_CODE });
-  };
-
   const addComment = (comment: AddComment) => {
     sendMessage({ message_type: RequestType.ADD_COMMENT, ...comment });
+  };
+
+  const ready = () => {
+    sendMessage({ message_type: RequestType.READY });
+  };
+
+  const wait = () => {
+    sendMessage({ message_type: RequestType.WAIT });
   };
 
   const ackNewComment = (commentId: string) => {
@@ -113,9 +116,10 @@ function useGameConnection(
   };
 
   const actions = {
-    pickSourceCode,
     addComment,
     ackNewComment,
+    ready,
+    wait
   };
 
   const disconnection = {

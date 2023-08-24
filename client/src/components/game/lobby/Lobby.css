@@ -5,17 +5,17 @@
   gap: 0.5rem;
 }
 
-.lobby-avatar {
+.avatar-image {
   width: 2.2rem;
   border: 1.5px solid;
   border-radius: 50%;
   vertical-align: top;
 }
 
-.lobby-player {
+.avatar {
   text-align: center;
 }
 
-.lobby-player:hover {
+.avatar:hover {
   cursor: pointer;
 }

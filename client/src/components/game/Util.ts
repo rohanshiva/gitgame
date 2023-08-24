@@ -11,12 +11,6 @@ export function applyPlayerDisplayOrder(
     if (b.username === deviceUsername) {
       return 1;
     }
-    if (a.is_host) {
-      return -1;
-    }
-    if (b.is_host) {
-      return -1;
-    }
     if (a.username < b.username) {
       return -1;
     } else {
