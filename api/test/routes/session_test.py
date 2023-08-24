@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient, Cookies
 from services.auth import Auth
-from models import Session
+from db import Models
 
 
 @pytest.mark.usefixtures("clear_db")
@@ -16,7 +16,7 @@ class TestMakeSession:
         assert response.status_code == 201
         response_json = response.json()
         assert "id" in response_json
-        session = await Session.filter(id=response_json["id"]).first()
+        session = await Models.Session.filter(id=response_json["id"]).first()
         assert session is not None
         assert session.host is None
 

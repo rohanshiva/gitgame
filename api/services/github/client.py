@@ -1,5 +1,5 @@
 import logging
-from typing import TypedDict, Optional
+from typing import TypedDict
 from httpx import AsyncClient
 from fastapi import status
 from pathlib import Path
@@ -10,16 +10,11 @@ LOGGER = logging.getLogger()
 
 class RepositoryDict(TypedDict):
     name: str
-    pushed_at: str
-    url: str
-    stars: int
+    last_pushed_at: datetime
     default_branch: str
-    description: Optional[str]
-    language: Optional[str]
 
 
 class FileDict(TypedDict):
-    name: str
     path: str
     download_url: str
     visit_url: str
@@ -96,12 +91,10 @@ class GithubClient:
                         repo_dicts.append(
                             RepositoryDict(
                                 name=repo["full_name"],
-                                pushed_at=repo["pushed_at"],
-                                url=repo["html_url"],
-                                stars=repo["stargazers_count"],
+                                last_pushed_at=datetime.fromisoformat(
+                                    repo["pushed_at"].replace("Z", "+00:00")
+                                ),
                                 default_branch=repo["default_branch"],
-                                description=repo["description"],
-                                language=repo["language"],
                             )
                         )
 
@@ -149,7 +142,6 @@ class GithubClient:
                     if extension in supported_extensions:
                         file_dicts.append(
                             FileDict(
-                                name=Path(entity["path"]).name,
                                 path=entity["path"],
                                 download_url=get_download_url(entity["path"]),
                                 visit_url=get_visit_url(entity["path"]),
