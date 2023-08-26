@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from nanoid import generate
-from models import Session
+from db import Models
 from deps import get_context
 
 router = APIRouter(prefix="/session", tags=["Session"])
@@ -11,5 +11,5 @@ router = APIRouter(prefix="/session", tags=["Session"])
 )
 async def make():
     id = generate(size=10)
-    session = await Session.create(id=id)
+    session = await Models.Session.create(id=id)
     return {"id": session.id}

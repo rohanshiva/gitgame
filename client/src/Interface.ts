@@ -37,7 +37,7 @@ export interface Player {
   username: string;
   profile_url: string;
   is_connected: boolean;
-  is_host: boolean;
+  is_ready: boolean;
 }
 
 export interface Code {
@@ -62,9 +62,9 @@ export enum ResponseType {
 }
 
 export enum RequestType {
-  PICK_SOURCE_CODE = 1,
-  ADD_COMMENT = 2,
-  DELETE_COMMENT = 3,
+  ADD_COMMENT = 1,
+  READY = 2,
+  WAIT = 3
 }
 
 export enum GameStateEventType {
@@ -117,7 +117,6 @@ export enum GameStatus {
 
 export interface GameState {
   players: Player[];
-  host: string;
   source_code: Code | null;
   comments: Comment[];
   new_comments: Comment[];

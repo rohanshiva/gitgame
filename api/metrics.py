@@ -2,7 +2,7 @@ from prometheus_client import Histogram, Counter, Gauge
 from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI
 from functools import wraps
-from typing import Callable
+from typing import Callable, TypeVar, ParamSpec
 import inspect
 
 NAMESPACE = "gitgame"
@@ -38,7 +38,11 @@ WS_CONNECTIONS = Gauge(
 )
 
 
-def instrument(func: Callable):
+P = ParamSpec("P")
+T = TypeVar("T")
+
+
+def instrument(func: Callable[P, T]) -> Callable[P, T]:
     func_name = func.__name__
 
     @wraps(func)

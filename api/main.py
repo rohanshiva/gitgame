@@ -28,7 +28,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def init_db_tables():
-    await Tortoise.init(db_url=DB_URI, modules={"models": ["models"]})
+    await Tortoise.init(db_url=DB_URI, modules={"models": ["db.models"]})
     await Tortoise.generate_schemas(safe=True)
     logger.info("DB tables are ready to go!")
     attach_instrumentation(app)

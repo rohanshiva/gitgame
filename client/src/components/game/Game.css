@@ -86,3 +86,7 @@
   min-height: 4rem;
   align-items: flex-end;
 }
+
+.advance-btn {
+  width: 6rem;
+}

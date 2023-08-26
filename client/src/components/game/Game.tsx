@@ -3,14 +3,11 @@ import { useCallback, useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import Notification, {
   SUCCESS,
-  LOADING,
-  toastWithId,
-  NotificationDisplay,
 } from "../notifications/Notification";
 import { Editor, TextDisplay } from "../editor";
 import toast from "react-hot-toast";
 import "./Game.css";
-import { AddComment, Code, GameState, GameStatus } from "../../Interface";
+import { AddComment, Code, GameState, GameStatus, User, Player } from "../../Interface";
 import CommentSider from "../commentSider";
 import useGameConnection from "./hooks/UseGameConnection";
 import Lobby from "./lobby/Lobby";
@@ -28,20 +25,23 @@ interface GameParams {
 }
 
 function getWelcomeText({ players }: GameState, deviceUser: string) {
-  const host = players.filter((player) => player.is_host)[0];
   const playerText = applyPlayerDisplayOrder(players, deviceUser)
-    .map(({ username, is_host }) => {
-      if (is_host) {
-        return `${username} (Host)`;
-      }
-      return username;
-    })
+    .map(({username}) => username)
     .join(", ");
 
-  const debriefText = `A code file will be picked among your public Github repositories.\n\nRoast it with a 💩 comment or celebrate it with a 💎 comment.\n\nClick 🔎 if you ever need any help.\n\nTo start reviewing, ${host.username} (Host) needs to click 'Next'`;
+  const debriefText = `A code file will be picked among your public Github repositories.\n\nRoast it with a 💩 comment or celebrate it with a 💎 comment.\n\nClick 🔎 if you ever need any help.\n\nTo start reviewing, everyone needs to ready up`;
 
   return `Players: ${playerText}\n\n${debriefText}`;
 }
+
+function isDevicePlayerReady(players: Player[], {username}: User){
+  if(players.length === 0){
+    return false;
+  }
+  const devicePlayer =  players.filter((p) => p.username === username)[0];
+  return devicePlayer.is_ready;
+}
+
 
 function Game() {
   const { sessionId } = useParams<GameParams>();
@@ -69,13 +69,12 @@ function Game() {
 
   const { isOpen: isInviteDialogOpen, close: closeInviteDialog } = useDialog({ initialIsOpen: true });
 
-  const nextHandler = () => {
-    toast(
-      "Fetching next chunk",
-      toastWithId(LOADING, NotificationDisplay.NEXT_ROUND)
-    );
-    actions.pickSourceCode();
-  };
+  const advanceHandler = () => {
+    if(isDevicePlayerReady(players, user as User)){
+      return actions.wait();
+    }
+    return actions.ready();
+  }
 
   const addCommentHandler = (comment: AddComment) => {
     actions.addComment(comment);
@@ -119,11 +118,11 @@ function Game() {
     }
   };
 
+
   const codeLink =
     status === GameStatus.PLAYING ? source_code?.file_visit_url : undefined;
-  const isYouHost = username === state.host;
-  const canPickNext = isYouHost && status !== GameStatus.FINISHED;
   const isInLobby = status === GameStatus.IN_LOBBY;
+  const isAdvanceDisabled = status === GameStatus.CONNECTING || status == GameStatus.FINISHED
 
   return (
     <>
@@ -134,8 +133,8 @@ function Game() {
         <div className="top-right">
           <Lobby players={players} locationUser={username} />
           <div className="top-btns">
-            <button onClick={nextHandler} disabled={!canPickNext}>
-              {status === GameStatus.IN_LOBBY ? "Start" : "Next"}
+            <button className="advance-btn" onClick={advanceHandler} disabled={isAdvanceDisabled}>
+              {isDevicePlayerReady(players, user as User) ? "Wait" : "Ready"}
             </button>
             <abbr title="Invite your friends!">
               <button onClick={copyInviteLink}>Copy Invite Link</button>

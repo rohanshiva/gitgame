@@ -12,10 +12,8 @@ export const LobbyAction = (
   state: GameState,
   payload: LobbyPayload
 ): GameState => {
-  const hostPlayer = payload.players.find((p) => p.is_host) as Player;
   const updates = {
     players: payload.players.filter((p) => p.is_connected),
-    host: hostPlayer.username,
     status: state.status,
   };
   if (state.status === GameStatus.CONNECTING) {
