@@ -122,6 +122,7 @@ function Game() {
   const codeLink =
     status === GameStatus.PLAYING ? source_code?.file_visit_url : undefined;
   const isInLobby = status === GameStatus.IN_LOBBY;
+  const isAdvanceDisabled = status === GameStatus.CONNECTING || status == GameStatus.FINISHED
 
   return (
     <>
@@ -132,7 +133,7 @@ function Game() {
         <div className="top-right">
           <Lobby players={players} locationUser={username} />
           <div className="top-btns">
-            <button className="advance-btn" onClick={advanceHandler} disabled={status === GameStatus.CONNECTING}>
+            <button className="advance-btn" onClick={advanceHandler} disabled={isAdvanceDisabled}>
               {isDevicePlayerReady(players, user as User) ? "Wait" : "Ready"}
             </button>
             <abbr title="Invite your friends!">
