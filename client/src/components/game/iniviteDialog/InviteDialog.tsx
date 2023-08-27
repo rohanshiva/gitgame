@@ -1,12 +1,12 @@
 import "./InviteDialog.css"
 import toast from "react-hot-toast";
 import * as Icon from "react-feather";
-import { SUCCESS } from "../../notifications/Notification";
+import {toastStyles } from "../../notifications/Notification";
 import Dialog from "../../dialog/Dialog";
 
 export async function copyInviteLink() {
     await navigator.clipboard.writeText(window.location.href);
-    toast(`Invite link copied!`, SUCCESS as any);
+    toast(`Invite link copied!`, toastStyles.POSITIVE);
 };
 
 interface InviteDialogProps {

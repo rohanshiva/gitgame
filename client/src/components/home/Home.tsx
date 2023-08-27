@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 import { useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Notification, { ERROR } from "../notifications/Notification";
+import Notification, { toastStyles } from "../notifications/Notification";
 import "./Home.css";
 import UserContext from "../../context/UserContext";
 import { GitPullRequest } from "react-feather";
@@ -68,8 +68,11 @@ function Home() {
   const { redirectionToLoginReason } = useLoginParams();
 
   useEffect(() => {
-    if (redirectionToLoginReason != undefined) {
-      toast(explainRedirectionToLogin(redirectionToLoginReason), ERROR as any);
+    if (redirectionToLoginReason !== undefined) {
+      toast(
+        explainRedirectionToLogin(redirectionToLoginReason),
+        toastStyles.NEGATIVE
+      );
     }
   }, [redirectionToLoginReason]);
 

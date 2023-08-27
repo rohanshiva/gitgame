@@ -55,10 +55,15 @@ class AddCommentRequest(BaseModel):
     type: Models.Comment.Type
 
 
-class AlertType(str, Enum):
+class AlertType(IntEnum):
     NEGATIVE = 0
     POSITIVE = 1
-    INFO = 2
+    NEUTRAL = 2
+
+
+class Alert(BaseModel):
+    message: str
+    type: AlertType
 
 
 class LobbyResponse(BaseModel):
@@ -68,8 +73,7 @@ class LobbyResponse(BaseModel):
 
 class AlertResponse(BaseModel):
     message_type: WSResponseType = WSResponseType.ALERT
-    alert: str
-    alert_type: AlertType = AlertType.INFO
+    alert: Alert
 
 
 class CodeResponse(BaseModel):
@@ -139,7 +143,8 @@ async def get_new_comment(new_comment_id: str):
     return NewCommentResponse(comment=comment)
 
 
-def get_alert(alert: str):
+def get_alert(message: str, type: AlertType = AlertType.POSITIVE):
+    alert = Alert(message=message, type=type)
     return AlertResponse(alert=alert)
 
 
@@ -153,7 +158,7 @@ async def broadcast(ctx: WSEventContext, *messages: Response):
 
 @instrument
 async def on_advance(ctx: WSEventContext):
-    await broadcast(ctx, get_alert("Advancing..."))
+    await broadcast(ctx, get_alert("Advancing...", type=AlertType.NEUTRAL))
     await Crud.advance(ctx.session_id, ctx.gh_client)
     lobby = await get_lobby(ctx.session_id)
     if await Crud.is_terminated(ctx.session_id):
@@ -167,7 +172,9 @@ async def on_leave(ctx: WSEventContext):
     await Crud.leave(ctx.session_id, ctx.player_name)
     ctx.connection_manager.remove(ctx.connection)
     await broadcast(
-        ctx, await get_lobby(ctx.session_id), get_alert(f"{ctx.player_name} has left")
+        ctx,
+        await get_lobby(ctx.session_id),
+        get_alert(f"{ctx.player_name} has left", type=AlertType.NEGATIVE),
     )
     if await Crud.is_ready_to_advance(ctx.session_id):
         await on_advance(ctx)
