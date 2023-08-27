@@ -50,6 +50,17 @@ export interface Code {
   file_display_path: string;
 }
 
+export enum AlertType {
+  NEGATIVE = 0,
+  POSITIVE = 1,
+  NEUTRAL = 2,
+}
+
+export interface Alert {
+  message: string;
+  type: AlertType;
+}
+
 export enum ResponseType {
   ALERT = 0,
   ERROR = 1,
@@ -64,7 +75,7 @@ export enum ResponseType {
 export enum RequestType {
   ADD_COMMENT = 1,
   READY = 2,
-  WAIT = 3
+  WAIT = 3,
 }
 
 export enum GameStateEventType {
@@ -89,7 +100,7 @@ export interface SourceCodePayload extends ResponsePayload {
 }
 
 export interface AlertPayload extends ResponsePayload {
-  alert: string;
+  alert: Alert;
 }
 
 export interface CommentsPayload extends ResponsePayload {

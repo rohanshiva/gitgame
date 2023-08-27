@@ -1,13 +1,20 @@
 import { useCallback, useContext, useState } from "react";
 
 import { useParams } from "react-router-dom";
-import Notification, {
-  SUCCESS,
-} from "../notifications/Notification";
+import Notification, { toastStyles } from "../notifications/Notification";
 import { Editor, TextDisplay } from "../editor";
 import toast from "react-hot-toast";
 import "./Game.css";
-import { AddComment, Code, GameState, GameStatus, User, Player } from "../../Interface";
+import {
+  AddComment,
+  Code,
+  GameState,
+  GameStatus,
+  User,
+  Player,
+  Alert,
+  AlertType,
+} from "../../Interface";
 import CommentSider from "../commentSider";
 import useGameConnection from "./hooks/UseGameConnection";
 import Lobby from "./lobby/Lobby";
@@ -26,7 +33,7 @@ interface GameParams {
 
 function getWelcomeText({ players }: GameState, deviceUser: string) {
   const playerText = applyPlayerDisplayOrder(players, deviceUser)
-    .map(({username}) => username)
+    .map(({ username }) => username)
     .join(", ");
 
   const debriefText = `A code file will be picked among your public Github repositories.\n\nRoast it with a 💩 comment or celebrate it with a 💎 comment.\n\nClick 🔎 if you ever need any help.\n\nTo start reviewing, everyone needs to ready up`;
@@ -34,14 +41,13 @@ function getWelcomeText({ players }: GameState, deviceUser: string) {
   return `Players: ${playerText}\n\n${debriefText}`;
 }
 
-function isDevicePlayerReady(players: Player[], {username}: User){
-  if(players.length === 0){
+function isDevicePlayerReady(players: Player[], { username }: User) {
+  if (players.length === 0) {
     return false;
   }
-  const devicePlayer =  players.filter((p) => p.username === username)[0];
+  const devicePlayer = players.filter((p) => p.username === username)[0];
   return devicePlayer.is_ready;
 }
-
 
 function Game() {
   const { sessionId } = useParams<GameParams>();
@@ -52,8 +58,17 @@ function Game() {
 
   const dehighlight = () => setCommentHighlight(undefined);
 
-  const onAlert = useCallback((alert: string) => {
-    toast(alert, SUCCESS as any);
+  const onAlert = useCallback(({ message, type }: Alert) => {
+    switch (type) {
+      case AlertType.NEGATIVE:
+        toast(message, toastStyles.NEGATIVE);
+        return;
+      case AlertType.POSITIVE:
+        toast(message, toastStyles.POSITIVE);
+        return;
+      default:
+        toast(message, toastStyles.NEUTRAL);
+    }
   }, []);
 
   const { state, actions, disconnection } = useGameConnection(
@@ -65,16 +80,22 @@ function Game() {
 
   const { isDisconnected, disconnectionMessage } = disconnection;
 
-  const { isOpen: isHelpDialogOpen, open: openHelpDialog, close: closeHelpDialog } = useDialog();
+  const {
+    isOpen: isHelpDialogOpen,
+    open: openHelpDialog,
+    close: closeHelpDialog,
+  } = useDialog();
 
-  const { isOpen: isInviteDialogOpen, close: closeInviteDialog } = useDialog({ initialIsOpen: true });
+  const { isOpen: isInviteDialogOpen, close: closeInviteDialog } = useDialog({
+    initialIsOpen: true,
+  });
 
   const advanceHandler = () => {
-    if(isDevicePlayerReady(players, user as User)){
+    if (isDevicePlayerReady(players, user as User)) {
       return actions.wait();
     }
     return actions.ready();
-  }
+  };
 
   const addCommentHandler = (comment: AddComment) => {
     actions.addComment(comment);
@@ -118,11 +139,11 @@ function Game() {
     }
   };
 
-
   const codeLink =
     status === GameStatus.PLAYING ? source_code?.file_visit_url : undefined;
   const isInLobby = status === GameStatus.IN_LOBBY;
-  const isAdvanceDisabled = status === GameStatus.CONNECTING || status == GameStatus.FINISHED
+  const isAdvanceDisabled =
+    status === GameStatus.CONNECTING || status == GameStatus.FINISHED;
 
   return (
     <>
@@ -133,7 +154,11 @@ function Game() {
         <div className="top-right">
           <Lobby players={players} locationUser={username} />
           <div className="top-btns">
-            <button className="advance-btn" onClick={advanceHandler} disabled={isAdvanceDisabled}>
+            <button
+              className="advance-btn"
+              onClick={advanceHandler}
+              disabled={isAdvanceDisabled}
+            >
               {isDevicePlayerReady(players, user as User) ? "Wait" : "Ready"}
             </button>
             <abbr title="Invite your friends!">

@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import { StatusCodes } from "http-status-codes";
 import routes_, { redirectToLoginUrl } from "../../constants/Route";
 import Api from "../../services/HttpApi";
-import { SUCCESS, LOADING, ERROR } from "../notifications/Notification";
+import { toastStyles } from "../notifications/Notification";
 import { RedirectionToLoginReason } from "../../Interface";
 
 function MakeForm() {
@@ -11,11 +11,14 @@ function MakeForm() {
 
   const handleMakeFormSubmit = (event: any) => {
     event.preventDefault();
-    const loadingToast = toast.loading("Making session...", LOADING as any);
+    const loadingToast = toast.loading(
+      "Making session...",
+      toastStyles.NEUTRAL
+    );
     Api.makeSession()
       .then((id) => {
         toast.dismiss(loadingToast);
-        toast("Session created successfully!", SUCCESS as any);
+        toast("Session created successfully!", toastStyles.POSITIVE);
         history.replace({
           pathname: routes_.game(id),
         });
@@ -31,7 +34,7 @@ function MakeForm() {
         } else {
           toast(
             `Failed to create session with error: ${error.message}`,
-            ERROR as any
+            toastStyles.NEGATIVE
           );
         }
       })

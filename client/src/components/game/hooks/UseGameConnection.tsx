@@ -9,6 +9,7 @@ import {
   ResponsePayload,
   ResponseType,
   GameStatus,
+  Alert,
 } from "../../../Interface";
 import gameReducer from "../reducers/GameReducer";
 import config from "../../../config/Config";
@@ -28,10 +29,7 @@ const INITIAL_GAME_STATE = {
   status: GameStatus.CONNECTING,
 };
 
-function useGameConnection(
-  sessionId: string,
-  onAlert: (alert: string) => void
-) {
+function useGameConnection(sessionId: string, onAlert: (alert: Alert) => void) {
   const [ws, setWs] = useState<WebSocket>();
   const [state, dispatch] = useReducer(gameReducer, { ...INITIAL_GAME_STATE });
 
@@ -119,7 +117,7 @@ function useGameConnection(
     addComment,
     ackNewComment,
     ready,
-    wait
+    wait,
   };
 
   const disconnection = {
