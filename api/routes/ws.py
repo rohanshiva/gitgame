@@ -203,13 +203,12 @@ async def on_join(ctx: WSEventContext):
             )
 
     ctx.connection_manager.add(ctx.connection)
-    await broadcast(
-        ctx,
-        await get_lobby(ctx.session_id),
-        get_alert(f"{ctx.player_name} has joined"),
-        await get_code(ctx.session_id),
-        await get_comments(ctx.session_id),
-    )
+    lobby = await get_lobby(ctx.session_id)
+    alert = get_alert(f"{ctx.player_name} has joined")
+    if await Crud.is_terminated(ctx.session_id):
+        await broadcast(ctx, lobby, alert, GameFinishedResponse())
+    else:
+        await broadcast(ctx, lobby, alert, await get_code(ctx.session_id), await get_comments(ctx.session_id))
 
 
 @instrument
