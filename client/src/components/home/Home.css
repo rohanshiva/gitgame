@@ -61,10 +61,11 @@ input[type="submit"]:hover {
 }
 
 .home-right {
-  background-color: var(--primary);
   border-radius: 1rem;
-  width: 100%;
   height: 512px;
+  width: 100%;
   z-index: -1;
+  display: flex;
+  justify-content: flex-end;
 }
 
