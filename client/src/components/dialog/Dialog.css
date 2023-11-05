@@ -2,6 +2,8 @@
   position: fixed;
   inset: 0px;
   backdrop-filter: blur(0.2rem);
+  /* Dialog needs to be the top most layer */
+  z-index: 999;
 }
 
 .dialog-header {
@@ -27,4 +29,6 @@ dialog {
   position: absolute;
   inset: 0px;
   padding: 1rem 2rem;
+  /* Dialog needs to be the top most layer */
+  z-index: 999;
 }
