@@ -136,7 +136,7 @@ video {
   border-radius: 0.2rem;
   background-color: var(--bg);
   border: 0.1rem solid var(--border);
-  /* Context menu is a layer above all other elements */
+  /* Context menu is a layer above all other elements, but below dialog (see Dialog's CSS classes) */
   z-index: 1;
 }
 
