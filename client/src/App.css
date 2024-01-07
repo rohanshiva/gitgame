@@ -1,6 +1,8 @@
 .app {
   display: flex;
   flex-direction: column;
+  /* All elements are at z-index 0; unless overwritten */
+  z-index: 0;
 }
 
 .main-section {

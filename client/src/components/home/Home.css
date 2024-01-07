@@ -64,7 +64,6 @@ input[type="submit"]:hover {
   border-radius: 1rem;
   height: 512px;
   width: 100%;
-  z-index: -1;
   display: flex;
   justify-content: flex-end;
 }
